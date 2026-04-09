@@ -96,6 +96,38 @@ standard component library — components are copied into the project (not a pac
 and styled with Tailwind. Do not install alternative component libraries (MUI, Chakra, Mantine,
 Ant Design) — shadcn/ui is the only approved component system for FullBloom frontends.
 
+### Color Palette
+
+FullBloom uses a **Slate + Rose** palette with deep forest green accents. All apps MUST use
+these colors consistently:
+
+- **Sidebar background**: `#1a2e1a` (deep forest green)
+- **Sidebar hover/active**: `#2d4a2d` (medium forest green)
+- **Headings & structural text**: `#1e3a5f` (slate blue)
+- **Primary action** (buttons, links, active states): `#c27890` (rose pink)
+- **Secondary accent**: `#5c3d50` (deep plum)
+- **Status/info badges**: `#dbeafe` background / `#1e3a5f` text (blue), `#fce7f3` / `#831843`
+  (pink), `#e8f0e8` / `#2d4a2d` (green)
+- **Content background**: `#f4f1ec` (warm cream)
+- **Card/input background**: `#ffffff` (white)
+- **Borders**: `#e0ddd8` (warm gray)
+- **Muted text**: `#94a3b8` (cool gray)
+- **Body text**: `#334155` (dark slate)
+- **Brand wordmark**: white (never rose — rose is reserved for actions)
+
+### App Shell
+
+All FullBloom frontend apps MUST use a consistent app shell layout:
+
+- **Collapsible sidebar navigation** on the left. Desktop: expands to show icon + label, collapses
+  to an icon-only rail (always visible, one-click navigation). Mobile: sidebar fully hidden behind
+  a hamburger menu in a top bar. The icon rail is the default collapsed state on desktop.
+- **Full-width content area** to the right of the sidebar. Content flows vertically in a single
+  column with a `max-width` container to prevent over-stretching on wide monitors.
+- **No secondary sidebars or split panels** for primary content. Auxiliary panels (e.g., product
+  picker) slide out from the left, pushing the content area narrower, and can be dismissed.
+- On mobile, auxiliary panels open as full-screen overlays.
+
 ### Backend
 
 Python is the default language. FastAPI is the default web framework; use pytest for backend
@@ -110,7 +142,7 @@ before being created.
 ### Infrastructure
 
 Mac Mini is the local development environment and LLM host. Production deployment uses a single
-**DigitalOcean Droplet** (2GB RAM) running docker-compose: **Caddy** (serves frontend static
+**DigitalOcean Droplet** (2GB RAM preferred, vertically scalable as needed) running docker-compose: **Caddy** (serves frontend static
 files + reverse-proxies the API, automatic HTTPS via Let's Encrypt), **FastAPI** (API server),
 **Celery** (worker + beat combined), **Redis** (broker), and **Neon** (serverless PostgreSQL,
 free tier, external). The frontend is built during deployment and served as static files by
@@ -239,4 +271,4 @@ Versioning follows semantic rules:
 As a solo project, no formal review process is required — but amendments MUST be intentional and
 reflected here before taking effect in practice.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-05
+**Version**: 1.1.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-08
