@@ -2,7 +2,7 @@
 
 **Feature Branch**: `002-customer-management`  
 **Created**: 2026-04-08  
-**Status**: in-progress  
+**Status**: implemented  
 **Input**: Customer management page: list all customers with search/filter, inline edit customer details, add new customers, soft-delete customers (recoverable).
 
 ## Clarifications
