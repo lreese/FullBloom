@@ -16,6 +16,7 @@ export function CustomersPage() {
     salesperson: [],
     default_ship_via: [],
     payment_terms: [],
+    price_type: [],
   });
   const [activeView, setActiveView] = useState<"active" | "archived">("active");
   const [drawerOpen, setDrawerOpen] = useState(false);
