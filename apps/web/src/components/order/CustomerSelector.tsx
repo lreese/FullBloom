@@ -78,9 +78,10 @@ export function CustomerSelector({ value, onSelect }: CustomerSelectorProps) {
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <Command shouldFilter={false} className="rounded-lg border border-input">
+      <Command shouldFilter={false} className="rounded-lg border border-input overflow-visible p-0">
         <CommandInput
           placeholder="Search customers..."
+          className="h-8"
           value={search}
           onValueChange={(val) => {
             setSearch(val);
@@ -89,7 +90,7 @@ export function CustomerSelector({ value, onSelect }: CustomerSelectorProps) {
           onFocus={() => setOpen(true)}
         />
         {open && (
-          <CommandList>
+          <CommandList className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-input bg-white shadow-lg max-h-64">
             {loading && (
               <div className="py-4 text-center text-sm text-muted-foreground">
                 Searching...
