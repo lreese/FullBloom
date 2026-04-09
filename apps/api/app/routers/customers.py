@@ -1,5 +1,7 @@
 """Customer endpoints."""
 
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException
 
 from app.models.customer import Customer
@@ -60,7 +62,7 @@ async def dropdown_options() -> dict:
 
 
 @router.get("/customers/{customer_id}")
-async def get_customer(customer_id: str) -> dict:
+async def get_customer(customer_id: UUID) -> dict:
     """Get a single customer with nested stores."""
     customer = await Customer.get_or_none(id=customer_id).prefetch_related("stores")
     if customer is None:
@@ -118,8 +120,13 @@ async def create_customer(data: CustomerCreateRequest) -> dict:
 
 
 @router.patch("/customers/{customer_id}")
-async def update_customer(customer_id: str, data: CustomerUpdateRequest) -> dict:
-    """Update a customer's fields. Only include fields to change."""
+async def update_customer(customer_id: UUID, data: CustomerUpdateRequest) -> dict:
+    """Update a customer's fields. Only include fields to change.
+
+    NOTE: CustomerUpdateRequest intentionally excludes is_active, customer_number,
+    and id. is_active is managed via /archive and /restore. customer_number and id
+    are immutable after creation. Do not add those fields to the update schema.
+    """
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -149,7 +156,7 @@ async def update_customer(customer_id: str, data: CustomerUpdateRequest) -> dict
 
 
 @router.post("/customers/{customer_id}/archive")
-async def archive_customer(customer_id: str) -> dict:
+async def archive_customer(customer_id: UUID) -> dict:
     """Soft-delete (archive) a customer."""
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:
@@ -160,7 +167,7 @@ async def archive_customer(customer_id: str) -> dict:
 
 
 @router.post("/customers/{customer_id}/restore")
-async def restore_customer(customer_id: str) -> dict:
+async def restore_customer(customer_id: UUID) -> dict:
     """Restore an archived customer."""
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:

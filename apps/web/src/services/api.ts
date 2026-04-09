@@ -27,8 +27,9 @@ async function request<T>(
   const body = await res.json();
 
   if (!res.ok) {
+    // FastAPI returns {"detail": "..."}, our convention is {"error": "..."} — handle both
     const errorMessage =
-      (body as ApiError).error ?? `Request failed with status ${res.status}`;
+      (body as ApiError).error ?? body.detail ?? `Request failed with status ${res.status}`;
 
     if (res.status === 409) {
       throw new DuplicateError(errorMessage);

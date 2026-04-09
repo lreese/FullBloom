@@ -152,15 +152,15 @@ export function CustomerDrawer({
     <div>
       <Label className="text-xs font-semibold text-[#1e3a5f]">{label}</Label>
       <Select
-        value={value}
-        onValueChange={(v) => setField(field, v)}
+        value={value || "__none__"}
+        onValueChange={(v) => setField(field, v === "__none__" ? "" : v)}
         disabled={isReadOnly}
       >
         <SelectTrigger className="mt-1 h-8 text-sm">
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">None</SelectItem>
+          <SelectItem value="__none__">None</SelectItem>
           {options.map((opt) => (
             <SelectItem key={opt} value={opt}>
               {opt}
