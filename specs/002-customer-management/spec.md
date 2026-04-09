@@ -132,6 +132,14 @@ A user can archive (soft-delete) a customer, removing them from the default acti
 - **SC-004**: Archived customers are recoverable — no data is permanently lost through the archive action.
 - **SC-005**: The Customers page loads the full customer list in under 2 seconds.
 
+### Data Import
+
+Two CSV import endpoints support initial data loading:
+- `POST /api/v1/import/customer-info` — populates customer fields (salesperson, contact, ship via, phone, location, terms, email, notes, active status) from the Customer Info CSV. Matches by customer number, upserts.
+- `POST /api/v1/import/price-categories` — sets price_type from the Customer Price Category CSV. Matches by customer name (case-insensitive).
+
+These are operational endpoints for data seeding, not user-facing features.
+
 ## Assumptions
 
 - This is a single-user system (Oregon Flowers staff), so concurrent editing conflicts are not a concern.

@@ -212,7 +212,7 @@ export function CustomerDrawer({
                     className="mt-1 h-8 text-sm"
                     value={form.customer_number}
                     onChange={(e) =>
-                      setField("customer_number", e.target.value)
+                      setForm((prev) => ({ ...prev, customer_number: parseInt(e.target.value, 10) || 0 }))
                     }
                   />
                 )}

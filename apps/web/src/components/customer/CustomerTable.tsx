@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CustomerColumnFilter } from "./CustomerColumnFilter";
-import { Search, Settings2 } from "lucide-react";
+import { Search, Settings2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@/types";
 
@@ -33,18 +33,41 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "notes", label: "Notes", filterable: false, defaultVisible: false },
 ];
 
+const COLUMN_MAP = Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, c]));
+const DEFAULT_ORDER = ALL_COLUMNS.map((c) => c.key);
+const DEFAULT_VISIBLE = new Set(ALL_COLUMNS.filter((c) => c.defaultVisible).map((c) => c.key));
+
 const STORAGE_KEY = "fullbloom:customer-columns";
 
-function loadColumnPrefs(): string[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch { /* ignore */ }
-  return ALL_COLUMNS.filter((c) => c.defaultVisible).map((c) => c.key);
+interface ColumnPrefs {
+  order: string[];
+  visible: string[];
 }
 
-function saveColumnPrefs(cols: string[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cols));
+function loadColumnPrefs(): ColumnPrefs {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Handle legacy format (plain string array = visible only)
+      if (Array.isArray(parsed)) {
+        return { order: DEFAULT_ORDER, visible: parsed };
+      }
+      // Ensure all columns are represented in order (handles new columns added later)
+      const order = parsed.order ?? DEFAULT_ORDER;
+      const allKeys = new Set(DEFAULT_ORDER);
+      const missing = DEFAULT_ORDER.filter((k) => !order.includes(k));
+      return {
+        order: [...order.filter((k: string) => allKeys.has(k)), ...missing],
+        visible: parsed.visible ?? [...DEFAULT_VISIBLE],
+      };
+    }
+  } catch { /* ignore */ }
+  return { order: DEFAULT_ORDER, visible: [...DEFAULT_VISIBLE] };
+}
+
+function saveColumnPrefs(prefs: ColumnPrefs) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
 const SEARCHABLE_FIELDS = [
@@ -75,9 +98,9 @@ export function CustomerTable({
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>(
     {}
   );
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    loadColumnPrefs
-  );
+  const [columnPrefs, setColumnPrefs] = useState<ColumnPrefs>(loadColumnPrefs);
+  const dragItem = useRef<number | null>(null);
+  const dragOver = useRef<number | null>(null);
 
   const hasActiveFilters =
     searchTerm.length > 0 ||
@@ -94,14 +117,42 @@ export function CustomerTable({
   };
 
   const toggleColumn = (key: string) => {
-    setVisibleColumns((prev) => {
-      const next = prev.includes(key)
-        ? prev.filter((k) => k !== key)
-        : [...prev, key];
+    setColumnPrefs((prev) => {
+      const visible = prev.visible.includes(key)
+        ? prev.visible.filter((k) => k !== key)
+        : [...prev.visible, key];
+      const next = { ...prev, visible };
       saveColumnPrefs(next);
       return next;
     });
   };
+
+  const handleDragStart = useCallback((idx: number) => {
+    dragItem.current = idx;
+  }, []);
+
+  const handleDragEnter = useCallback((idx: number) => {
+    dragOver.current = idx;
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    if (dragItem.current === null || dragOver.current === null) return;
+    if (dragItem.current === dragOver.current) {
+      dragItem.current = null;
+      dragOver.current = null;
+      return;
+    }
+    setColumnPrefs((prev) => {
+      const order = [...prev.order];
+      const [removed] = order.splice(dragItem.current!, 1);
+      order.splice(dragOver.current!, 0, removed);
+      dragItem.current = null;
+      dragOver.current = null;
+      const next = { ...prev, order };
+      saveColumnPrefs(next);
+      return next;
+    });
+  }, []);
 
   // Compute distinct values for filterable columns
   const distinctValues = useMemo(() => {
@@ -143,9 +194,11 @@ export function CustomerTable({
     return result;
   }, [customers, searchTerm, columnFilters]);
 
-  const activeColumns = ALL_COLUMNS.filter((c) =>
-    visibleColumns.includes(c.key)
-  );
+  // Active columns: visible ones in the user's order
+  const activeColumns = columnPrefs.order
+    .filter((key) => columnPrefs.visible.includes(key))
+    .map((key) => COLUMN_MAP[key])
+    .filter(Boolean);
 
   return (
     <div>
@@ -200,27 +253,37 @@ export function CustomerTable({
           </button>
         )}
 
-        {/* Column toggle */}
+        {/* Column toggle + reorder */}
         <Popover>
           <PopoverTrigger asChild>
             <button className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 flex items-center gap-1">
               <Settings2 className="h-3 w-3" /> Columns
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-48 p-2" align="end">
-            <div className="space-y-1">
-              {ALL_COLUMNS.map((col) => (
-                <label
-                  key={col.key}
-                  className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer"
-                >
-                  <Checkbox
-                    checked={visibleColumns.includes(col.key)}
-                    onCheckedChange={() => toggleColumn(col.key)}
-                  />
-                  <span className="text-[#334155]">{col.label}</span>
-                </label>
-              ))}
+          <PopoverContent className="w-52 p-2" align="end">
+            <div className="space-y-0.5">
+              {columnPrefs.order.map((key, idx) => {
+                const col = COLUMN_MAP[key];
+                if (!col) return null;
+                return (
+                  <div
+                    key={col.key}
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragEnter={() => handleDragEnter(idx)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    className="flex items-center gap-1.5 px-1 py-1 text-sm rounded hover:bg-[#f4f1ec] cursor-grab active:cursor-grabbing"
+                  >
+                    <GripVertical className="h-3 w-3 text-[#94a3b8] shrink-0" />
+                    <Checkbox
+                      checked={columnPrefs.visible.includes(col.key)}
+                      onCheckedChange={() => toggleColumn(col.key)}
+                    />
+                    <span className="text-[#334155] select-none">{col.label}</span>
+                  </div>
+                );
+              })}
             </div>
           </PopoverContent>
         </Popover>
