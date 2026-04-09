@@ -36,6 +36,7 @@ class CustomerCreateRequest(BaseModel):
     customer_number: int
     name: str
     salesperson: str | None = None
+    price_type: str = "Retail"
     contact_name: str | None = None
     default_ship_via: str | None = None
     phone: str | None = None
@@ -55,6 +56,7 @@ class CustomerCreateRequest(BaseModel):
 class CustomerUpdateRequest(BaseModel):
     name: str | None = None
     salesperson: str | None = None
+    price_type: str | None = None
     contact_name: str | None = None
     default_ship_via: str | None = None
     phone: str | None = None
@@ -75,6 +77,7 @@ class DropdownOptionsResponse(BaseModel):
     salesperson: list[str]
     default_ship_via: list[str]
     payment_terms: list[str]
+    price_type: list[str]
 
 
 class NextNumberResponse(BaseModel):

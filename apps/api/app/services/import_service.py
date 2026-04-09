@@ -10,6 +10,7 @@ from tortoise import Tortoise
 from app.schemas.import_data import (
     ImportColorsResult,
     ImportCustomerInfoResult,
+    ImportPriceCategoryResult,
     ImportPricingResult,
     ImportVarietiesResult,
 )
@@ -533,5 +534,45 @@ async def import_customer_info(rows: list[dict]) -> ImportCustomerInfoResult:
                 result.customers_created += 1
             else:
                 result.customers_updated += 1
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# import_price_categories
+# ---------------------------------------------------------------------------
+
+async def import_price_categories(rows: list[dict]) -> ImportPriceCategoryResult:
+    """Import price categories from the Customer Price Category CSV.
+
+    Matches customers by name (case-insensitive) and updates their price_type.
+    """
+    conn = Tortoise.get_connection("default")
+    result = ImportPriceCategoryResult()
+
+    # Build a lookup of customer name (lowercase) -> id from DB
+    _, db_rows = await conn.execute_query(
+        "SELECT id, LOWER(name) AS name_lower FROM customers", []
+    )
+    name_to_id: dict[str, str] = {r["name_lower"]: str(r["id"]) for r in db_rows}
+
+    for row in rows:
+        customer_name = (row.get("Customer") or "").strip()
+        price_category = (row.get("Price Category") or "").strip()
+
+        if not customer_name or not price_category:
+            result.customers_skipped += 1
+            continue
+
+        cust_id = name_to_id.get(customer_name.lower())
+        if not cust_id:
+            result.customers_not_found += 1
+            continue
+
+        await conn.execute_query(
+            'UPDATE customers SET price_type = $1 WHERE id = $2::uuid',
+            [price_category, cust_id],
+        )
+        result.customers_updated += 1
 
     return result

@@ -36,6 +36,7 @@ export interface CustomerCreateRequest {
   customer_number: number;
   name: string;
   salesperson?: string | null;
+  price_type?: string;
   contact_name?: string | null;
   default_ship_via?: string | null;
   phone?: string | null;
@@ -48,6 +49,7 @@ export interface CustomerCreateRequest {
 export interface CustomerUpdateRequest {
   name?: string;
   salesperson?: string | null;
+  price_type?: string;
   contact_name?: string | null;
   default_ship_via?: string | null;
   phone?: string | null;
@@ -61,6 +63,7 @@ export interface DropdownOptions {
   salesperson: string[];
   default_ship_via: string[];
   payment_terms: string[];
+  price_type: string[];
 }
 
 // ── Products ─────────────────────────────────────────────────

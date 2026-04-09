@@ -5,12 +5,14 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from app.schemas.import_data import (
     ImportColorsResult,
     ImportCustomerInfoResult,
+    ImportPriceCategoryResult,
     ImportPricingResult,
     ImportVarietiesResult,
 )
 from app.services.import_service import (
     import_colors,
     import_customer_info,
+    import_price_categories,
     import_pricing,
     import_varieties,
 )
@@ -61,4 +63,12 @@ async def upload_customer_info(file: UploadFile = File(...)):
     """Import customer info from the Customer Info CSV."""
     rows = await _read_csv(file)
     result = await import_customer_info(rows)
+    return {"data": result.model_dump()}
+
+
+@router.post("/price-categories", response_model=dict)
+async def upload_price_categories(file: UploadFile = File(...)):
+    """Import price categories from the Customer Price Category CSV."""
+    rows = await _read_csv(file)
+    result = await import_price_categories(rows)
     return {"data": result.model_dump()}

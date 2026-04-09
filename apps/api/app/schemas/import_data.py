@@ -30,3 +30,9 @@ class ImportCustomerInfoResult(BaseModel):
     customers_created: int = 0
     customers_updated: int = 0
     customers_skipped: int = 0
+
+
+class ImportPriceCategoryResult(BaseModel):
+    customers_updated: int = 0
+    customers_not_found: int = 0
+    customers_skipped: int = 0
