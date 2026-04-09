@@ -258,9 +258,9 @@ async def import_pricing(rows: list[dict]) -> ImportPricingResult:
             values_parts.append(f"(${offset+1}, ${offset+2}, ${offset+3}, ${offset+4}::bool)")
             params.extend([str(uuid.uuid4()), cust_num, info["name"], info["is_active"]])
         sql = (
-            f"INSERT INTO customers (id, customer_id, name, is_active) "
+            f"INSERT INTO customers (id, customer_number, name, is_active) "
             f"VALUES {', '.join(values_parts)} "
-            f"ON CONFLICT (customer_id) DO UPDATE SET "
+            f"ON CONFLICT (customer_number) DO UPDATE SET "
             f"name = EXCLUDED.name, is_active = EXCLUDED.is_active "
             f"RETURNING (xmax = 0) AS inserted"
         )
@@ -271,9 +271,9 @@ async def import_pricing(rows: list[dict]) -> ImportPricingResult:
             else:
                 result.customers_updated += 1
 
-    # Fetch customer id map: customer_id (int) -> uuid
-    _, cust_rows = await conn.execute_query("SELECT id, customer_id FROM customers", [])
-    cust_id_map = {r["customer_id"]: str(r["id"]) for r in cust_rows}
+    # Fetch customer id map: customer_number (int) -> uuid
+    _, cust_rows = await conn.execute_query("SELECT id, customer_number FROM customers", [])
+    cust_id_map = {r["customer_number"]: str(r["id"]) for r in cust_rows}
 
     # --- Collect unique sales items ---
     # sales_item_name -> {variety_name, stems_per_order, retail_price}

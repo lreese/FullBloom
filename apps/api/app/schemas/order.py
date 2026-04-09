@@ -98,7 +98,7 @@ class OrderCustomerResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    customer_id: int
+    customer_number: int
     name: str
 
 

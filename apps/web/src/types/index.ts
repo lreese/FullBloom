@@ -17,7 +17,7 @@ export interface Store {
 
 export interface Customer {
   id: string;
-  customer_id: number;
+  customer_number: number;
   name: string;
   price_type: string;
   is_active: boolean;
@@ -127,7 +127,7 @@ export interface OrderLineResponse {
 export interface OrderDetailResponse {
   id: string;
   order_number: string;
-  customer: { id: string; customer_id: number; name: string };
+  customer: { id: string; customer_number: number; name: string };
   order_date: string;
   ship_via: string | null;
   price_type: string;
