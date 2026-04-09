@@ -19,7 +19,7 @@ async def list_customers(search: str | None = None) -> dict:
         "data": [
             CustomerListResponse(
                 id=str(c.id),
-                customer_id=c.customer_id,
+                customer_number=c.customer_number,
                 name=c.name,
                 price_type=c.price_type,
                 is_active=c.is_active,
@@ -38,7 +38,7 @@ async def get_customer(customer_id: str) -> dict:
     return {
         "data": CustomerResponse(
             id=str(customer.id),
-            customer_id=customer.customer_id,
+            customer_number=customer.customer_number,
             name=customer.name,
             price_type=customer.price_type,
             is_active=customer.is_active,

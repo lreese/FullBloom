@@ -70,7 +70,7 @@ export function CustomerSelector({ value, onSelect }: CustomerSelectorProps) {
       >
         <span className="flex-1 truncate">{value.name}</span>
         <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
-          ID: {value.customer_id}
+          ID: {value.customer_number}
         </span>
       </button>
     );
@@ -112,7 +112,7 @@ export function CustomerSelector({ value, onSelect }: CustomerSelectorProps) {
                 >
                   <span className="flex-1 truncate">{customer.name}</span>
                   <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
-                    ID: {customer.customer_id}
+                    ID: {customer.customer_number}
                   </span>
                 </CommandItem>
               ))}

@@ -10,7 +10,7 @@ class Customer(Model):
     """A customer (buyer) in the system."""
 
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    customer_id = fields.IntField(unique=True)
+    customer_number = fields.IntField(unique=True)
     name = fields.CharField(max_length=255)
     price_type = fields.CharField(max_length=50, default="Retail")
     is_active = fields.BooleanField(default=True)

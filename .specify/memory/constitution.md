@@ -220,6 +220,12 @@ lightweight cloud deployment, no SLA requirements unless a spec explicitly defin
 - Python: `snake_case` for variables, functions, and modules; `PascalCase` for classes;
   `SCREAMING_SNAKE_CASE` for module-level constants. No abbreviations unless universally understood
   (`id`, `url`, `api` are fine; `usr`, `cfg`, `mgr` are not).
+- Database columns: `snake_case`. Suffix `_id` is reserved for foreign keys (UUID references to
+  another table's primary key). Human-assigned business identifiers use `_number` (e.g.,
+  `customer_number`, `order_number`). Boolean columns use `is_` or `has_` prefix. Timestamps use
+  `_at` suffix (`created_at`, `updated_at`). Free-text fields that could be ambiguous get a
+  descriptive qualifier (`contact_name` not `contact`, `payment_terms` not `terms`,
+  `default_ship_via` not `ship_via` when the value is a default that can be overridden per order).
 
 **No magic literals**: Repeated string or numeric literals MUST be extracted into named constants.
 A string used once inline is fine; the same string in two places is a constant waiting to happen.
@@ -271,4 +277,4 @@ Versioning follows semantic rules:
 As a solo project, no formal review process is required — but amendments MUST be intentional and
 reflected here before taking effect in practice.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-08
+**Version**: 1.2.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-08

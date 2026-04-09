@@ -14,7 +14,7 @@ class CustomerResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    customer_id: int
+    customer_number: int
     name: str
     price_type: str
     is_active: bool
@@ -25,7 +25,7 @@ class CustomerListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    customer_id: int
+    customer_number: int
     name: str
     price_type: str
     is_active: bool

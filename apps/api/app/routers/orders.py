@@ -56,7 +56,7 @@ async def get_order(order_id: str) -> dict:
             order_number=order.order_number,
             customer=OrderCustomerResponse(
                 id=str(customer.id),
-                customer_id=customer.customer_id,
+                customer_number=customer.customer_number,
                 name=customer.name,
             ),
             order_date=str(order.order_date),
