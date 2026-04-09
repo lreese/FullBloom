@@ -28,8 +28,12 @@ const navItems: NavItem[] = [
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
-export function Sidebar() {
-  const [expanded, setExpanded] = useState(false);
+interface SidebarProps {
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
+}
+
+export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activePath] = useState("/orders");
 
@@ -111,7 +115,7 @@ export function Sidebar() {
         {/* Desktop expand/collapse toggle */}
         <div className="hidden md:flex px-2 py-3">
           <button
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => onExpandedChange(!expanded)}
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors px-2 py-1 rounded-md w-full"
             aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
           >

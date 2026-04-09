@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 
 interface AppShellProps {
@@ -6,12 +6,16 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <Sidebar expanded={sidebarExpanded} onExpandedChange={setSidebarExpanded} />
 
-      {/* Main content area — offset for sidebar width on desktop, top bar on mobile */}
-      <main className="flex-1 bg-cream overflow-y-auto md:ml-[52px] mt-12 md:mt-0">
+      {/* Main content area — margin tracks sidebar width on desktop, top bar offset on mobile */}
+      <main className="flex-1 bg-cream overflow-y-auto mt-12 md:mt-0 transition-[margin-left] duration-200 md:ml-[52px]"
+        {...(sidebarExpanded ? { style: { marginLeft: 200 } } : {})}
+      >
         <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8">
           {children}
         </div>
