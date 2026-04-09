@@ -258,9 +258,10 @@ Commit messages MUST follow Conventional Commits format: `type: short descriptio
 `refactor` (code change with no behavior change), `test` (tests). Subject line MUST be lowercase,
 imperative mood, under 72 characters. Example: `feat: add weekly budget summary endpoint`.
 
-Branch strategy: `main` is always deployable. Feature work MUST use short-lived feature branches
-named `feat/<slug>` (e.g., `feat/budget-summary`). Bug fixes use `fix/<slug>`. Merge to main
-when the spec's acceptance criteria are met. Delete branches after merging.
+Branch strategy: `master` is always deployable. Feature work MUST use short-lived feature branches
+named `<NNN>-<slug>` where NNN is the zero-padded spec number (e.g., `002-customer-management`).
+Bug fixes use `fix/<slug>`. Merge to master when the spec's acceptance criteria are met. Delete
+branches after merging.
 
 ## Governance
 
@@ -277,4 +278,4 @@ Versioning follows semantic rules:
 As a solo project, no formal review process is required — but amendments MUST be intentional and
 reflected here before taking effect in practice.
 
-**Version**: 1.2.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-08
+**Version**: 1.2.1 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-09

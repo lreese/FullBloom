@@ -9,6 +9,8 @@ from tortoise import Tortoise
 
 from app.schemas.import_data import (
     ImportColorsResult,
+    ImportCustomerInfoResult,
+    ImportPriceCategoryResult,
     ImportPricingResult,
     ImportVarietiesResult,
 )
@@ -434,5 +436,143 @@ async def import_colors(rows: list[dict]) -> ImportColorsResult:
             result.varieties_updated += len(affected)
         else:
             result.varieties_not_found += 1
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# import_customer_info
+# ---------------------------------------------------------------------------
+
+async def import_customer_info(rows: list[dict]) -> ImportCustomerInfoResult:
+    """Import customer info rows from the Customer Info CSV.
+
+    Upserts customers by customer_number, populating all extended fields:
+    salesperson, contact_name, default_ship_via, phone, location,
+    payment_terms, email, notes, and is_active.
+    """
+    conn = Tortoise.get_connection("default")
+    result = ImportCustomerInfoResult()
+
+    # The CSV header for salesperson contains a newline: "SALES\nPERSON"
+    salesperson_key = next(
+        (k for k in rows[0].keys() if "SALES" in k.upper() and "PERSON" in k.upper()),
+        "SALES\nPERSON",
+    ) if rows else "SALES\nPERSON"
+
+    # Deduplicate by customer_number — keep last occurrence
+    seen: dict[str, int] = {}
+    for i, row in enumerate(rows):
+        num = (row.get("CUST. NUMBER") or "").strip()
+        if num:
+            seen[num] = i
+    rows = [rows[i] for i in sorted(seen.values())]
+
+    for chunk in _chunks(rows, 500):
+        values_parts = []
+        params: list = []
+        param_idx = 0
+
+        for row in chunk:
+            cust_num = _parse_int(row.get("CUST. NUMBER"))
+            cust_name = (row.get("CUSTOMER NAME") or "").strip()
+            if cust_num is None or not cust_name:
+                result.customers_skipped += 1
+                continue
+
+            is_active = (row.get("Active") or "").strip().lower() == "active"
+            salesperson = (row.get(salesperson_key) or "").strip() or None
+            contact_name = (row.get("CONTACT") or "").strip() or None
+            default_ship_via = (row.get("SHIP VIA") or "").strip() or None
+            phone = (row.get("PHONE") or "").strip() or None
+            location = (row.get("LOCATION") or "").strip() or None
+            payment_terms = (row.get("TERMS") or "").strip() or None
+            email = (row.get("EMAIL") or "").strip() or None
+            notes = (row.get("NOTES") or "").strip() or None
+
+            values_parts.append(
+                f"(${param_idx+1}, ${param_idx+2}::int, ${param_idx+3}, "
+                f"${param_idx+4}::bool, ${param_idx+5}, ${param_idx+6}, "
+                f"${param_idx+7}, ${param_idx+8}, ${param_idx+9}, "
+                f"${param_idx+10}, ${param_idx+11}, ${param_idx+12})"
+            )
+            params.extend([
+                str(uuid.uuid4()),  # id
+                cust_num,           # customer_number
+                cust_name,          # name
+                is_active,          # is_active
+                salesperson,        # salesperson
+                contact_name,       # contact_name
+                default_ship_via,   # default_ship_via
+                phone,              # phone
+                location,           # location
+                payment_terms,      # payment_terms
+                email,              # email
+                notes,              # notes
+            ])
+            param_idx += 12
+
+        if not values_parts:
+            continue
+
+        sql = (
+            f"INSERT INTO customers (id, customer_number, name, is_active, "
+            f"salesperson, contact_name, default_ship_via, phone, location, "
+            f"payment_terms, email, notes) "
+            f"VALUES {', '.join(values_parts)} "
+            f"ON CONFLICT (customer_number) DO UPDATE SET "
+            f"name = EXCLUDED.name, is_active = EXCLUDED.is_active, "
+            f"salesperson = EXCLUDED.salesperson, contact_name = EXCLUDED.contact_name, "
+            f"default_ship_via = EXCLUDED.default_ship_via, phone = EXCLUDED.phone, "
+            f"location = EXCLUDED.location, payment_terms = EXCLUDED.payment_terms, "
+            f"email = EXCLUDED.email, notes = EXCLUDED.notes "
+            f"RETURNING (xmax = 0) AS inserted"
+        )
+        _, rows_back = await conn.execute_query(sql, params)
+        for r in rows_back:
+            if r["inserted"]:
+                result.customers_created += 1
+            else:
+                result.customers_updated += 1
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# import_price_categories
+# ---------------------------------------------------------------------------
+
+async def import_price_categories(rows: list[dict]) -> ImportPriceCategoryResult:
+    """Import price categories from the Customer Price Category CSV.
+
+    Matches customers by name (case-insensitive) and updates their price_type.
+    """
+    conn = Tortoise.get_connection("default")
+    result = ImportPriceCategoryResult()
+
+    # Build a lookup of customer name (lowercase) -> id from DB
+    _, db_rows = await conn.execute_query(
+        "SELECT id, LOWER(name) AS name_lower FROM customers", []
+    )
+    name_to_id: dict[str, str] = {r["name_lower"]: str(r["id"]) for r in db_rows}
+
+    for row in rows:
+        customer_name = (row.get("Customer") or "").strip()
+        price_category = (row.get("Price Category") or "").strip()
+
+        if not customer_name or not price_category:
+            result.customers_skipped += 1
+            continue
+
+        cust_id = name_to_id.get(customer_name.lower())
+        if not cust_id:
+            result.customers_not_found += 1
+            continue
+
+        await conn.execute_query(
+            'UPDATE customers SET price_type = $1 WHERE id = $2::uuid',
+            [price_category, cust_id],
+        )
+        result.customers_updated += 1
 
     return result

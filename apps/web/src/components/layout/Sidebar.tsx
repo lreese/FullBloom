@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ClipboardList,
   Users,
@@ -35,7 +36,9 @@ interface SidebarProps {
 
 export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activePath] = useState("/orders");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activePath = location.pathname;
 
   return (
     <>
@@ -63,14 +66,11 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 flex flex-col h-full bg-sidebar transition-all duration-200",
-          // Desktop
           "hidden md:flex",
           expanded ? "w-[200px]" : "w-[52px]",
-          // Mobile override
           mobileOpen && "!flex w-[200px]"
         )}
       >
-        {/* Monogram + close on mobile */}
         <div className="flex items-center justify-between h-14 px-3">
           <span className="text-white font-bold text-xl tracking-tight select-none">
             {expanded || mobileOpen ? "FullBloom" : "FB"}
@@ -86,20 +86,18 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
           )}
         </div>
 
-        {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-1 px-2 mt-2">
           {navItems.map(({ label, icon: Icon, href }) => {
             const active = activePath === href;
             return (
-              <a
+              <button
                 key={href}
-                href={href}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={() => {
+                  navigate(href);
                   setMobileOpen(false);
                 }}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors",
+                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
                   active && "bg-sidebar-hover text-white"
                 )}
               >
@@ -107,12 +105,11 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
                 {(expanded || mobileOpen) && (
                   <span className="whitespace-nowrap">{label}</span>
                 )}
-              </a>
+              </button>
             );
           })}
         </nav>
 
-        {/* Desktop expand/collapse toggle */}
         <div className="hidden md:flex px-2 py-3">
           <button
             onClick={() => onExpandedChange(!expanded)}

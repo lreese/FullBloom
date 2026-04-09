@@ -27,8 +27,9 @@ async function request<T>(
   const body = await res.json();
 
   if (!res.ok) {
+    // FastAPI returns {"detail": "..."}, our convention is {"error": "..."} — handle both
     const errorMessage =
-      (body as ApiError).error ?? `Request failed with status ${res.status}`;
+      (body as ApiError).error ?? body.detail ?? `Request failed with status ${res.status}`;
 
     if (res.status === 409) {
       throw new DuplicateError(errorMessage);
@@ -51,4 +52,11 @@ export function post<T>(path: string, body: unknown): Promise<T> {
   });
 }
 
-export const api = { get, post };
+export function patch<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export const api = { get, post, patch };
