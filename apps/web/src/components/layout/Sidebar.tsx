@@ -11,19 +11,44 @@ import {
   PanelLeftOpen,
   Menu,
   X,
+  ChevronDown,
+  Leaf,
+  FolderTree,
+  Palette,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-interface NavItem {
+interface NavChild {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;
 }
 
+interface NavItem {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  children?: NavChild[];
+}
+
 const navItems: NavItem[] = [
   { label: "Orders", icon: ClipboardList, href: "/orders" },
   { label: "Customers", icon: Users, href: "/customers" },
-  { label: "Products", icon: Flower2, href: "/products" },
+  {
+    label: "Products",
+    icon: Flower2,
+    href: "/products",
+    children: [
+      { label: "Varieties", icon: Leaf, href: "/products/varieties" },
+      { label: "Product Lines", icon: FolderTree, href: "/products/product-lines" },
+      { label: "Colors", icon: Palette, href: "/products/colors" },
+    ],
+  },
   { label: "Pricing", icon: DollarSign, href: "/pricing" },
   { label: "Import", icon: Upload, href: "/import" },
   { label: "Settings", icon: Settings, href: "/settings" },
@@ -36,9 +61,133 @@ interface SidebarProps {
 
 export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const activePath = location.pathname;
+
+  const isExpanded = expanded || mobileOpen;
+
+  const isChildActive = (children: NavChild[]) =>
+    children.some((c) => activePath.startsWith(c.href));
+
+  const renderNavItem = (item: NavItem) => {
+    const { label, icon: Icon, href, children } = item;
+
+    // Items with children: expandable dropdown (expanded mode) or popover (collapsed mode)
+    if (children) {
+      const childActive = isChildActive(children);
+
+      // Collapsed mode: popover flyout
+      if (!isExpanded) {
+        return (
+          <Popover key={href}>
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
+                  childActive && "bg-sidebar-hover text-white"
+                )}
+              >
+                <Icon className="h-5 w-5 shrink-0" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="right"
+              align="start"
+              className="w-44 p-1"
+              sideOffset={8}
+            >
+              {children.map((child) => {
+                const ChildIcon = child.icon;
+                const active = activePath.startsWith(child.href);
+                return (
+                  <button
+                    key={child.href}
+                    onClick={() => navigate(child.href)}
+                    className={cn(
+                      "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-[#334155] hover:bg-[#f4f1ec] transition-colors",
+                      active && "bg-[#f4f1ec] font-medium"
+                    )}
+                  >
+                    <ChildIcon className="h-4 w-4 shrink-0 text-[#94a3b8]" />
+                    <span>{child.label}</span>
+                  </button>
+                );
+              })}
+            </PopoverContent>
+          </Popover>
+        );
+      }
+
+      // Expanded mode: toggle dropdown
+      return (
+        <div key={href}>
+          <button
+            onClick={() => setDropdownOpen((prev) => !prev)}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
+              childActive && "bg-sidebar-hover text-white"
+            )}
+          >
+            <Icon className="h-5 w-5 shrink-0" />
+            <span className="whitespace-nowrap flex-1">{label}</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 shrink-0 transition-transform",
+                dropdownOpen && "rotate-180"
+              )}
+            />
+          </button>
+          {dropdownOpen && (
+            <div className="ml-4 mt-0.5 space-y-0.5">
+              {children.map((child) => {
+                const ChildIcon = child.icon;
+                const active = activePath.startsWith(child.href);
+                return (
+                  <button
+                    key={child.href}
+                    onClick={() => {
+                      navigate(child.href);
+                      setMobileOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-white/70 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
+                      active && "bg-sidebar-hover text-white"
+                    )}
+                  >
+                    <ChildIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">{child.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Simple nav item (no children)
+    const active = activePath === href;
+    return (
+      <button
+        key={href}
+        onClick={() => {
+          navigate(href);
+          setMobileOpen(false);
+        }}
+        className={cn(
+          "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
+          active && "bg-sidebar-hover text-white"
+        )}
+      >
+        <Icon className="h-5 w-5 shrink-0" />
+        {isExpanded && (
+          <span className="whitespace-nowrap">{label}</span>
+        )}
+      </button>
+    );
+  };
 
   return (
     <>
@@ -73,7 +222,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
       >
         <div className="flex items-center justify-between h-14 px-3">
           <span className="text-white font-bold text-xl tracking-tight select-none">
-            {expanded || mobileOpen ? "FullBloom" : "FB"}
+            {isExpanded ? "FullBloom" : "FB"}
           </span>
           {mobileOpen && (
             <button
@@ -87,27 +236,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
         </div>
 
         <nav className="flex-1 flex flex-col gap-1 px-2 mt-2">
-          {navItems.map(({ label, icon: Icon, href }) => {
-            const active = activePath === href;
-            return (
-              <button
-                key={href}
-                onClick={() => {
-                  navigate(href);
-                  setMobileOpen(false);
-                }}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
-                  active && "bg-sidebar-hover text-white"
-                )}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {(expanded || mobileOpen) && (
-                  <span className="whitespace-nowrap">{label}</span>
-                )}
-              </button>
-            );
-          })}
+          {navItems.map(renderNavItem)}
         </nav>
 
         <div className="hidden md:flex px-2 py-3">
