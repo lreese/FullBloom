@@ -24,3 +24,9 @@ class ImportPricingResult(BaseModel):
 class ImportColorsResult(BaseModel):
     varieties_updated: int = 0
     varieties_not_found: int = 0
+
+
+class ImportCustomerInfoResult(BaseModel):
+    customers_created: int = 0
+    customers_updated: int = 0
+    customers_skipped: int = 0

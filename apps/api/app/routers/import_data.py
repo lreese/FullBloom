@@ -4,10 +4,16 @@ from fastapi import APIRouter, File, UploadFile
 
 from app.schemas.import_data import (
     ImportColorsResult,
+    ImportCustomerInfoResult,
     ImportPricingResult,
     ImportVarietiesResult,
 )
-from app.services.import_service import import_colors, import_pricing, import_varieties
+from app.services.import_service import (
+    import_colors,
+    import_customer_info,
+    import_pricing,
+    import_varieties,
+)
 from app.utils.csv_parser import parse_csv
 
 router = APIRouter(prefix="/api/v1/import", tags=["import"])
@@ -37,4 +43,13 @@ async def upload_colors(file: UploadFile = File(...)):
     content = await file.read()
     rows = parse_csv(content)
     result = await import_colors(rows)
+    return {"data": result.model_dump()}
+
+
+@router.post("/customer-info", response_model=dict)
+async def upload_customer_info(file: UploadFile = File(...)):
+    """Import customer info from the Customer Info CSV."""
+    content = await file.read()
+    rows = parse_csv(content)
+    result = await import_customer_info(rows)
     return {"data": result.model_dump()}
