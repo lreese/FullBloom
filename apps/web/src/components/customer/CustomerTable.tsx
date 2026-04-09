@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CustomerColumnFilter } from "./CustomerColumnFilter";
+import { ColumnFilter } from "@/components/common/ColumnFilter";
 import { Search, Settings2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@/types";
@@ -311,7 +311,7 @@ export function CustomerTable({
                     <span className="inline-flex items-center">
                       {col.label}
                       {col.filterable && distinctValues[col.key] && (
-                        <CustomerColumnFilter
+                        <ColumnFilter
                           values={distinctValues[col.key]}
                           selected={columnFilters[col.key] ?? []}
                           onChange={(selected) =>
