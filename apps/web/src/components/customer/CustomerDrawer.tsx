@@ -219,7 +219,7 @@ export function CustomerDrawer({
               </div>
               {renderSelect(
                 "salesperson",
-                "Salesperson",
+                "Salesperson (Initials)",
                 dropdownOptions.salesperson,
                 form.salesperson
               )}

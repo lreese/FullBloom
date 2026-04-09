@@ -22,7 +22,7 @@ interface ColumnDef {
 const ALL_COLUMNS: ColumnDef[] = [
   { key: "customer_number", label: "#", filterable: false, defaultVisible: true },
   { key: "name", label: "Name", filterable: true, defaultVisible: true },
-  { key: "salesperson", label: "Salesperson", filterable: true, defaultVisible: true },
+  { key: "salesperson", label: "Sales (Initials)", filterable: true, defaultVisible: true },
   { key: "default_ship_via", label: "Ship Via", filterable: true, defaultVisible: true },
   { key: "location", label: "Location", filterable: true, defaultVisible: true },
   { key: "payment_terms", label: "Terms", filterable: true, defaultVisible: true },
