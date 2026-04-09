@@ -22,12 +22,12 @@ interface ColumnDef {
 const ALL_COLUMNS: ColumnDef[] = [
   { key: "customer_number", label: "#", filterable: false, defaultVisible: true },
   { key: "name", label: "Name", filterable: true, defaultVisible: true },
-  { key: "salesperson", label: "Sales (Initials)", filterable: true, defaultVisible: true },
   { key: "default_ship_via", label: "Ship Via", filterable: true, defaultVisible: true },
   { key: "location", label: "Location", filterable: true, defaultVisible: true },
   { key: "payment_terms", label: "Terms", filterable: true, defaultVisible: true },
-  { key: "price_type", label: "Price Type", filterable: true, defaultVisible: false },
-  { key: "contact_name", label: "Contact", filterable: false, defaultVisible: false },
+  { key: "price_type", label: "Price Type", filterable: true, defaultVisible: true },
+  { key: "contact_name", label: "Contact", filterable: false, defaultVisible: true },
+  { key: "salesperson", label: "Sales", filterable: true, defaultVisible: true },
   { key: "phone", label: "Phone", filterable: false, defaultVisible: false },
   { key: "email", label: "Email", filterable: false, defaultVisible: false },
   { key: "notes", label: "Notes", filterable: false, defaultVisible: false },
@@ -300,13 +300,13 @@ export function CustomerTable({
       {/* Table */}
       <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs">
             <thead>
               <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
                 {activeColumns.map((col) => (
                   <th
                     key={col.key}
-                    className="px-3 py-2 text-left text-xs font-semibold text-[#1e3a5f] whitespace-nowrap"
+                    className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap"
                   >
                     <span className="inline-flex items-center">
                       {col.label}
@@ -356,7 +356,7 @@ export function CustomerTable({
                       <td
                         key={col.key}
                         className={cn(
-                          "px-3 py-2 text-[#334155]",
+                          "px-2 py-1.5 text-[#334155]",
                           col.key === "name" && "font-medium",
                           col.key === "notes" && "max-w-[200px] truncate"
                         )}
