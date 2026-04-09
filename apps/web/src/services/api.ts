@@ -51,4 +51,11 @@ export function post<T>(path: string, body: unknown): Promise<T> {
   });
 }
 
-export const api = { get, post };
+export function patch<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export const api = { get, post, patch };

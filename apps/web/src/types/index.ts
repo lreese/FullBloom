@@ -19,9 +19,48 @@ export interface Customer {
   id: string;
   customer_number: number;
   name: string;
+  salesperson: string | null;
+  contact_name: string | null;
+  default_ship_via: string | null;
+  phone: string | null;
+  location: string | null;
+  payment_terms: string | null;
+  email: string | null;
+  notes: string | null;
   price_type: string;
   is_active: boolean;
   stores?: Store[];
+}
+
+export interface CustomerCreateRequest {
+  customer_number: number;
+  name: string;
+  salesperson?: string | null;
+  contact_name?: string | null;
+  default_ship_via?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  payment_terms?: string | null;
+  email?: string | null;
+  notes?: string | null;
+}
+
+export interface CustomerUpdateRequest {
+  name?: string;
+  salesperson?: string | null;
+  contact_name?: string | null;
+  default_ship_via?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  payment_terms?: string | null;
+  email?: string | null;
+  notes?: string | null;
+}
+
+export interface DropdownOptions {
+  salesperson: string[];
+  default_ship_via: string[];
+  payment_terms: string[];
 }
 
 // ── Products ─────────────────────────────────────────────────
