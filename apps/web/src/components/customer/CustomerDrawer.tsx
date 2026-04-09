@@ -187,26 +187,6 @@ export function CustomerDrawer({
                 </SheetDescription>
               )}
             </div>
-            {mode === "edit" && customer && !isArchived && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-[#c27890] border-[#fce7f3] hover:bg-[#fce7f3] text-xs"
-                onClick={() => onArchive(customer.id)}
-              >
-                Archive
-              </Button>
-            )}
-            {mode === "edit" && customer && isArchived && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-[#2d4a2d] border-[#e8f0e8] hover:bg-[#e8f0e8] text-xs"
-                onClick={() => onRestore(customer.id)}
-              >
-                Restore
-              </Button>
-            )}
           </div>
         </SheetHeader>
 
@@ -363,7 +343,28 @@ export function CustomerDrawer({
 
         {/* Footer */}
         {!isReadOnly && (
-          <div className="flex gap-2 px-5 py-3 border-t border-[#e0ddd8] bg-[#faf8f5] justify-end">
+          <div className="flex gap-2 px-5 py-3 border-t border-[#e0ddd8] bg-[#faf8f5]">
+            {mode === "edit" && customer && !isArchived && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-[#c27890] border-[#fce7f3] hover:bg-[#fce7f3] text-xs mr-auto"
+                onClick={() => onArchive(customer.id)}
+              >
+                Archive
+              </Button>
+            )}
+            {mode === "edit" && customer && isArchived && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-[#2d4a2d] border-[#e8f0e8] hover:bg-[#e8f0e8] text-xs mr-auto"
+                onClick={() => onRestore(customer.id)}
+              >
+                Restore
+              </Button>
+            )}
+            <div className="flex gap-2 ml-auto">
             <Button
               variant="outline"
               size="sm"
@@ -384,6 +385,7 @@ export function CustomerDrawer({
                   ? "Create Customer"
                   : "Save Changes"}
             </Button>
+            </div>
           </div>
         )}
       </SheetContent>
