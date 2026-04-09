@@ -1,0 +1,12 @@
+{$DOMAIN:localhost} {
+    root * /srv/web
+    file_server
+
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    handle {
+        try_files {path} /index.html
+    }
+}

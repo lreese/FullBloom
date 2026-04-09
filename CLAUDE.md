@@ -43,3 +43,10 @@ Do not implement anything not described in the spec. If a good idea surfaces dur
 
 ## What to Do When Unsure
 If requirements are ambiguous, ask before building. A wrong implementation is more expensive than a clarifying question. Reference the spec's **Open Questions** section as the right place to surface uncertainty.
+
+## Active Technologies
+- Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, Tortoise ORM, Aerich (backend); React, Vite, Tailwind CSS, shadcn/ui (frontend) (001-order-management)
+- PostgreSQL via Neon (serverless, free tier) (001-order-management)
+
+## Recent Changes
+- 001-order-management: Added Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, Tortoise ORM, Aerich (backend); React, Vite, Tailwind CSS, shadcn/ui (frontend)
