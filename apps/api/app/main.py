@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise import Tortoise
 
-from app.config import LOG_LEVEL, TORTOISE_ORM
+from app.config import CORS_ORIGINS, LOG_LEVEL, TORTOISE_ORM
 from app.routers.customers import router as customers_router
 from app.routers.health import router as health_router
 from app.routers.import_data import router as import_router
@@ -61,7 +61,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
