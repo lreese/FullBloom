@@ -27,6 +27,7 @@ class ProductLine(Model):
         "models.ProductType", related_name="product_lines", on_delete=fields.CASCADE
     )
     name = fields.CharField(max_length=100)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "product_lines"
@@ -49,6 +50,7 @@ class Variety(Model):
     flowering_type = fields.CharField(max_length=50, null=True)
     can_replace = fields.BooleanField(default=False)
     show = fields.BooleanField(default=True)
+    is_active = fields.BooleanField(default=True)
     weekly_sales_category = fields.CharField(max_length=100, null=True)
     item_group_id = fields.IntField(null=True)
     item_group_description = fields.CharField(max_length=255, null=True)
@@ -71,6 +73,7 @@ class SalesItem(Model):
     name = fields.CharField(max_length=100, unique=True)
     stems_per_order = fields.IntField()
     retail_price = fields.DecimalField(max_digits=10, decimal_places=2)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "sales_items"
@@ -87,6 +90,7 @@ class VarietyColor(Model):
         "models.Variety", related_name="variety_colors", on_delete=fields.CASCADE
     )
     color_name = fields.CharField(max_length=100)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "variety_colors"
