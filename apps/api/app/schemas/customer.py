@@ -1,6 +1,6 @@
 """Pydantic schemas for customer endpoints."""
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class StoreResponse(BaseModel):
@@ -33,16 +33,16 @@ class CustomerResponse(CustomerListResponse):
 
 
 class CustomerCreateRequest(BaseModel):
-    customer_number: int
-    name: str
-    salesperson: str | None = None
-    price_type: str = "Retail"
-    contact_name: str | None = None
-    default_ship_via: str | None = None
-    phone: str | None = None
-    location: str | None = None
-    payment_terms: str | None = None
-    email: str | None = None
+    customer_number: int = Field(gt=0)
+    name: str = Field(max_length=255)
+    salesperson: str | None = Field(None, max_length=10)
+    price_type: str = Field("Retail", max_length=50)
+    contact_name: str | None = Field(None, max_length=255)
+    default_ship_via: str | None = Field(None, max_length=100)
+    phone: str | None = Field(None, max_length=50)
+    location: str | None = Field(None, max_length=255)
+    payment_terms: str | None = Field(None, max_length=50)
+    email: str | None = Field(None, max_length=255)
     notes: str | None = None
 
     @field_validator("name")
@@ -54,15 +54,15 @@ class CustomerCreateRequest(BaseModel):
 
 
 class CustomerUpdateRequest(BaseModel):
-    name: str | None = None
-    salesperson: str | None = None
-    price_type: str | None = None
-    contact_name: str | None = None
-    default_ship_via: str | None = None
-    phone: str | None = None
-    location: str | None = None
-    payment_terms: str | None = None
-    email: str | None = None
+    name: str | None = Field(None, max_length=255)
+    salesperson: str | None = Field(None, max_length=10)
+    price_type: str | None = Field(None, max_length=50)
+    contact_name: str | None = Field(None, max_length=255)
+    default_ship_via: str | None = Field(None, max_length=100)
+    phone: str | None = Field(None, max_length=50)
+    location: str | None = Field(None, max_length=255)
+    payment_terms: str | None = Field(None, max_length=50)
+    email: str | None = Field(None, max_length=255)
     notes: str | None = None
 
     @field_validator("name")
