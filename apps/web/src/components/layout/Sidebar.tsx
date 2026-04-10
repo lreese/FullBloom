@@ -15,6 +15,7 @@ import {
   Leaf,
   FolderTree,
   Palette,
+  Boxes,
 } from "lucide-react";
 import {
   Popover,
@@ -47,6 +48,7 @@ const navItems: NavItem[] = [
       { label: "Varieties", icon: Leaf, href: "/products/varieties" },
       { label: "Product Lines", icon: FolderTree, href: "/products/product-lines" },
       { label: "Colors", icon: Palette, href: "/products/colors" },
+      { label: "Product Types", icon: Boxes, href: "/products/product-types" },
     ],
   },
   { label: "Pricing", icon: DollarSign, href: "/pricing" },
