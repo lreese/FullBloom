@@ -118,21 +118,34 @@ export function ProductLineDrawer({
 
           <div>
             <Label className="text-xs font-semibold text-[#1e3a5f]">Product Type *</Label>
-            <Select
-              value={form.product_type_id || "__none__"}
-              onValueChange={(v) => setForm((f) => ({ ...f, product_type_id: v === "__none__" ? "" : v }))}
-              disabled={isReadOnly}
-            >
-              <SelectTrigger className="mt-1 h-8 text-sm">
-                <SelectValue placeholder="Select product type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {dropdownOptions.product_types.map((pt) => (
-                  <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {dropdownOptions.product_types.length === 0 ? (
+              <div className="mt-1 px-3 py-1.5 bg-[#f4f1ec] border border-[#e0ddd8] rounded-md text-sm text-[#94a3b8]">
+                Loading...
+              </div>
+            ) : (
+              <Select
+                key={dropdownOptions.product_types.length}
+                value={form.product_type_id || "__none__"}
+                onValueChange={(v) => setForm((f) => ({ ...f, product_type_id: v === "__none__" ? "" : v }))}
+                disabled={isReadOnly}
+              >
+                <SelectTrigger className="mt-1 h-8 text-sm">
+                  {form.product_type_id ? (
+                    <span>
+                      {dropdownOptions.product_types.find((pt) => pt.id === form.product_type_id)?.name ?? "Select product type"}
+                    </span>
+                  ) : (
+                    <SelectValue placeholder="Select product type" />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {dropdownOptions.product_types.map((pt) => (
+                    <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {mode === "edit" && productLine && (
