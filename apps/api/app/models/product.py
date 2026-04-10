@@ -38,6 +38,21 @@ class ProductLine(Model):
         return self.name
 
 
+class Color(Model):
+    """A color reference for varieties."""
+
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    name = fields.CharField(max_length=100, unique=True)
+    hex_color = fields.CharField(max_length=7, null=True)
+    is_active = fields.BooleanField(default=True)
+
+    class Meta:
+        table = "colors"
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Variety(Model):
     """A specific variety within a product line."""
 
@@ -46,7 +61,9 @@ class Variety(Model):
         "models.ProductLine", related_name="varieties", on_delete=fields.CASCADE
     )
     name = fields.CharField(max_length=100)
-    color = fields.CharField(max_length=100, null=True)
+    color = fields.ForeignKeyField(
+        "models.Color", related_name="varieties", on_delete=fields.SET_NULL, null=True
+    )
     hex_color = fields.CharField(max_length=7, null=True)
     flowering_type = fields.CharField(max_length=50, null=True)
     can_replace = fields.BooleanField(default=False)
@@ -81,21 +98,3 @@ class SalesItem(Model):
 
     def __str__(self) -> str:
         return self.name
-
-
-class VarietyColor(Model):
-    """Helper table for tracking known color names for a variety."""
-
-    id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    variety = fields.ForeignKeyField(
-        "models.Variety", related_name="variety_colors", on_delete=fields.CASCADE
-    )
-    color_name = fields.CharField(max_length=100)
-    is_active = fields.BooleanField(default=True)
-
-    class Meta:
-        table = "variety_colors"
-        unique_together = (("variety", "color_name"),)
-
-    def __str__(self) -> str:
-        return self.color_name
