@@ -20,17 +20,17 @@ interface ColumnDef {
 }
 
 const ALL_COLUMNS: ColumnDef[] = [
-  { key: "customer_number", label: "#", filterable: false, defaultVisible: true },
+  { key: "customer_number", label: "#", filterable: true, defaultVisible: true },
   { key: "name", label: "Name", filterable: true, defaultVisible: true },
   { key: "default_ship_via", label: "Ship Via", filterable: true, defaultVisible: true },
   { key: "location", label: "Location", filterable: true, defaultVisible: true },
   { key: "payment_terms", label: "Terms", filterable: true, defaultVisible: true },
   { key: "price_type", label: "Price Type", filterable: true, defaultVisible: true },
-  { key: "contact_name", label: "Contact", filterable: false, defaultVisible: true },
+  { key: "contact_name", label: "Contact", filterable: true, defaultVisible: true },
   { key: "salesperson", label: "Sales", filterable: true, defaultVisible: true },
-  { key: "phone", label: "Phone", filterable: false, defaultVisible: false },
-  { key: "email", label: "Email", filterable: false, defaultVisible: false },
-  { key: "notes", label: "Notes", filterable: false, defaultVisible: false },
+  { key: "phone", label: "Phone", filterable: true, defaultVisible: false },
+  { key: "email", label: "Email", filterable: true, defaultVisible: false },
+  { key: "notes", label: "Notes", filterable: true, defaultVisible: false },
 ];
 
 const COLUMN_MAP = Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, c]));

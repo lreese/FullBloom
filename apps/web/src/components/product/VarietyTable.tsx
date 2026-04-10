@@ -34,10 +34,10 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "show", label: "Show", filterable: true, defaultVisible: true },
   { key: "flowering_type", label: "Flowering Type", filterable: true, defaultVisible: true },
   { key: "weekly_sales_category", label: "Weekly Sales Category", filterable: true, defaultVisible: true },
-  { key: "hex_color", label: "Hex Color", filterable: false, defaultVisible: false },
-  { key: "can_replace", label: "Can Replace", filterable: false, defaultVisible: false },
-  { key: "item_group_id", label: "Item Group ID", filterable: false, defaultVisible: false },
-  { key: "item_group_description", label: "Item Group Description", filterable: false, defaultVisible: false },
+  { key: "hex_color", label: "Hex Color", filterable: true, defaultVisible: false },
+  { key: "can_replace", label: "Can Replace", filterable: true, defaultVisible: false },
+  { key: "item_group_id", label: "Item Group ID", filterable: true, defaultVisible: false },
+  { key: "item_group_description", label: "Item Group Description", filterable: true, defaultVisible: false },
 ];
 
 const COLUMN_MAP = Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, c]));
