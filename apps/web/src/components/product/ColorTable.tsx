@@ -3,28 +3,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { VarietyColor } from "@/types";
-
-interface UniqueColor {
-  color_name: string;
-  hex_color: string | null;
-  count: number;
-  /** First VarietyColor row for this color name (used for row click / edit) */
-  representative: VarietyColor;
-}
+import type { Color } from "@/types";
 
 interface ColorTableProps {
-  colors: VarietyColor[];
-  varietyHexColors: Record<string, string>;
+  colors: Color[];
   activeView: "active" | "archived";
   onViewChange: (view: "active" | "archived") => void;
-  onRowClick: (color: VarietyColor) => void;
+  onRowClick: (color: Color) => void;
   onAddClick: () => void;
 }
 
 export function ColorTable({
   colors,
-  varietyHexColors,
   activeView,
   onViewChange,
   onRowClick,
@@ -43,38 +33,15 @@ export function ColorTable({
     onViewChange(view);
   };
 
-  // Deduplicate colors by color_name, count how many varieties use each
-  const uniqueColors = useMemo(() => {
-    const map = new Map<string, UniqueColor>();
-    for (const c of colors) {
-      const existing = map.get(c.color_name);
-      if (existing) {
-        existing.count++;
-        // Use the hex from any variety that has one
-        if (!existing.hex_color && c.variety_id) {
-          existing.hex_color = varietyHexColors[c.variety_id] ?? null;
-        }
-      } else {
-        map.set(c.color_name, {
-          color_name: c.color_name,
-          hex_color: varietyHexColors[c.variety_id] ?? null,
-          count: 1,
-          representative: c,
-        });
-      }
-    }
-    return Array.from(map.values()).sort((a, b) =>
-      a.color_name.localeCompare(b.color_name)
-    );
-  }, [colors, varietyHexColors]);
+  const sorted = useMemo(() => {
+    return [...colors].sort((a, b) => a.name.localeCompare(b.name));
+  }, [colors]);
 
   const filtered = useMemo(() => {
-    if (!searchTerm) return uniqueColors;
+    if (!searchTerm) return sorted;
     const term = searchTerm.toLowerCase();
-    return uniqueColors.filter((c) =>
-      c.color_name.toLowerCase().includes(term)
-    );
-  }, [uniqueColors, searchTerm]);
+    return sorted.filter((c) => c.name.toLowerCase().includes(term));
+  }, [sorted, searchTerm]);
 
   return (
     <div>
@@ -144,14 +111,13 @@ export function ColorTable({
             <thead>
               <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
                 <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-10">Swatch</th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f]">Color/Variety</th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-24">Varieties</th>
+                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f]">Name</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-3 py-8 text-center text-[#94a3b8]">
+                  <td colSpan={2} className="px-3 py-8 text-center text-[#94a3b8]">
                     No colors found.
                     {hasActiveFilters && (
                       <button className="ml-2 text-[#c27890] hover:underline" onClick={clearAllFilters}>
@@ -161,24 +127,23 @@ export function ColorTable({
                   </td>
                 </tr>
               ) : (
-                filtered.map((uc) => (
+                filtered.map((color) => (
                   <tr
-                    key={uc.color_name}
+                    key={color.id}
                     className="border-b border-[#f0ede8] hover:bg-[#faf8f5] cursor-pointer transition-colors"
-                    onClick={() => onRowClick(uc.representative)}
+                    onClick={() => onRowClick(color)}
                   >
                     <td className="px-2 py-1.5">
-                      {uc.hex_color ? (
+                      {color.hex_color ? (
                         <div
                           className="h-5 w-5 rounded-full border border-[#e0ddd8]"
-                          style={{ backgroundColor: uc.hex_color }}
+                          style={{ backgroundColor: color.hex_color }}
                         />
                       ) : (
                         <div className="h-5 w-5 rounded-full border border-[#e0ddd8] bg-[#f4f1ec]" />
                       )}
                     </td>
-                    <td className="px-2 py-1.5 text-[#334155] font-medium">{uc.color_name}</td>
-                    <td className="px-2 py-1.5 text-[#94a3b8]">{uc.count}</td>
+                    <td className="px-2 py-1.5 text-[#334155] font-medium">{color.name}</td>
                   </tr>
                 ))
               )}
@@ -186,7 +151,7 @@ export function ColorTable({
           </table>
         </div>
         <div className="px-3 py-2 text-xs text-[#94a3b8] bg-[#faf8f5] border-t border-[#e0ddd8]">
-          {filtered.length} unique color{filtered.length !== 1 ? "s" : ""}
+          {filtered.length} color{filtered.length !== 1 ? "s" : ""}
         </div>
       </div>
     </div>
