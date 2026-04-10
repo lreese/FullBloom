@@ -1,38 +1,36 @@
-"""Pydantic schemas for variety color endpoints."""
-
-from uuid import UUID
+"""Pydantic schemas for color endpoints."""
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class VarietyColorListResponse(BaseModel):
+class ColorListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    variety_id: str
-    variety_name: str
-    color_name: str
+    name: str
+    hex_color: str | None
     is_active: bool
 
 
-class VarietyColorCreateRequest(BaseModel):
-    variety_id: UUID
-    color_name: str = Field(max_length=100)
+class ColorCreateRequest(BaseModel):
+    name: str = Field(max_length=100)
+    hex_color: str | None = Field(None, max_length=7)
 
-    @field_validator("color_name")
+    @field_validator("name")
     @classmethod
-    def color_name_not_empty(cls, v: str) -> str:
+    def name_not_empty(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("Color name cannot be empty")
+            raise ValueError("Name cannot be empty")
         return v.strip()
 
 
-class VarietyColorUpdateRequest(BaseModel):
-    color_name: str | None = Field(None, max_length=100)
+class ColorUpdateRequest(BaseModel):
+    name: str | None = Field(None, max_length=100)
+    hex_color: str | None = Field(None, max_length=7)
 
-    @field_validator("color_name")
+    @field_validator("name")
     @classmethod
-    def color_name_not_empty(cls, v: str | None) -> str | None:
+    def name_not_empty(cls, v: str | None) -> str | None:
         if v is not None and not v.strip():
-            raise ValueError("Color name cannot be empty")
+            raise ValueError("Name cannot be empty")
         return v.strip() if v is not None else None

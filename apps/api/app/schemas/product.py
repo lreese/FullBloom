@@ -13,7 +13,8 @@ class VarietyListResponse(BaseModel):
     product_line_id: str
     product_line_name: str
     product_type_name: str
-    color: str | None
+    color_id: str | None
+    color_name: str | None
     hex_color: str | None
     flowering_type: str | None
     can_replace: bool
@@ -44,7 +45,8 @@ class VarietyDetailResponse(BaseModel):
     product_line_id: str
     product_line_name: str
     product_type_name: str
-    color: str | None
+    color_id: str | None
+    color_name: str | None
     hex_color: str | None
     flowering_type: str | None
     can_replace: bool
@@ -59,7 +61,7 @@ class VarietyDetailResponse(BaseModel):
 class VarietyCreateRequest(BaseModel):
     name: str = Field(max_length=100)
     product_line_id: UUID
-    color: str | None = Field(None, max_length=100)
+    color_id: UUID | None = None
     hex_color: str | None = Field(None, max_length=7)
     flowering_type: str | None = Field(None, max_length=50)
     can_replace: bool = False
@@ -79,7 +81,7 @@ class VarietyCreateRequest(BaseModel):
 class VarietyUpdateRequest(BaseModel):
     name: str | None = Field(None, max_length=100)
     product_line_id: UUID | None = None
-    color: str | None = Field(None, max_length=100)
+    color_id: UUID | None = None
     hex_color: str | None = Field(None, max_length=7)
     flowering_type: str | None = Field(None, max_length=50)
     can_replace: bool | None = None
@@ -108,8 +110,13 @@ class ProductLineOption(BaseModel):
     product_type: str
 
 
+class ColorOption(BaseModel):
+    id: str
+    name: str
+
+
 class VarietyDropdownOptionsResponse(BaseModel):
     product_lines: list[ProductLineOption]
-    colors: list[str]
+    colors: list[ColorOption]
     flowering_types: list[str]
     weekly_sales_categories: list[str]
