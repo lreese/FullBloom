@@ -8,11 +8,11 @@ from tortoise import Tortoise
 
 from app.main import app
 from app.models.product import (
+    Color,
     ProductLine,
     ProductType,
     SalesItem,
     Variety,
-    VarietyColor,
 )
 
 TORTOISE_TEST_CONFIG = {
@@ -66,12 +66,18 @@ async def product_line(product_type):
 
 
 @pytest.fixture
-async def variety(product_line):
-    """Create a Variety under the default ProductLine."""
+async def color():
+    """Create a Color and return it."""
+    return await Color.create(name="Red")
+
+
+@pytest.fixture
+async def variety(product_line, color):
+    """Create a Variety under the default ProductLine with a Color FK."""
     return await Variety.create(
         product_line=product_line,
         name="Freedom",
-        color="Red",
+        color=color,
         flowering_type="Hybrid Tea",
     )
 
@@ -85,9 +91,3 @@ async def sales_item(variety):
         stems_per_order=25,
         retail_price=12.50,
     )
-
-
-@pytest.fixture
-async def variety_color(variety):
-    """Create a VarietyColor under the default Variety."""
-    return await VarietyColor.create(variety=variety, color_name="Red")

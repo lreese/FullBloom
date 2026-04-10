@@ -5,7 +5,7 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
-from app.models.product import ProductLine, ProductType, SalesItem, Variety
+from app.models.product import Color, ProductLine, ProductType, SalesItem, Variety
 
 BASE = "/api/v1"
 
@@ -78,12 +78,12 @@ async def test_get_variety_not_found(async_client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 
-async def test_create_variety_success(async_client: AsyncClient, product_line):
+async def test_create_variety_success(async_client: AsyncClient, product_line, color):
     """POST /varieties creates with required fields and returns 201."""
     payload = {
         "name": "Mondial",
         "product_line_id": str(product_line.id),
-        "color": "White",
+        "color_id": str(color.id),
     }
     resp = await async_client.post(f"{BASE}/varieties", json=payload)
     assert resp.status_code == 201
@@ -91,6 +91,8 @@ async def test_create_variety_success(async_client: AsyncClient, product_line):
     assert data["name"] == "Mondial"
     assert data["product_line_id"] == str(product_line.id)
     assert data["product_line_name"] == "Rose"
+    assert data["color_id"] == str(color.id)
+    assert data["color_name"] == "Red"
     assert data["is_active"] is True
     assert data["sales_items_count"] == 0
 
@@ -133,6 +135,18 @@ async def test_create_variety_invalid_product_line(async_client: AsyncClient):
     assert "not found" in resp.json()["error"].lower()
 
 
+async def test_create_variety_invalid_color(async_client: AsyncClient, product_line):
+    """POST /varieties returns 422 when color_id doesn't exist."""
+    payload = {
+        "name": "Ghost",
+        "product_line_id": str(product_line.id),
+        "color_id": str(uuid.uuid4()),
+    }
+    resp = await async_client.post(f"{BASE}/varieties", json=payload)
+    assert resp.status_code == 422
+    assert "Color not found" in resp.json()["error"]
+
+
 # ---------------------------------------------------------------------------
 # Update variety
 # ---------------------------------------------------------------------------
@@ -140,13 +154,15 @@ async def test_create_variety_invalid_product_line(async_client: AsyncClient):
 
 async def test_update_variety_success(async_client: AsyncClient, variety):
     """PATCH /varieties/{id} updates fields and returns updated object."""
+    new_color = await Color.create(name="Pink")
     resp = await async_client.patch(
         f"{BASE}/varieties/{variety.id}",
-        json={"color": "Pink", "flowering_type": "Spray"},
+        json={"color_id": str(new_color.id), "flowering_type": "Spray"},
     )
     assert resp.status_code == 200
     data = resp.json()["data"]
-    assert data["color"] == "Pink"
+    assert data["color_id"] == str(new_color.id)
+    assert data["color_name"] == "Pink"
     assert data["flowering_type"] == "Spray"
     assert data["name"] == "Freedom"  # unchanged
 
@@ -155,7 +171,7 @@ async def test_update_variety_not_found(async_client: AsyncClient):
     """PATCH /varieties/{id} returns 404 for nonexistent UUID."""
     fake_id = uuid.uuid4()
     resp = await async_client.patch(
-        f"{BASE}/varieties/{fake_id}", json={"color": "Blue"}
+        f"{BASE}/varieties/{fake_id}", json={"flowering_type": "Spray"}
     )
     assert resp.status_code == 404
 
@@ -270,9 +286,9 @@ async def test_create_variety_empty_name(async_client: AsyncClient, product_line
     assert resp.status_code == 422
 
 
-async def test_update_variety_partial_update(async_client: AsyncClient, variety):
+async def test_update_variety_partial_update(async_client: AsyncClient, variety, color):
     """Only specified fields change, others remain untouched."""
-    original_color = variety.color  # "Red"
+    original_color_id = str(color.id)
     resp = await async_client.patch(
         f"{BASE}/varieties/{variety.id}",
         json={"flowering_type": "Garden"},
@@ -280,7 +296,7 @@ async def test_update_variety_partial_update(async_client: AsyncClient, variety)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["flowering_type"] == "Garden"
-    assert data["color"] == original_color  # unchanged
+    assert data["color_id"] == original_color_id  # unchanged
 
 
 async def test_bulk_update_with_nonexistent_ids(async_client: AsyncClient):
