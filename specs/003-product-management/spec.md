@@ -212,8 +212,8 @@ The Products item in the sidebar expands to show sub-items: Varieties, Product L
 - **FR-015**: Archiving a product line with varieties MUST warn the user that associated varieties will also be hidden.
 
 **Colors**
-- **FR-016**: System MUST display variety colors in a table with variety name, color name, and hex color swatch.
-- **FR-017**: System MUST allow adding, editing, and archiving (soft-delete) color entries via a drawer.
+- **FR-016**: System MUST display colors in a table with color name and hex color swatch. Colors are a standalone reference list, not per-variety.
+- **FR-017**: System MUST allow adding, editing, and archiving (soft-delete) color entries via a drawer. Color name must be unique.
 
 **Sales Items (inline in variety drawer)**
 - **FR-020**: The variety edit drawer MUST show a "Sales Items" section listing associated SKUs (name, stems per order, retail price).
@@ -237,9 +237,9 @@ The Products item in the sidebar expands to show sub-items: Varieties, Product L
 
 - **ProductType**: Top-level category (e.g., Tulips, Cut Flowers). Attributes: name. Exists in data model.
 - **ProductLine**: Category within a type (e.g., Standard Tulips, Novelty Tulips). Attributes: name, product type. Exists in data model.
-- **Variety**: The primary product entity. Attributes: name, product line, color, hex color, flowering type, can replace, show (order form visibility), is_active (archive flag, new field), weekly sales category, item group ID, item group description. Exists in data model — needs `is_active` field added.
-- **SalesItem**: Purchasable SKU tied to a variety. Attributes: name, stems per order, retail price, is_active (soft-delete, new field). Managed inline within the variety drawer (add/edit/soft-delete/restore). Customer prices referencing a soft-deleted sales item are preserved but hidden.
-- **VarietyColor**: Color lookup for a variety. Attributes: variety, color name, is_active (soft-delete, new field). Exists in data model — needs `is_active` field added.
+- **Color**: Standalone reference table for color names. Attributes: name (unique), hex_color (optional), is_active. Varieties reference a Color via FK. Replaces the old free-text color field and variety_colors mapping table.
+- **Variety**: The primary product entity. Attributes: name, product line, color (FK to Color), hex color, flowering type, can replace, show (order form visibility), is_active (archive flag), weekly sales category, item group ID, item group description.
+- **SalesItem**: Purchasable SKU tied to a variety. Attributes: name, stems per order, retail price, is_active (soft-delete). Managed inline within the variety drawer (add/edit/soft-delete/restore). Customer prices referencing a soft-deleted sales item are preserved but hidden.
 
 ## Success Criteria
 
