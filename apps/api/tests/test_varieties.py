@@ -70,7 +70,7 @@ async def test_get_variety_not_found(async_client: AsyncClient):
     fake_id = uuid.uuid4()
     resp = await async_client.get(f"{BASE}/varieties/{fake_id}")
     assert resp.status_code == 404
-    assert "not found" in resp.json()["detail"].lower()
+    assert "not found" in resp.json()["error"].lower()
 
 
 # ---------------------------------------------------------------------------
@@ -105,7 +105,7 @@ async def test_create_variety_duplicate_name_same_product_line(
     }
     resp = await async_client.post(f"{BASE}/varieties", json=payload)
     assert resp.status_code == 422
-    assert "already exists" in resp.json()["detail"]
+    assert "already exists" in resp.json()["error"]
 
 
 async def test_create_variety_duplicate_name_different_product_line(
@@ -130,7 +130,7 @@ async def test_create_variety_invalid_product_line(async_client: AsyncClient):
     }
     resp = await async_client.post(f"{BASE}/varieties", json=payload)
     assert resp.status_code == 422
-    assert "not found" in resp.json()["detail"].lower()
+    assert "not found" in resp.json()["error"].lower()
 
 
 # ---------------------------------------------------------------------------
@@ -164,7 +164,7 @@ async def test_update_variety_empty_body(async_client: AsyncClient, variety):
     """PATCH /varieties/{id} with no fields returns 422."""
     resp = await async_client.patch(f"{BASE}/varieties/{variety.id}", json={})
     assert resp.status_code == 422
-    assert "No fields" in resp.json()["detail"]
+    assert "No fields" in resp.json()["error"]
 
 
 async def test_update_variety_name_uniqueness_check(
@@ -176,7 +176,7 @@ async def test_update_variety_name_uniqueness_check(
         f"{BASE}/varieties/{other.id}", json={"name": "Freedom"}
     )
     assert resp.status_code == 422
-    assert "already exists" in resp.json()["detail"]
+    assert "already exists" in resp.json()["error"]
 
 
 # ---------------------------------------------------------------------------
@@ -237,7 +237,7 @@ async def test_bulk_update_disallowed_field(async_client: AsyncClient, variety):
         json={"ids": [str(variety.id)], "field": "name", "value": "Hacked"},
     )
     assert resp.status_code == 422
-    assert "not bulk-updatable" in resp.json()["detail"]
+    assert "not bulk-updatable" in resp.json()["error"]
 
 
 async def test_bulk_update_returns_count(async_client: AsyncClient, product_line):

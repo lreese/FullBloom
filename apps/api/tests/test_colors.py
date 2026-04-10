@@ -29,7 +29,7 @@ async def test_create_variety_color_duplicate(async_client, variety_color, varie
     payload = {"variety_id": str(variety.id), "color_name": "Red"}
     resp = await async_client.post("/api/v1/variety-colors", json=payload)
     assert resp.status_code == 422
-    assert "already exists" in resp.json()["detail"]
+    assert "already exists" in resp.json()["error"]
 
 
 async def test_create_variety_color_invalid_variety(async_client):
@@ -38,4 +38,4 @@ async def test_create_variety_color_invalid_variety(async_client):
     payload = {"variety_id": fake_id, "color_name": "Blue"}
     resp = await async_client.post("/api/v1/variety-colors", json=payload)
     assert resp.status_code == 422
-    assert "Variety not found" in resp.json()["detail"]
+    assert "Variety not found" in resp.json()["error"]

@@ -77,7 +77,7 @@ async def test_list_sales_items_variety_not_found(async_client):
     fake_id = uuid.uuid4()
     resp = await async_client.get(f"/api/v1/varieties/{fake_id}/sales-items")
     assert resp.status_code == 404
-    assert "Variety not found" in resp.json()["detail"]
+    assert "Variety not found" in resp.json()["error"]
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ async def test_create_sales_item_duplicate_name(async_client, variety):
         f"/api/v1/varieties/{variety.id}/sales-items", json=payload
     )
     assert resp.status_code == 422
-    assert "already exists" in resp.json()["detail"]
+    assert "already exists" in resp.json()["error"]
 
 
 # ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ async def test_update_sales_item_not_found(async_client):
         f"/api/v1/sales-items/{fake_id}", json={"name": "Nope"}
     )
     assert resp.status_code == 404
-    assert "Sales item not found" in resp.json()["detail"]
+    assert "Sales item not found" in resp.json()["error"]
 
 
 # ---------------------------------------------------------------------------

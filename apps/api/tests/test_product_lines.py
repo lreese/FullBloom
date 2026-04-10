@@ -71,7 +71,7 @@ async def test_create_product_line_duplicate(async_client, product_type, product
     payload = {"name": "Rose", "product_type_id": str(product_type.id)}
     resp = await async_client.post("/api/v1/product-lines", json=payload)
     assert resp.status_code == 422
-    assert "already exists" in resp.json()["detail"]
+    assert "already exists" in resp.json()["error"]
 
 
 async def test_create_product_line_invalid_product_type(async_client):
@@ -80,7 +80,7 @@ async def test_create_product_line_invalid_product_type(async_client):
     payload = {"name": "Orchid", "product_type_id": str(fake_id)}
     resp = await async_client.post("/api/v1/product-lines", json=payload)
     assert resp.status_code == 422
-    assert "Product type not found" in resp.json()["detail"]
+    assert "Product type not found" in resp.json()["error"]
 
 
 # ---------------------------------------------------------------------------
