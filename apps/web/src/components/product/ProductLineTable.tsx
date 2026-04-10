@@ -15,7 +15,8 @@ interface ColumnDef {
 const COLUMNS: ColumnDef[] = [
   { key: "name", label: "Name", filterable: true },
   { key: "product_type_name", label: "Product Type", filterable: true },
-  { key: "variety_count", label: "Varieties", filterable: false },
+  { key: "variety_count", label: "Varieties", filterable: true },
+  { key: "is_active", label: "Active", filterable: true },
 ];
 
 const SEARCHABLE_FIELDS = ["name", "product_type_name"] as const;
@@ -200,6 +201,7 @@ export function ProductLineTable({
                     <td className="px-2 py-1.5 text-[#334155] font-medium">{pl.name}</td>
                     <td className="px-2 py-1.5 text-[#334155]">{pl.product_type_name}</td>
                     <td className="px-2 py-1.5 text-[#334155]">{pl.variety_count}</td>
+                    <td className="px-2 py-1.5 text-[#334155]">{pl.is_active ? "Yes" : "No"}</td>
                   </tr>
                 ))
               )}

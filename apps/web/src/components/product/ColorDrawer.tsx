@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Sheet,
   SheetContent,
@@ -10,12 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ChevronDown, Search } from "lucide-react";
 import type { VarietyColor, VarietyColorCreateRequest } from "@/types";
 
 interface ColorDrawerVariety {
@@ -96,6 +95,17 @@ export function ColorDrawer({
     }
   };
 
+  const [varietySearch, setVarietySearch] = useState("");
+  const [varietyPopoverOpen, setVarietyPopoverOpen] = useState(false);
+
+  const filteredVarieties = useMemo(() => {
+    if (!varietySearch) return varieties;
+    const term = varietySearch.toLowerCase();
+    return varieties.filter((v) => v.name.toLowerCase().includes(term));
+  }, [varieties, varietySearch]);
+
+  const selectedVarietyName = varieties.find((v) => v.id === form.variety_id)?.name;
+
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full sm:max-w-[520px] flex flex-col p-0">
@@ -120,20 +130,53 @@ export function ColorDrawer({
                 {color?.variety_name}
               </div>
             ) : (
-              <Select
-                value={form.variety_id || "__none__"}
-                onValueChange={(v) => setForm((f) => ({ ...f, variety_id: v === "__none__" ? "" : v }))}
-              >
-                <SelectTrigger className="mt-1 h-8 text-sm">
-                  <SelectValue placeholder="Select variety" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">None</SelectItem>
-                  {varieties.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={varietyPopoverOpen} onOpenChange={setVarietyPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="mt-1 flex items-center justify-between w-full px-3 py-1.5 h-8 text-sm border border-[#e0ddd8] rounded-md bg-white text-left hover:bg-[#faf8f5] transition-colors"
+                  >
+                    <span className={selectedVarietyName ? "text-[#334155]" : "text-[#94a3b8]"}>
+                      {selectedVarietyName || "Search varieties..."}
+                    </span>
+                    <ChevronDown className="h-3 w-3 text-[#94a3b8]" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <div className="p-2 border-b border-[#e0ddd8]">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#94a3b8]" />
+                      <Input
+                        placeholder="Search varieties..."
+                        className="pl-7 h-7 text-xs"
+                        value={varietySearch}
+                        onChange={(e) => setVarietySearch(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {filteredVarieties.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-[#94a3b8]">No varieties found</div>
+                    ) : (
+                      filteredVarieties.map((v) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          className="w-full text-left px-3 py-1.5 text-xs text-[#334155] hover:bg-[#f4f1ec] transition-colors"
+                          onClick={() => {
+                            setForm((f) => ({ ...f, variety_id: v.id }));
+                            setVarietyPopoverOpen(false);
+                            setVarietySearch("");
+                          }}
+                        >
+                          {v.name}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
 
