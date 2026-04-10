@@ -2,13 +2,13 @@
 
 from uuid import UUID
 
-from app.models.product import ProductLine, Variety
+from app.models.product import Color, ProductLine, Variety
 
 BULK_UPDATABLE_FIELDS = {
     "show",
     "weekly_sales_category",
     "product_line_id",
-    "color",
+    "color_id",
     "flowering_type",
 }
 
@@ -28,11 +28,13 @@ async def get_variety_dropdown_options() -> dict:
         for pl in product_lines
     ]
 
+    colors = await Color.filter(is_active=True).order_by("name")
+    color_list = [{"id": str(c.id), "name": c.name} for c in colors]
+
     varieties = await Variety.filter(is_active=True).values(
-        "color", "flowering_type", "weekly_sales_category"
+        "flowering_type", "weekly_sales_category"
     )
 
-    colors = sorted({v["color"] for v in varieties if v["color"]})
     flowering_types = sorted({v["flowering_type"] for v in varieties if v["flowering_type"]})
     weekly_sales_categories = sorted(
         {v["weekly_sales_category"] for v in varieties if v["weekly_sales_category"]}
@@ -40,7 +42,7 @@ async def get_variety_dropdown_options() -> dict:
 
     return {
         "product_lines": pl_list,
-        "colors": colors,
+        "colors": color_list,
         "flowering_types": flowering_types,
         "weekly_sales_categories": weekly_sales_categories,
     }
@@ -67,6 +69,11 @@ async def bulk_update_varieties(
         pl = await ProductLine.filter(id=value, is_active=True).first()
         if pl is None:
             raise ValueError(f"Product line '{value}' not found or archived")
+    if field == "color_id":
+        if value is not None:
+            color = await Color.filter(id=value, is_active=True).first()
+            if color is None:
+                raise ValueError(f"Color '{value}' not found or archived")
 
     updated_count = await Variety.filter(id__in=ids).update(**{field: value})
     return updated_count

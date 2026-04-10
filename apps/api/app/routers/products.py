@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.models.product import ProductLine, Variety
+from app.models.product import Color, ProductLine, Variety
 from app.schemas.product import (
     BulkUpdateRequest,
     SalesItemDetailResponse,
@@ -19,12 +19,24 @@ from app.services.product_service import bulk_update_varieties, get_variety_drop
 router = APIRouter(prefix="/api/v1", tags=["varieties"])
 
 
+def _variety_color_id(v) -> str | None:
+    """Extract color_id as string from a Variety instance."""
+    return str(v.color_id) if v.color_id else None
+
+
+def _variety_color_name(v) -> str | None:
+    """Extract color name from a prefetched Variety instance."""
+    if v.color_id and v.color:
+        return v.color.name  # type: ignore[attr-defined]
+    return None
+
+
 @router.get("/varieties")
 async def list_varieties(active: bool = True) -> dict:
     """List varieties filtered by active status."""
     qs = Variety.filter(is_active=active)
     varieties = await qs.prefetch_related(
-        "sales_items", "product_line", "product_line__product_type"
+        "sales_items", "product_line", "product_line__product_type", "color"
     ).order_by("name")
 
     data = []
@@ -40,7 +52,8 @@ async def list_varieties(active: bool = True) -> dict:
                 product_line_id=str(v.product_line_id),
                 product_line_name=v.product_line.name,  # type: ignore[attr-defined]
                 product_type_name=v.product_line.product_type.name,  # type: ignore[attr-defined]
-                color=v.color,
+                color_id=_variety_color_id(v),
+                color_name=_variety_color_name(v),
                 hex_color=v.hex_color,
                 flowering_type=v.flowering_type,
                 can_replace=v.can_replace,
@@ -66,7 +79,8 @@ async def variety_dropdown_options() -> dict:
 async def get_variety(variety_id: UUID) -> dict:
     """Get a single variety with its sales items."""
     variety = await Variety.get_or_none(id=variety_id).prefetch_related(
-        "sales_items__customer_prices", "product_line", "product_line__product_type"
+        "sales_items__customer_prices", "product_line", "product_line__product_type",
+        "color"
     )
     if variety is None:
         raise HTTPException(status_code=404, detail="Variety not found")
@@ -90,7 +104,8 @@ async def get_variety(variety_id: UUID) -> dict:
             product_line_id=str(variety.product_line_id),
             product_line_name=variety.product_line.name,  # type: ignore[attr-defined]
             product_type_name=variety.product_line.product_type.name,  # type: ignore[attr-defined]
-            color=variety.color,
+            color_id=_variety_color_id(variety),
+            color_name=_variety_color_name(variety),
             hex_color=variety.hex_color,
             flowering_type=variety.flowering_type,
             can_replace=variety.can_replace,
@@ -111,6 +126,12 @@ async def create_variety(data: VarietyCreateRequest) -> dict:
     if product_line is None:
         raise HTTPException(status_code=422, detail="Product line not found")
 
+    # Validate color_id if provided
+    if data.color_id is not None:
+        color = await Color.get_or_none(id=data.color_id)
+        if color is None:
+            raise HTTPException(status_code=422, detail="Color not found")
+
     existing = await Variety.filter(
         product_line_id=data.product_line_id, name=data.name
     ).first()
@@ -122,7 +143,7 @@ async def create_variety(data: VarietyCreateRequest) -> dict:
         )
 
     variety = await Variety.create(**data.model_dump())
-    await variety.fetch_related("product_line__product_type", "sales_items")
+    await variety.fetch_related("product_line__product_type", "sales_items", "color")
 
     return {
         "data": VarietyListResponse(
@@ -131,7 +152,8 @@ async def create_variety(data: VarietyCreateRequest) -> dict:
             product_line_id=str(variety.product_line_id),
             product_line_name=variety.product_line.name,  # type: ignore[attr-defined]
             product_type_name=variety.product_line.product_type.name,  # type: ignore[attr-defined]
-            color=variety.color,
+            color_id=_variety_color_id(variety),
+            color_name=_variety_color_name(variety),
             hex_color=variety.hex_color,
             flowering_type=variety.flowering_type,
             can_replace=variety.can_replace,
@@ -166,6 +188,12 @@ async def update_variety(variety_id: UUID, data: VarietyUpdateRequest) -> dict:
     if not update_data:
         raise HTTPException(status_code=422, detail="No fields to update")
 
+    # Validate color_id if provided
+    if "color_id" in update_data and update_data["color_id"] is not None:
+        color = await Color.get_or_none(id=update_data["color_id"])
+        if color is None:
+            raise HTTPException(status_code=422, detail="Color not found")
+
     # Check uniqueness if name or product_line_id is changing
     new_name = update_data.get("name", variety.name)
     new_pl_id = update_data.get("product_line_id", variety.product_line_id)
@@ -181,7 +209,7 @@ async def update_variety(variety_id: UUID, data: VarietyUpdateRequest) -> dict:
             )
 
     await variety.update_from_dict(update_data).save()
-    await variety.fetch_related("product_line__product_type", "sales_items")
+    await variety.fetch_related("product_line__product_type", "sales_items", "color")
 
     active_sales_items = [
         si for si in variety.sales_items  # type: ignore[attr-defined]
@@ -195,7 +223,8 @@ async def update_variety(variety_id: UUID, data: VarietyUpdateRequest) -> dict:
             product_line_id=str(variety.product_line_id),
             product_line_name=variety.product_line.name,  # type: ignore[attr-defined]
             product_type_name=variety.product_line.product_type.name,  # type: ignore[attr-defined]
-            color=variety.color,
+            color_id=_variety_color_id(variety),
+            color_name=_variety_color_name(variety),
             hex_color=variety.hex_color,
             flowering_type=variety.flowering_type,
             can_replace=variety.can_replace,
