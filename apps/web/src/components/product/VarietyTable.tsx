@@ -30,7 +30,7 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "name", label: "Name", filterable: true, defaultVisible: true },
   { key: "product_line_name", label: "Product Line", filterable: true, defaultVisible: true },
   { key: "product_type_name", label: "Type", filterable: true, defaultVisible: true },
-  { key: "color", label: "Color", filterable: true, defaultVisible: true },
+  { key: "color_name", label: "Color", filterable: true, defaultVisible: true },
   { key: "show", label: "Show", filterable: true, defaultVisible: true },
   { key: "flowering_type", label: "Flowering Type", filterable: true, defaultVisible: true },
   { key: "weekly_sales_category", label: "Weekly Sales Category", filterable: true, defaultVisible: true },
@@ -48,7 +48,7 @@ const STORAGE_KEY = "fullbloom:variety-columns";
 
 const SEARCHABLE_FIELDS = [
   "name",
-  "color",
+  "color_name",
   "product_line_name",
   "product_type_name",
   "flowering_type",
@@ -58,7 +58,7 @@ const BULK_FIELDS = [
   { key: "show", label: "Show" },
   { key: "weekly_sales_category", label: "Weekly Sales Category" },
   { key: "product_line_id", label: "Product Line" },
-  { key: "color", label: "Color" },
+  { key: "color_id", label: "Color" },
   { key: "flowering_type", label: "Flowering Type" },
 ] as const;
 
@@ -249,7 +249,7 @@ export function VarietyTable({
     if (bulkField === "show") return ["true", "false"];
     if (bulkField === "weekly_sales_category") return dropdownOptions.weekly_sales_categories;
     if (bulkField === "product_line_id") return dropdownOptions.product_lines.map((pl) => pl.id);
-    if (bulkField === "color") return dropdownOptions.colors;
+    if (bulkField === "color_id") return dropdownOptions.colors.map((c) => c.id);
     if (bulkField === "flowering_type") return dropdownOptions.flowering_types;
     return [];
   }, [bulkField, dropdownOptions]);
@@ -259,6 +259,11 @@ export function VarietyTable({
     if (bulkField === "product_line_id") {
       return Object.fromEntries(
         dropdownOptions.product_lines.map((pl) => [pl.id, `${pl.product_type} > ${pl.name}`])
+      );
+    }
+    if (bulkField === "color_id") {
+      return Object.fromEntries(
+        dropdownOptions.colors.map((c) => [c.id, c.name])
       );
     }
     return {};
