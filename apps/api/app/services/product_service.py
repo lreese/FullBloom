@@ -52,10 +52,21 @@ async def bulk_update_varieties(
     """Bulk update a single field across multiple varieties.
 
     Returns the number of updated rows.
-    Raises ValueError if the field is not allowed for bulk update.
+    Raises ValueError if the field is not allowed for bulk update or
+    the value is invalid for the given field.
     """
     if field not in BULK_UPDATABLE_FIELDS:
         raise ValueError(f"Field '{field}' is not bulk-updatable")
+
+    # Validate field-specific values
+    if field == "show" and not isinstance(value, bool):
+        raise ValueError("'show' must be true or false")
+    if field == "product_line_id":
+        if value is None:
+            raise ValueError("'product_line_id' cannot be null")
+        pl = await ProductLine.filter(id=value, is_active=True).first()
+        if pl is None:
+            raise ValueError(f"Product line '{value}' not found or archived")
 
     updated_count = await Variety.filter(id__in=ids).update(**{field: value})
     return updated_count
