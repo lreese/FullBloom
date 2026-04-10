@@ -47,6 +47,8 @@ If requirements are ambiguous, ask before building. A wrong implementation is mo
 ## Active Technologies
 - Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, Tortoise ORM, Aerich (backend); React, Vite, Tailwind CSS, shadcn/ui (frontend) (001-order-management)
 - PostgreSQL via Neon (serverless, free tier) (001-order-management)
+- Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, Tortoise ORM, Aerich (backend); React, Vite, Tailwind CSS, shadcn/ui, react-router-dom (frontend) (003-product-management)
+- PostgreSQL (local dev), Neon (production) (003-product-management)
 
 ## Recent Changes
 - 001-order-management: Added Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, Tortoise ORM, Aerich (backend); React, Vite, Tailwind CSS, shadcn/ui (frontend)
