@@ -60,7 +60,7 @@ export function VarietyDrawer({
   const [form, setForm] = useState({
     name: "",
     product_line_id: "",
-    color: "",
+    color_id: "",
     hex_color: "#000000",
     flowering_type: "",
     weekly_sales_category: "",
@@ -81,7 +81,7 @@ export function VarietyDrawer({
       setForm({
         name: variety.name,
         product_line_id: variety.product_line_id,
-        color: variety.color ?? "",
+        color_id: variety.color_id ?? "",
         hex_color: variety.hex_color ?? "#000000",
         flowering_type: variety.flowering_type ?? "",
         weekly_sales_category: variety.weekly_sales_category ?? "",
@@ -95,7 +95,7 @@ export function VarietyDrawer({
       setForm({
         name: "",
         product_line_id: "",
-        color: "",
+        color_id: "",
         hex_color: "#000000",
         flowering_type: "",
         weekly_sales_category: "",
@@ -125,7 +125,7 @@ export function VarietyDrawer({
         const data: VarietyCreateRequest = {
           name: form.name.trim(),
           product_line_id: form.product_line_id,
-          color: form.color || null,
+          color_id: form.color_id || null,
           hex_color: form.hex_color || null,
           flowering_type: form.flowering_type || null,
           weekly_sales_category: form.weekly_sales_category || null,
@@ -139,7 +139,7 @@ export function VarietyDrawer({
         const data: VarietyUpdateRequest = {
           name: form.name.trim(),
           product_line_id: form.product_line_id,
-          color: form.color || null,
+          color_id: form.color_id || null,
           hex_color: form.hex_color || null,
           flowering_type: form.flowering_type || null,
           weekly_sales_category: form.weekly_sales_category || null,
@@ -252,12 +252,27 @@ export function VarietyDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div>
                 <Label className="text-xs font-semibold text-[#1e3a5f]">Color</Label>
-                <Input
-                  className="mt-1 h-8 text-sm"
-                  value={form.color}
-                  onChange={(e) => setField("color", e.target.value)}
+                <Select
+                  value={form.color_id || "__none__"}
+                  onValueChange={(v) => setField("color_id", v === "__none__" ? "" : v)}
                   disabled={isReadOnly}
-                />
+                >
+                  <SelectTrigger className="mt-1 h-8 text-sm">
+                    {form.color_id && dropdownOptions.colors.length > 0 ? (
+                      <span>
+                        {dropdownOptions.colors.find((c) => c.id === form.color_id)?.name ?? "Select color"}
+                      </span>
+                    ) : (
+                      <SelectValue placeholder="Select color" />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {dropdownOptions.colors.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-xs font-semibold text-[#1e3a5f]">Hex Color</Label>
