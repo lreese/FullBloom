@@ -1,33 +1,30 @@
-"""Variety color endpoints — CRUD + archive/restore."""
+"""Color endpoints — CRUD + archive/restore for standalone Color model."""
 
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.models.product import Variety, VarietyColor
+from app.models.product import Color
 from app.schemas.color import (
-    VarietyColorCreateRequest,
-    VarietyColorListResponse,
-    VarietyColorUpdateRequest,
+    ColorCreateRequest,
+    ColorListResponse,
+    ColorUpdateRequest,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["variety-colors"])
+router = APIRouter(prefix="/api/v1", tags=["colors"])
 
 
-@router.get("/variety-colors")
-async def list_variety_colors(active: bool = True) -> dict:
-    """List all variety colors."""
-    colors = await VarietyColor.filter(is_active=active).prefetch_related(
-        "variety"
-    ).order_by("color_name")
+@router.get("/colors")
+async def list_colors(active: bool = True) -> dict:
+    """List all colors, filtered by active status."""
+    colors = await Color.filter(is_active=active).order_by("name")
 
     return {
         "data": [
-            VarietyColorListResponse(
+            ColorListResponse(
                 id=str(c.id),
-                variety_id=str(c.variety_id),
-                variety_name=c.variety.name,  # type: ignore[attr-defined]
-                color_name=c.color_name,
+                name=c.name,
+                hex_color=c.hex_color,
                 is_active=c.is_active,
             )
             for c in colors
@@ -35,78 +32,76 @@ async def list_variety_colors(active: bool = True) -> dict:
     }
 
 
-@router.post("/variety-colors", status_code=201)
-async def create_variety_color(data: VarietyColorCreateRequest) -> dict:
-    """Create a new variety color entry."""
-    variety = await Variety.get_or_none(id=data.variety_id)
-    if variety is None:
-        raise HTTPException(status_code=422, detail="Variety not found")
-
-    existing = await VarietyColor.filter(
-        variety_id=data.variety_id, color_name=data.color_name
-    ).first()
+@router.post("/colors", status_code=201)
+async def create_color(data: ColorCreateRequest) -> dict:
+    """Create a new color entry."""
+    existing = await Color.filter(name=data.name).first()
     if existing:
         raise HTTPException(
             status_code=422,
-            detail=f"Color '{data.color_name}' already exists for variety '{variety.name}'",
+            detail=f"Color '{data.name}' already exists",
         )
 
-    color = await VarietyColor.create(**data.model_dump())
+    color = await Color.create(**data.model_dump())
     return {
-        "data": VarietyColorListResponse(
+        "data": ColorListResponse(
             id=str(color.id),
-            variety_id=str(color.variety_id),
-            variety_name=variety.name,
-            color_name=color.color_name,
+            name=color.name,
+            hex_color=color.hex_color,
             is_active=color.is_active,
         )
     }
 
 
-@router.patch("/variety-colors/{color_id}")
-async def update_variety_color(
-    color_id: UUID, data: VarietyColorUpdateRequest
-) -> dict:
-    """Update a variety color entry."""
-    color = await VarietyColor.get_or_none(id=color_id)
+@router.patch("/colors/{color_id}")
+async def update_color(color_id: UUID, data: ColorUpdateRequest) -> dict:
+    """Update a color entry."""
+    color = await Color.get_or_none(id=color_id)
     if color is None:
-        raise HTTPException(status_code=404, detail="Variety color not found")
+        raise HTTPException(status_code=404, detail="Color not found")
 
     update_data = data.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=422, detail="No fields to update")
 
+    # Check name uniqueness if changing name
+    if "name" in update_data:
+        existing = await Color.filter(name=update_data["name"]).exclude(id=color_id).first()
+        if existing:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Color '{update_data['name']}' already exists",
+            )
+
     await color.update_from_dict(update_data).save()
-    await color.fetch_related("variety")
 
     return {
-        "data": VarietyColorListResponse(
+        "data": ColorListResponse(
             id=str(color.id),
-            variety_id=str(color.variety_id),
-            variety_name=color.variety.name,  # type: ignore[attr-defined]
-            color_name=color.color_name,
+            name=color.name,
+            hex_color=color.hex_color,
             is_active=color.is_active,
         )
     }
 
 
-@router.post("/variety-colors/{color_id}/archive")
-async def archive_variety_color(color_id: UUID) -> dict:
-    """Soft-delete a variety color entry."""
-    color = await VarietyColor.get_or_none(id=color_id)
+@router.post("/colors/{color_id}/archive")
+async def archive_color(color_id: UUID) -> dict:
+    """Soft-delete a color."""
+    color = await Color.get_or_none(id=color_id)
     if color is None:
-        raise HTTPException(status_code=404, detail="Variety color not found")
+        raise HTTPException(status_code=404, detail="Color not found")
     color.is_active = False
     await color.save()
     return {"data": {"id": str(color.id), "is_active": False}}
 
 
-@router.post("/variety-colors/{color_id}/restore")
-async def restore_variety_color(color_id: UUID) -> dict:
-    """Restore a soft-deleted variety color entry."""
-    color = await VarietyColor.get_or_none(id=color_id)
+@router.post("/colors/{color_id}/restore")
+async def restore_color(color_id: UUID) -> dict:
+    """Restore a soft-deleted color."""
+    color = await Color.get_or_none(id=color_id)
     if color is None:
-        raise HTTPException(status_code=404, detail="Variety color not found")
+        raise HTTPException(status_code=404, detail="Color not found")
     color.is_active = True
     await color.save()
     return {"data": {"id": str(color.id), "is_active": True}}
