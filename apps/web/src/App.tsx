@@ -6,6 +6,7 @@ import { CustomersPage } from "@/pages/CustomersPage";
 import { VarietiesPage } from "@/pages/VarietiesPage";
 import { ProductLinesPage } from "@/pages/ProductLinesPage";
 import { ColorsPage } from "@/pages/ColorsPage";
+import { ProductTypesPage } from "@/pages/ProductTypesPage";
 import "@/index.css";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             <Route path="/products/varieties" element={<VarietiesPage />} />
             <Route path="/products/product-lines" element={<ProductLinesPage />} />
             <Route path="/products/colors" element={<ColorsPage />} />
+            <Route path="/products/product-types" element={<ProductTypesPage />} />
             <Route path="*" element={<Navigate to="/orders" replace />} />
           </Routes>
         </AppShell>
