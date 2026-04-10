@@ -1,0 +1,147 @@
+"""Sales item endpoints — CRUD + archive/restore.
+
+Create and list are nested under varieties. Update, archive, and restore are flat.
+"""
+
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException
+
+from app.models.product import SalesItem, Variety
+from app.schemas.sales_item import (
+    SalesItemCreateRequest,
+    SalesItemResponse,
+    SalesItemUpdateRequest,
+)
+
+router = APIRouter(prefix="/api/v1", tags=["sales-items"])
+
+
+@router.get("/varieties/{variety_id}/sales-items")
+async def list_sales_items(
+    variety_id: UUID, include_inactive: bool = False
+) -> dict:
+    """List sales items for a variety."""
+    variety = await Variety.get_or_none(id=variety_id)
+    if variety is None:
+        raise HTTPException(status_code=404, detail="Variety not found")
+
+    qs = SalesItem.filter(variety_id=variety_id)
+    if not include_inactive:
+        qs = qs.filter(is_active=True)
+
+    sales_items = await qs.prefetch_related("customer_prices").order_by("name")
+
+    return {
+        "data": [
+            SalesItemResponse(
+                id=str(si.id),
+                name=si.name,
+                stems_per_order=si.stems_per_order,
+                retail_price=str(si.retail_price),
+                is_active=si.is_active,
+                customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+            )
+            for si in sales_items
+        ]
+    }
+
+
+@router.post("/varieties/{variety_id}/sales-items", status_code=201)
+async def create_sales_item(
+    variety_id: UUID, data: SalesItemCreateRequest
+) -> dict:
+    """Create a new sales item for a variety."""
+    variety = await Variety.get_or_none(id=variety_id)
+    if variety is None:
+        raise HTTPException(status_code=404, detail="Variety not found")
+
+    existing = await SalesItem.filter(name=data.name).first()
+    if existing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Sales item name '{data.name}' already exists",
+        )
+
+    si = await SalesItem.create(variety_id=variety_id, **data.model_dump())
+    return {
+        "data": SalesItemResponse(
+            id=str(si.id),
+            name=si.name,
+            stems_per_order=si.stems_per_order,
+            retail_price=str(si.retail_price),
+            is_active=si.is_active,
+            customer_prices_count=0,
+        )
+    }
+
+
+@router.patch("/sales-items/{sales_item_id}")
+async def update_sales_item(
+    sales_item_id: UUID, data: SalesItemUpdateRequest
+) -> dict:
+    """Update a sales item."""
+    si = await SalesItem.get_or_none(id=sales_item_id)
+    if si is None:
+        raise HTTPException(status_code=404, detail="Sales item not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=422, detail="No fields to update")
+
+    # Check name uniqueness if name is changing
+    if "name" in update_data:
+        existing = await SalesItem.filter(
+            name=update_data["name"]
+        ).exclude(id=sales_item_id).first()
+        if existing:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Sales item name '{update_data['name']}' already exists",
+            )
+
+    await si.update_from_dict(update_data).save()
+    await si.fetch_related("customer_prices")
+
+    return {
+        "data": SalesItemResponse(
+            id=str(si.id),
+            name=si.name,
+            stems_per_order=si.stems_per_order,
+            retail_price=str(si.retail_price),
+            is_active=si.is_active,
+            customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+        )
+    }
+
+
+@router.post("/sales-items/{sales_item_id}/archive")
+async def archive_sales_item(sales_item_id: UUID) -> dict:
+    """Soft-delete a sales item. Returns customer price count as a warning."""
+    si = await SalesItem.get_or_none(id=sales_item_id)
+    if si is None:
+        raise HTTPException(status_code=404, detail="Sales item not found")
+
+    await si.fetch_related("customer_prices")
+    customer_prices_count = len(si.customer_prices)  # type: ignore[attr-defined]
+
+    si.is_active = False
+    await si.save()
+    return {
+        "data": {
+            "id": str(si.id),
+            "is_active": False,
+            "customer_prices_count": customer_prices_count,
+        }
+    }
+
+
+@router.post("/sales-items/{sales_item_id}/restore")
+async def restore_sales_item(sales_item_id: UUID) -> dict:
+    """Restore a soft-deleted sales item."""
+    si = await SalesItem.get_or_none(id=sales_item_id)
+    if si is None:
+        raise HTTPException(status_code=404, detail="Sales item not found")
+    si.is_active = True
+    await si.save()
+    return {"data": {"id": str(si.id), "is_active": True}}
