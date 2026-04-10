@@ -211,6 +211,11 @@ export function VarietyDrawer({
               </div>
               <div>
                 <Label className="text-xs font-semibold text-[#1e3a5f]">Product Line *</Label>
+                {dropdownOptions.product_lines.length === 0 ? (
+                  <div className="mt-1 px-3 py-1.5 bg-[#f4f1ec] border border-[#e0ddd8] rounded-md text-sm text-[#94a3b8]">
+                    Loading...
+                  </div>
+                ) : (
                 <Select
                   value={form.product_line_id || "__none__"}
                   onValueChange={(v) => setField("product_line_id", v === "__none__" ? "" : v)}
@@ -228,6 +233,7 @@ export function VarietyDrawer({
                     ))}
                   </SelectContent>
                 </Select>
+                )}
                 {error && error.toLowerCase().includes("product line") && (
                   <p className="text-xs text-red-500 mt-1">{error}</p>
                 )}
