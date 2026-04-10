@@ -141,6 +141,17 @@ export interface VarietyDropdownOptions {
   weekly_sales_categories: string[];
 }
 
+export interface ProductType {
+  id: string;
+  name: string;
+  is_active: boolean;
+  product_line_count: number;
+}
+
+export interface ProductTypeCreateRequest {
+  name: string;
+}
+
 export interface ProductLine {
   id: string;
   name: string;
