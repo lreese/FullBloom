@@ -89,7 +89,8 @@ export interface Variety {
   product_line_id: string;
   product_line_name: string;
   product_type_name: string;
-  color: string | null;
+  color_id: string | null;
+  color_name: string | null;
   hex_color: string | null;
   flowering_type: string | null;
   can_replace: boolean;
@@ -105,7 +106,7 @@ export interface Variety {
 export interface VarietyCreateRequest {
   name: string;
   product_line_id: string;
-  color?: string | null;
+  color_id?: string | null;
   hex_color?: string | null;
   flowering_type?: string | null;
   can_replace?: boolean;
@@ -118,7 +119,7 @@ export interface VarietyCreateRequest {
 export interface VarietyUpdateRequest {
   name?: string;
   product_line_id?: string;
-  color?: string | null;
+  color_id?: string | null;
   hex_color?: string | null;
   flowering_type?: string | null;
   can_replace?: boolean;
@@ -136,7 +137,7 @@ export interface BulkUpdateRequest {
 
 export interface VarietyDropdownOptions {
   product_lines: { id: string; name: string; product_type: string }[];
-  colors: string[];
+  colors: { id: string; name: string }[];
   flowering_types: string[];
   weekly_sales_categories: string[];
 }
@@ -166,17 +167,16 @@ export interface ProductLineCreateRequest {
   product_type_id: string;
 }
 
-export interface VarietyColor {
+export interface Color {
   id: string;
-  variety_id: string;
-  variety_name: string;
-  color_name: string;
+  name: string;
+  hex_color: string | null;
   is_active: boolean;
 }
 
-export interface VarietyColorCreateRequest {
-  variety_id: string;
-  color_name: string;
+export interface ColorCreateRequest {
+  name: string;
+  hex_color?: string | null;
 }
 
 // ── Pricing ──────────────────────────────────────────────────
