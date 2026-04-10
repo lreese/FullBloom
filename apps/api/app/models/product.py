@@ -11,6 +11,7 @@ class ProductType(Model):
 
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=100, unique=True)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "product_types"
