@@ -208,12 +208,10 @@ export function VarietyDrawer({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">None</SelectItem>
-                    {Object.entries(groupedProductLines).map(([type, lines]) => (
-                      lines.map((pl) => (
-                        <SelectItem key={pl.id} value={pl.id}>
-                          {type} &gt; {pl.name}
-                        </SelectItem>
-                      ))
+                    {dropdownOptions.product_lines.map((pl) => (
+                      <SelectItem key={pl.id} value={pl.id}>
+                        {pl.product_type} &gt; {pl.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
