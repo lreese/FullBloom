@@ -17,6 +17,7 @@ from app.routers.import_data import router as import_router
 from app.routers.orders import router as orders_router
 from app.routers.pricing import router as pricing_router
 from app.routers.product_lines import router as product_lines_router
+from app.routers.product_types import router as product_types_router
 from app.routers.products import router as products_router
 from app.routers.sales_items import router as sales_items_router
 
@@ -111,6 +112,7 @@ app.include_router(import_router)
 app.include_router(customers_router)
 app.include_router(products_router)
 app.include_router(product_lines_router)
+app.include_router(product_types_router)
 app.include_router(colors_router)
 app.include_router(sales_items_router)
 app.include_router(pricing_router)
