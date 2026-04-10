@@ -217,12 +217,22 @@ export function VarietyDrawer({
                   </div>
                 ) : (
                 <Select
+                  key={dropdownOptions.product_lines.length}
                   value={form.product_line_id || "__none__"}
                   onValueChange={(v) => setField("product_line_id", v === "__none__" ? "" : v)}
                   disabled={isReadOnly}
                 >
                   <SelectTrigger className="mt-1 h-8 text-sm">
-                    <SelectValue placeholder="Select product line" />
+                    {form.product_line_id && dropdownOptions.product_lines.length > 0 ? (
+                      <span>
+                        {(() => {
+                          const pl = dropdownOptions.product_lines.find((p) => p.id === form.product_line_id);
+                          return pl ? `${pl.product_type} > ${pl.name}` : "Select product line";
+                        })()}
+                      </span>
+                    ) : (
+                      <SelectValue placeholder="Select product line" />
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">None</SelectItem>
