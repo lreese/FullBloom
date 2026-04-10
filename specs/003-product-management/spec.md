@@ -143,9 +143,27 @@ A user navigates to Products → Colors via the sidebar dropdown. They see a tab
 
 ---
 
-### User Story 8 - Sidebar Navigation with Dropdown (Priority: P1)
+### User Story 8 - Manage Product Types (Priority: P3)
 
-The Products item in the sidebar expands to show sub-items: Varieties, Product Lines, and Colors. Clicking Products itself navigates to Varieties (the default). The dropdown is collapsible.
+A user navigates to Products → Product Types via the sidebar dropdown. They see a simple table of all product types (e.g., Tulips, Lilies, Unknown) with the name and a count of product lines in each. They can add, edit, and archive product types using the same drawer pattern.
+
+**Why this priority**: Product types are the top-level category and change very rarely, but need to be manageable when new flower categories are introduced.
+
+**Independent Test**: Navigate to Product Types, see the list, add a new product type, edit an existing one.
+
+**Acceptance Scenarios**:
+
+1. **Given** the user navigates to Product Types, **When** the page loads, **Then** they see a table of all product types with columns: name and product line count.
+2. **Given** the product type list is displayed, **When** the user clicks a row, **Then** a drawer opens for editing the product type name.
+3. **Given** the user clicks "Add Product Type", **When** they enter a name and save, **Then** the new product type appears in the list.
+4. **Given** a product type has no product lines, **When** the user archives it, **Then** the archive succeeds.
+5. **Given** a product type has product lines, **When** the user attempts to archive it, **Then** a warning shows that associated product lines and their varieties will also be hidden.
+
+---
+
+### User Story 9 - Sidebar Navigation with Dropdown (Priority: P1)
+
+The Products item in the sidebar expands to show sub-items: Varieties, Product Lines, Colors, and Product Types. Clicking Products itself navigates to Varieties (the default). The dropdown is collapsible.
 
 **Why this priority**: Navigation structure is required for all other stories to be accessible.
 
@@ -153,11 +171,12 @@ The Products item in the sidebar expands to show sub-items: Varieties, Product L
 
 **Acceptance Scenarios**:
 
-1. **Given** the sidebar is visible, **When** the user clicks Products, **Then** a dropdown expands showing Varieties, Product Lines, and Colors.
+1. **Given** the sidebar is visible, **When** the user clicks Products, **Then** a dropdown expands showing Varieties, Product Lines, Colors, and Product Types.
 2. **Given** the dropdown is expanded, **When** the user clicks Varieties, **Then** they navigate to the Varieties page.
 3. **Given** the dropdown is expanded, **When** the user clicks Product Lines, **Then** they navigate to the Product Lines page.
 4. **Given** the dropdown is expanded, **When** the user clicks Colors, **Then** they navigate to the Colors page.
-5. **Given** the sidebar is collapsed to icon-only mode, **When** the user clicks the Products icon, **Then** a flyout popover appears next to the icon showing Varieties, Product Lines, and Colors.
+5. **Given** the dropdown is expanded, **When** the user clicks Product Types, **Then** they navigate to the Product Types page.
+6. **Given** the sidebar is collapsed to icon-only mode, **When** the user clicks the Products icon, **Then** a flyout popover appears next to the icon showing all sub-items.
 
 ---
 
@@ -204,8 +223,14 @@ The Products item in the sidebar expands to show sub-items: Varieties, Product L
 - **FR-024**: System MUST validate that sales item name is not empty and stems per order is a positive integer.
 - **FR-025**: System MUST allow viewing and restoring soft-deleted sales items within the variety drawer.
 
+**Product Types**
+- **FR-026**: System MUST display all product types in a table with name and product line count.
+- **FR-027**: System MUST allow adding, editing, and archiving product types via a drawer.
+- **FR-028**: Archiving a product type with product lines MUST warn the user that associated product lines and their varieties will also be hidden.
+- **FR-029**: Product type name MUST be unique.
+
 **Navigation**
-- **FR-018**: The Products sidebar item MUST expand to show sub-navigation: Varieties, Product Lines, Colors.
+- **FR-018**: The Products sidebar item MUST expand to show sub-navigation: Varieties, Product Lines, Colors, and Product Types.
 - **FR-019**: The sidebar dropdown MUST work in both expanded and collapsed sidebar modes, using a flyout popover when collapsed.
 
 ### Key Entities
@@ -225,7 +250,7 @@ The Products item in the sidebar expands to show sub-items: Varieties, Product L
 - **SC-003**: Users can bulk update 20+ varieties in under 30 seconds.
 - **SC-004**: Archived varieties are recoverable — no data is permanently lost.
 - **SC-005**: The Varieties page loads the full catalog in under 2 seconds.
-- **SC-006**: Users can navigate between Varieties, Product Lines, and Colors within 1 click from the sidebar.
+- **SC-006**: Users can navigate between Varieties, Product Lines, Colors, and Product Types within 1 click from the sidebar.
 
 ## Assumptions
 
@@ -233,6 +258,6 @@ The Products item in the sidebar expands to show sub-items: Varieties, Product L
 - The Variety model gets a new `is_active` field for archive/restore. The existing `show` field is preserved as a separate flag controlling order form visibility.
 - SalesItem management (add/edit/delete SKUs) is in scope, managed inline within the variety drawer.
 - VarietyColor gets a new `is_active` field for soft-delete. Color data has known duplication issues from free-text entry — cleanup is deferred to a separate task.
-- Product types are a small, stable set — they can be managed inline (a dropdown when creating product lines) rather than needing their own page.
+- Product types are a small, stable set (~3 currently: Tulips, Lilies, Unknown) but get their own management page under Products for CRUD and archive.
 - The existing data (~300 varieties, ~50 product lines, ~10 product types) is small enough for client-side filtering.
 - Bulk update applies to the currently filtered/visible set when "Select All" is used, not the entire database.
