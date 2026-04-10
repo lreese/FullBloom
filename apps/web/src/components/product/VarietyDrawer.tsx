@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Sheet,
   SheetContent,
@@ -66,7 +66,10 @@ export function VarietyDrawer({
     weekly_sales_category: "",
     show: true,
     can_replace: false,
+    item_group_id: "",
+    item_group_description: "",
   });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -84,7 +87,10 @@ export function VarietyDrawer({
         weekly_sales_category: variety.weekly_sales_category ?? "",
         show: variety.show,
         can_replace: variety.can_replace,
+        item_group_id: variety.item_group_id != null ? String(variety.item_group_id) : "",
+        item_group_description: variety.item_group_description ?? "",
       });
+      setAdvancedOpen(false);
     } else if (mode === "add") {
       setForm({
         name: "",
@@ -95,7 +101,10 @@ export function VarietyDrawer({
         weekly_sales_category: "",
         show: true,
         can_replace: false,
+        item_group_id: "",
+        item_group_description: "",
       });
+      setAdvancedOpen(false);
     }
     setError(null);
   }, [mode, variety, open]);
@@ -122,6 +131,8 @@ export function VarietyDrawer({
           weekly_sales_category: form.weekly_sales_category || null,
           show: form.show,
           can_replace: form.can_replace,
+          item_group_id: form.item_group_id ? parseInt(form.item_group_id, 10) : null,
+          item_group_description: form.item_group_description || null,
         };
         await onSave(data);
       } else {
@@ -134,6 +145,8 @@ export function VarietyDrawer({
           weekly_sales_category: form.weekly_sales_category || null,
           show: form.show,
           can_replace: form.can_replace,
+          item_group_id: form.item_group_id ? parseInt(form.item_group_id, 10) : null,
+          item_group_description: form.item_group_description || null,
         };
         await onSave(data);
       }
@@ -313,6 +326,43 @@ export function VarietyDrawer({
                 <span className="text-sm text-[#334155]">Can Replace</span>
               </label>
             </div>
+          </div>
+
+          {/* Advanced (collapsible) */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setAdvancedOpen((v) => !v)}
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] hover:text-[#334155] transition-colors"
+            >
+              <span style={{ transform: advancedOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 150ms", display: "inline-block", fontSize: "8px" }}>▶</span>
+              Advanced
+            </button>
+            {advancedOpen && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <div>
+                  <Label className="text-xs font-semibold text-[#1e3a5f]">Item Group ID</Label>
+                  <Input
+                    type="number"
+                    className="mt-1 h-8 text-sm"
+                    value={form.item_group_id}
+                    onChange={(e) => setField("item_group_id", e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 100"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-semibold text-[#1e3a5f]">Item Group Description</Label>
+                  <Input
+                    className="mt-1 h-8 text-sm"
+                    value={form.item_group_description}
+                    onChange={(e) => setField("item_group_description", e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. Tulips Standard"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sales Items (edit mode only, with a variety id) */}
