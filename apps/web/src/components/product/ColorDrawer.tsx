@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -9,26 +9,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ChevronDown, Search } from "lucide-react";
-import type { VarietyColor, VarietyColorCreateRequest } from "@/types";
-
-interface ColorDrawerVariety {
-  id: string;
-  name: string;
-}
+import type { Color, ColorCreateRequest } from "@/types";
 
 interface ColorDrawerProps {
   open: boolean;
   onClose: () => void;
   mode: "edit" | "add";
-  color: VarietyColor | null;
-  varieties: ColorDrawerVariety[];
-  onSave: (data: VarietyColorCreateRequest | { color_name: string }) => Promise<void>;
+  color: Color | null;
+  onSave: (data: ColorCreateRequest) => Promise<void>;
   onArchive: (id: string) => void;
   onRestore: (id: string) => void;
 }
@@ -38,14 +26,13 @@ export function ColorDrawer({
   onClose,
   mode,
   color,
-  varieties,
   onSave,
   onArchive,
   onRestore,
 }: ColorDrawerProps) {
   const [form, setForm] = useState({
-    variety_id: "",
-    color_name: "",
+    name: "",
+    hex_color: "#000000",
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -56,37 +43,27 @@ export function ColorDrawer({
   useEffect(() => {
     if (mode === "edit" && color) {
       setForm({
-        variety_id: color.variety_id,
-        color_name: color.color_name,
+        name: color.name,
+        hex_color: color.hex_color ?? "#000000",
       });
     } else if (mode === "add") {
-      setForm({ variety_id: "", color_name: "" });
+      setForm({ name: "", hex_color: "#000000" });
     }
     setError(null);
   }, [mode, color, open]);
 
   const handleSave = async () => {
-    if (!form.color_name.trim()) {
-      setError("Color name cannot be empty");
-      return;
-    }
-    if (mode === "add" && !form.variety_id) {
-      setError("Variety is required");
+    if (!form.name.trim()) {
+      setError("Name cannot be empty");
       return;
     }
     setError(null);
     setSaving(true);
     try {
-      if (mode === "add") {
-        await onSave({
-          variety_id: form.variety_id,
-          color_name: form.color_name.trim(),
-        });
-      } else {
-        await onSave({
-          color_name: form.color_name.trim(),
-        });
-      }
+      await onSave({
+        name: form.name.trim(),
+        hex_color: form.hex_color || null,
+      });
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
@@ -94,17 +71,6 @@ export function ColorDrawer({
       setSaving(false);
     }
   };
-
-  const [varietySearch, setVarietySearch] = useState("");
-  const [varietyPopoverOpen, setVarietyPopoverOpen] = useState(false);
-
-  const filteredVarieties = useMemo(() => {
-    if (!varietySearch) return varieties;
-    const term = varietySearch.toLowerCase();
-    return varieties.filter((v) => v.name.toLowerCase().includes(term));
-  }, [varieties, varietySearch]);
-
-  const selectedVarietyName = varieties.find((v) => v.id === form.variety_id)?.name;
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -116,7 +82,7 @@ export function ColorDrawer({
             </SheetTitle>
             {mode === "edit" && color && (
               <SheetDescription className="text-xs mt-0.5">
-                {color.variety_name} &middot; {color.color_name}
+                {color.name}
               </SheetDescription>
             )}
           </div>
@@ -124,75 +90,34 @@ export function ColorDrawer({
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
           <div>
-            <Label className="text-xs font-semibold text-[#1e3a5f]">Variety *</Label>
-            {mode === "edit" ? (
-              <div className="mt-1 px-3 py-1.5 bg-[#f4f1ec] border border-[#e0ddd8] rounded-md text-sm text-[#94a3b8]">
-                {color?.variety_name}
-              </div>
-            ) : (
-              <Popover open={varietyPopoverOpen} onOpenChange={setVarietyPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="mt-1 flex items-center justify-between w-full px-3 py-1.5 h-8 text-sm border border-[#e0ddd8] rounded-md bg-white text-left hover:bg-[#faf8f5] transition-colors"
-                  >
-                    <span className={selectedVarietyName ? "text-[#334155]" : "text-[#94a3b8]"}>
-                      {selectedVarietyName || "Search varieties..."}
-                    </span>
-                    <ChevronDown className="h-3 w-3 text-[#94a3b8]" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                  <div className="p-2 border-b border-[#e0ddd8]">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#94a3b8]" />
-                      <Input
-                        placeholder="Search varieties..."
-                        className="pl-7 h-7 text-xs"
-                        value={varietySearch}
-                        onChange={(e) => setVarietySearch(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-                  <div className="max-h-48 overflow-y-auto">
-                    {filteredVarieties.length === 0 ? (
-                      <div className="px-3 py-2 text-xs text-[#94a3b8]">No varieties found</div>
-                    ) : (
-                      filteredVarieties.map((v) => (
-                        <button
-                          key={v.id}
-                          type="button"
-                          className="w-full text-left px-3 py-1.5 text-xs text-[#334155] hover:bg-[#f4f1ec] transition-colors"
-                          onClick={() => {
-                            setForm((f) => ({ ...f, variety_id: v.id }));
-                            setVarietyPopoverOpen(false);
-                            setVarietySearch("");
-                          }}
-                        >
-                          {v.name}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
-
-          <div>
-            <Label className="text-xs font-semibold text-[#1e3a5f]">Color Name *</Label>
+            <Label className="text-xs font-semibold text-[#1e3a5f]">Name *</Label>
             <Input
               className="mt-1 h-8 text-sm"
-              value={form.color_name}
-              onChange={(e) => setForm((f) => ({ ...f, color_name: e.target.value }))}
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               disabled={isReadOnly}
             />
           </div>
 
-          <p className="text-xs text-[#94a3b8]">
-            Hex colors are managed on the variety, not here.
-          </p>
+          <div>
+            <Label className="text-xs font-semibold text-[#1e3a5f]">Hex Color</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <Input
+                className="h-8 text-sm flex-1"
+                value={form.hex_color}
+                onChange={(e) => setForm((f) => ({ ...f, hex_color: e.target.value }))}
+                disabled={isReadOnly}
+                placeholder="#000000"
+              />
+              <input
+                type="color"
+                value={form.hex_color || "#000000"}
+                onChange={(e) => setForm((f) => ({ ...f, hex_color: e.target.value }))}
+                disabled={isReadOnly}
+                className="h-8 w-8 rounded border border-[#e0ddd8] cursor-pointer p-0"
+              />
+            </div>
+          </div>
 
           {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
