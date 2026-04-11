@@ -172,6 +172,7 @@ export interface Color {
   name: string;
   hex_color: string | null;
   is_active: boolean;
+  variety_count: number;
 }
 
 export interface ColorCreateRequest {

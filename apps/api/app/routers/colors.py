@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/v1", tags=["colors"])
 @router.get("/colors")
 async def list_colors(active: bool = True) -> dict:
     """List all colors, filtered by active status."""
-    colors = await Color.filter(is_active=active).order_by("name")
+    colors = await Color.filter(is_active=active).prefetch_related("varieties").order_by("name")
 
     return {
         "data": [
@@ -26,6 +26,7 @@ async def list_colors(active: bool = True) -> dict:
                 name=c.name,
                 hex_color=c.hex_color,
                 is_active=c.is_active,
+                variety_count=len([v for v in c.varieties if v.is_active]),  # type: ignore[attr-defined]
             )
             for c in colors
         ]

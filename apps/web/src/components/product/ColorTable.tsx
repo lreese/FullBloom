@@ -112,12 +112,13 @@ export function ColorTable({
               <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
                 <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-10">Swatch</th>
                 <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f]">Name</th>
+                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-24">Varieties</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={2} className="px-3 py-8 text-center text-[#94a3b8]">
+                  <td colSpan={3} className="px-3 py-8 text-center text-[#94a3b8]">
                     No colors found.
                     {hasActiveFilters && (
                       <button className="ml-2 text-[#c27890] hover:underline" onClick={clearAllFilters}>
@@ -144,6 +145,7 @@ export function ColorTable({
                       )}
                     </td>
                     <td className="px-2 py-1.5 text-[#334155] font-medium">{color.name}</td>
+                    <td className="px-2 py-1.5 text-[#94a3b8]">{color.variety_count}</td>
                   </tr>
                 ))
               )}

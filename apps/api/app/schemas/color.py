@@ -10,6 +10,7 @@ class ColorListResponse(BaseModel):
     name: str
     hex_color: str | None
     is_active: bool
+    variety_count: int = 0
 
 
 class ColorCreateRequest(BaseModel):
