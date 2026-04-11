@@ -95,6 +95,14 @@ export function PriceListMatrix({
         } else if (sortConfig.key === "retail") {
           aVal = parseFloat(a.retail_price) || 0;
           bVal = parseFloat(b.retail_price) || 0;
+        } else if (sortConfig.key === "spread") {
+          const getSpreadSize = (item: PriceListMatrixRow): number => {
+            const all = [parseFloat(item.retail_price), ...Object.values(item.prices).map(Number)].filter((p) => !isNaN(p));
+            if (all.length < 2) return 0;
+            return Math.max(...all) - Math.min(...all);
+          };
+          aVal = getSpreadSize(a);
+          bVal = getSpreadSize(b);
         } else {
           // Price list column
           aVal = parseFloat(a.prices[sortConfig.key] ?? "0") || 0;
@@ -404,8 +412,11 @@ export function PriceListMatrix({
                     </div>
                   </th>
                 ))}
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap w-24">
-                  Spread
+                <th
+                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap w-24 cursor-pointer select-none"
+                  onClick={() => handleSort("spread")}
+                >
+                  Spread {sortConfig?.key === "spread" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
               </tr>
             </thead>
