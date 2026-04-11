@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnFilter } from "@/components/common/ColumnFilter";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ interface DataTableProps<T> {
   cellClassName?: (col: ColumnDef, item: T) => string | undefined;
   emptyMessage?: string;
   footerText?: string;
+  onReorderColumns?: (fromIdx: number, toIdx: number) => void;
 
   // Optional bulk selection
   selectedIds?: Set<string>;
@@ -28,6 +30,7 @@ export function DataTable<T extends Record<string, unknown>>({
   cellClassName,
   emptyMessage = "No items found.",
   footerText,
+  onReorderColumns,
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
@@ -51,6 +54,38 @@ export function DataTable<T extends Record<string, unknown>>({
     selectedIds.size === filteredData.length;
   const colSpan = activeColumns.length + (hasBulkSelect ? 1 : 0);
 
+  // Header drag-to-reorder state
+  const [headerDragIdx, setHeaderDragIdx] = useState<number | null>(null);
+  const [headerDropIdx, setHeaderDropIdx] = useState<number | null>(null);
+
+  const handleHeaderDragStart = useCallback((e: React.DragEvent, idx: number) => {
+    setHeaderDragIdx(idx);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
+
+  const handleHeaderDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    const insertIdx = e.clientX < midX ? idx : idx + 1;
+    setHeaderDropIdx(insertIdx);
+  }, []);
+
+  const handleHeaderDrop = useCallback(() => {
+    if (headerDragIdx === null || headerDropIdx === null) return;
+    if (headerDragIdx !== headerDropIdx && onReorderColumns) {
+      onReorderColumns(headerDragIdx, headerDropIdx);
+    }
+    setHeaderDragIdx(null);
+    setHeaderDropIdx(null);
+  }, [headerDragIdx, headerDropIdx, onReorderColumns]);
+
+  const handleHeaderDragEnd = useCallback(() => {
+    setHeaderDragIdx(null);
+    setHeaderDropIdx(null);
+  }, []);
+
   return (
     <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
       <div className="overflow-x-auto">
@@ -65,18 +100,29 @@ export function DataTable<T extends Record<string, unknown>>({
                   />
                 </th>
               )}
-              {activeColumns.map((col) => {
+              {activeColumns.map((col, idx) => {
                 const isSortable = col.sortable !== undefined ? col.sortable : false;
                 const isSorted = sortConfig?.key === col.key;
                 return (
                   <th
                     key={col.key}
+                    draggable={!!onReorderColumns}
+                    onDragStart={(e) => handleHeaderDragStart(e, idx)}
+                    onDragOver={(e) => handleHeaderDragOver(e, idx)}
+                    onDrop={handleHeaderDrop}
+                    onDragEnd={handleHeaderDragEnd}
                     className={cn(
-                      "px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap",
-                      isSortable && "cursor-pointer select-none"
+                      "px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap relative",
+                      isSortable && "cursor-pointer select-none",
+                      headerDragIdx === idx && "opacity-50"
                     )}
                     onClick={() => isSortable && handleSort(col.key)}
                   >
+                    {/* Left drop indicator */}
+                    {headerDropIdx === idx && headerDragIdx !== idx && headerDragIdx !== idx - 1 && (
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                    )}
+
                     <span className="inline-flex items-center gap-1">
                       {col.label}
                       {isSorted && (
@@ -94,6 +140,11 @@ export function DataTable<T extends Record<string, unknown>>({
                         />
                       )}
                     </span>
+
+                    {/* Right drop indicator (only on last column) */}
+                    {headerDropIdx === activeColumns.length && idx === activeColumns.length - 1 && headerDragIdx !== idx && (
+                      <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                    )}
                   </th>
                 );
               })}
