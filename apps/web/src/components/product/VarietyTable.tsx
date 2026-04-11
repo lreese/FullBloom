@@ -27,6 +27,7 @@ interface ColumnDef {
 }
 
 const ALL_COLUMNS: ColumnDef[] = [
+  { key: "hex_color", label: "", filterable: false, defaultVisible: true },
   { key: "name", label: "Name", filterable: true, defaultVisible: true },
   { key: "product_line_name", label: "Product Line", filterable: true, defaultVisible: true },
   { key: "product_type_name", label: "Type", filterable: true, defaultVisible: true },
@@ -34,7 +35,6 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "show", label: "Show", filterable: true, defaultVisible: true },
   { key: "flowering_type", label: "Flowering Type", filterable: true, defaultVisible: true },
   { key: "weekly_sales_category", label: "Weekly Sales Category", filterable: true, defaultVisible: true },
-  { key: "hex_color", label: "Hex Color", filterable: true, defaultVisible: false },
   { key: "can_replace", label: "Can Replace", filterable: true, defaultVisible: false },
   { key: "item_group_id", label: "Item Group ID", filterable: true, defaultVisible: false },
   { key: "item_group_description", label: "Item Group Description", filterable: true, defaultVisible: false },
@@ -523,10 +523,23 @@ export function VarietyTable({
                           key={col.key}
                           className={cn(
                             "px-2 py-1.5 text-[#334155]",
-                            col.key === "name" && "font-medium"
+                            col.key === "name" && "font-medium",
+                            col.key === "hex_color" && "w-8"
                           )}
                         >
-                          {formatCellValue(col, variety)}
+                          {col.key === "hex_color" ? (
+                            variety.hex_color ? (
+                              <div
+                                className="h-4 w-4 rounded-full border border-[#e0ddd8]"
+                                style={{ backgroundColor: variety.hex_color }}
+                                title={variety.hex_color}
+                              />
+                            ) : (
+                              <div className="h-4 w-4 rounded-full border border-[#e0ddd8] bg-[#f4f1ec]" />
+                            )
+                          ) : (
+                            formatCellValue(col, variety)
+                          )}
                         </td>
                       ))}
                     </tr>

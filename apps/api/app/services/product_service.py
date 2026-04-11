@@ -29,7 +29,7 @@ async def get_variety_dropdown_options() -> dict:
     ]
 
     colors = await Color.filter(is_active=True).order_by("name")
-    color_list = [{"id": str(c.id), "name": c.name} for c in colors]
+    color_list = [{"id": str(c.id), "name": c.name, "hex_color": c.hex_color} for c in colors]
 
     varieties = await Variety.filter(is_active=True).values(
         "flowering_type", "weekly_sales_category"

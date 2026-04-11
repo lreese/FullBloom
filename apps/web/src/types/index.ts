@@ -135,7 +135,7 @@ export interface BulkUpdateRequest {
 
 export interface VarietyDropdownOptions {
   product_lines: { id: string; name: string; product_type: string }[];
-  colors: { id: string; name: string }[];
+  colors: { id: string; name: string; hex_color: string | null }[];
   flowering_types: string[];
   weekly_sales_categories: string[];
 }

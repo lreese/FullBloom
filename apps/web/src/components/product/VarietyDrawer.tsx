@@ -247,28 +247,41 @@ export function VarietyDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div>
                 <Label className="text-xs font-semibold text-[#1e3a5f]">Color</Label>
-                <Select
-                  value={form.color_id || "__none__"}
-                  onValueChange={(v) => setField("color_id", v === "__none__" ? "" : v)}
-                  disabled={isReadOnly}
-                >
-                  <SelectTrigger className="mt-1 h-8 text-sm">
-                    {form.color_id && dropdownOptions.colors.length > 0 ? (
-                      <span>
-                        {dropdownOptions.colors.find((c) => c.id === form.color_id)?.name ?? "Select color"}
-                      </span>
+                <div className="flex items-center gap-2 mt-1">
+                  <Select
+                    value={form.color_id || "__none__"}
+                    onValueChange={(v) => setField("color_id", v === "__none__" ? "" : v)}
+                    disabled={isReadOnly}
+                  >
+                    <SelectTrigger className="h-8 text-sm flex-1">
+                      {form.color_id && dropdownOptions.colors.length > 0 ? (
+                        <span>
+                          {dropdownOptions.colors.find((c) => c.id === form.color_id)?.name ?? "Select color"}
+                        </span>
+                      ) : (
+                        <SelectValue placeholder="Select color" />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {dropdownOptions.colors.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {(() => {
+                    const selectedColor = dropdownOptions.colors.find((c) => c.id === form.color_id);
+                    return selectedColor?.hex_color ? (
+                      <div
+                        className="h-8 w-8 rounded border border-[#e0ddd8] shrink-0"
+                        style={{ backgroundColor: selectedColor.hex_color }}
+                        title={selectedColor.hex_color}
+                      />
                     ) : (
-                      <SelectValue placeholder="Select color" />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {dropdownOptions.colors.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-[#94a3b8] mt-1">Hex colors are managed on the Colors page</p>
+                      <div className="h-8 w-8 rounded border border-[#e0ddd8] bg-[#f4f1ec] shrink-0" />
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           </div>
