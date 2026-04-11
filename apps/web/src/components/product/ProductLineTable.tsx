@@ -10,13 +10,14 @@ interface ColumnDef {
   key: string;
   label: string;
   filterable: boolean;
+  sortable: boolean;
 }
 
 const COLUMNS: ColumnDef[] = [
-  { key: "name", label: "Name", filterable: true },
-  { key: "product_type_name", label: "Product Type", filterable: true },
-  { key: "variety_count", label: "Varieties", filterable: true },
-  { key: "is_active", label: "Active", filterable: true },
+  { key: "name", label: "Name", filterable: true, sortable: true },
+  { key: "product_type_name", label: "Product Type", filterable: true, sortable: true },
+  { key: "variety_count", label: "Varieties", filterable: true, sortable: true },
+  { key: "is_active", label: "Active", filterable: true, sortable: true },
 ];
 
 const SEARCHABLE_FIELDS = ["name", "product_type_name"] as const;
@@ -38,6 +39,15 @@ export function ProductLineTable({
 }: ProductLineTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (!prev || prev.key !== key) return { key, direction: "asc" };
+      if (prev.direction === "asc") return { key, direction: "desc" };
+      return null;
+    });
+  };
 
   const hasActiveFilters =
     searchTerm.length > 0 ||
@@ -88,8 +98,21 @@ export function ProductLineTable({
       });
     }
 
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        const aVal = a[sortConfig.key as keyof ProductLine];
+        const bVal = b[sortConfig.key as keyof ProductLine];
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        if (typeof aVal === "boolean") return sortConfig.direction === "asc" ? (aVal ? 1 : -1) - ((bVal as boolean) ? 1 : -1) : ((bVal as boolean) ? 1 : -1) - (aVal ? 1 : -1);
+        if (typeof aVal === "number") return sortConfig.direction === "asc" ? aVal - (bVal as number) : (bVal as number) - aVal;
+        return sortConfig.direction === "asc" ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
+      });
+    }
+
     return result;
-  }, [productLines, searchTerm, columnFilters]);
+  }, [productLines, searchTerm, columnFilters, sortConfig]);
 
   return (
     <div>
@@ -161,10 +184,14 @@ export function ProductLineTable({
                 {COLUMNS.map((col) => (
                   <th
                     key={col.key}
-                    className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap"
+                    className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap cursor-pointer select-none"
+                    onClick={() => col.sortable && handleSort(col.key)}
                   >
-                    <span className="inline-flex items-center">
+                    <span className="inline-flex items-center gap-1">
                       {col.label}
+                      {sortConfig?.key === col.key && (
+                        <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+                      )}
                       {col.filterable && distinctValues[col.key] && (
                         <ColumnFilter
                           values={distinctValues[col.key]}
