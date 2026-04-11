@@ -62,7 +62,6 @@ class VarietyCreateRequest(BaseModel):
     name: str = Field(max_length=100)
     product_line_id: UUID
     color_id: UUID | None = None
-    hex_color: str | None = Field(None, max_length=7)
     flowering_type: str | None = Field(None, max_length=50)
     can_replace: bool = False
     show: bool = True
@@ -82,7 +81,6 @@ class VarietyUpdateRequest(BaseModel):
     name: str | None = Field(None, max_length=100)
     product_line_id: UUID | None = None
     color_id: UUID | None = None
-    hex_color: str | None = Field(None, max_length=7)
     flowering_type: str | None = Field(None, max_length=50)
     can_replace: bool | None = None
     show: bool | None = None
