@@ -50,7 +50,9 @@ export function CustomerPriceGrid({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [editError, setEditError] = useState(false);
   const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkPriceError, setBulkPriceError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const displayedItems = onlyOverrides
@@ -91,22 +93,35 @@ export function CustomerPriceGrid({
   const handleSaveEdit = async () => {
     if (!editingId) return;
     if (editValue.trim()) {
+      const numVal = parseFloat(editValue.trim());
+      if (isNaN(numVal) || numVal < 0) {
+        setEditError(true);
+        return;
+      }
       await onSetOverride(editingId, editValue.trim());
     }
     setEditingId(null);
     setEditValue("");
+    setEditError(false);
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditValue("");
+    setEditError(false);
   };
 
   const handleBulkSetPrice = async () => {
     if (!bulkPrice.trim() || selectedIds.size === 0) return;
+    const numVal = parseFloat(bulkPrice.trim());
+    if (isNaN(numVal) || numVal < 0) {
+      setBulkPriceError(true);
+      return;
+    }
     await onBulkSetPrice(Array.from(selectedIds), bulkPrice.trim());
     setSelectedIds(new Set());
     setBulkPrice("");
+    setBulkPriceError(false);
   };
 
   const handleBulkRemoveOverrides = async () => {
@@ -130,9 +145,15 @@ export function CustomerPriceGrid({
           <input
             ref={inputRef}
             type="text"
-            className="w-20 h-6 px-1 text-xs text-center border-2 border-[#c27890] rounded outline-none bg-white"
+            className={cn(
+              "w-20 h-6 px-1 text-xs text-center border-2 rounded outline-none bg-white",
+              editError ? "border-red-500" : "border-[#c27890]"
+            )}
             value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
+            onChange={(e) => {
+              setEditValue(e.target.value);
+              setEditError(false);
+            }}
             onBlur={handleSaveEdit}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSaveEdit();
@@ -235,9 +256,12 @@ export function CustomerPriceGrid({
           <Input
             type="text"
             value={bulkPrice}
-            onChange={(e) => setBulkPrice(e.target.value)}
+            onChange={(e) => {
+              setBulkPrice(e.target.value);
+              setBulkPriceError(false);
+            }}
             placeholder="$0.00"
-            className="h-7 w-20 text-xs"
+            className={cn("h-7 w-20 text-xs", bulkPriceError && "border-red-500")}
           />
           <Button
             size="sm"

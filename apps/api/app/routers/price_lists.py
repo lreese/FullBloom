@@ -8,6 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from tortoise.functions import Count
 from tortoise.transactions import in_transaction
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
@@ -307,6 +308,8 @@ async def impact_preview(
 
     try:
         price_decimal = Decimal(new_price.replace("$", "").replace(",", "").strip())
+        if price_decimal < 0:
+            raise HTTPException(status_code=422, detail="Price cannot be negative")
     except InvalidOperation:
         raise HTTPException(status_code=422, detail="new_price must be a valid number")
 

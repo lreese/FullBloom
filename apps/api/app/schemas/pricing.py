@@ -1,6 +1,7 @@
 """Pydantic schemas for pricing endpoints."""
 
 from decimal import Decimal, InvalidOperation
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -190,17 +191,9 @@ class CustomerPriceCreateRequest(BaseModel):
 
 
 class BulkCustomerPriceRequest(BaseModel):
-    action: str  # "set_price" | "remove_overrides" | "reset_to_list"
+    action: Literal["set_price", "remove_overrides", "reset_to_list"]
     sales_item_ids: list[UUID] = Field(max_length=1000)
     price: str | None = None
-
-    @field_validator("action")
-    @classmethod
-    def action_valid(cls, v: str) -> str:
-        allowed = {"set_price", "remove_overrides", "reset_to_list"}
-        if v not in allowed:
-            raise ValueError(f"Action must be one of: {', '.join(sorted(allowed))}")
-        return v
 
     @field_validator("price")
     @classmethod

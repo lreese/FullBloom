@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ColumnDef } from "@/hooks/useTableState";
 import type { ItemPricingCustomer } from "@/types";
 
@@ -36,6 +37,7 @@ export function ItemPriceGrid({
 }: ItemPriceGridProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [editError, setEditError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const tableState = useTableState<FlatItem>({
@@ -53,15 +55,22 @@ export function ItemPriceGrid({
   const handleSaveEdit = async () => {
     if (!editingId) return;
     if (editValue.trim()) {
+      const numVal = parseFloat(editValue.trim());
+      if (isNaN(numVal) || numVal < 0) {
+        setEditError(true);
+        return;
+      }
       await onSetOverride(editingId, editValue.trim());
     }
     setEditingId(null);
     setEditValue("");
+    setEditError(false);
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditValue("");
+    setEditError(false);
   };
 
   const renderCell = (col: ColumnDef, item: FlatItem) => {
@@ -79,9 +88,15 @@ export function ItemPriceGrid({
           <input
             ref={inputRef}
             type="text"
-            className="w-20 h-6 px-1 text-xs text-center border-2 border-[#c27890] rounded outline-none bg-white"
+            className={cn(
+              "w-20 h-6 px-1 text-xs text-center border-2 rounded outline-none bg-white",
+              editError ? "border-red-500" : "border-[#c27890]"
+            )}
             value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
+            onChange={(e) => {
+              setEditValue(e.target.value);
+              setEditError(false);
+            }}
             onBlur={handleSaveEdit}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSaveEdit();

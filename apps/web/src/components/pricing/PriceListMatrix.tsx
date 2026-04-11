@@ -55,6 +55,7 @@ export function PriceListMatrix({
 }: PriceListMatrixProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [editing, setEditing] = useState<EditingCell | null>(null);
+  const [editError, setEditError] = useState(false);
   const [impact, setImpact] = useState<ImpactState | null>(null);
   const [savedCell, setSavedCell] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -97,6 +98,7 @@ export function PriceListMatrix({
 
   const handleCancel = useCallback(() => {
     setEditing(null);
+    setEditError(false);
     setImpact(null);
   }, []);
 
@@ -104,6 +106,13 @@ export function PriceListMatrix({
     if (!editing) return;
     if (editing.value === editing.original) {
       setEditing(null);
+      setEditError(false);
+      return;
+    }
+
+    const numVal = parseFloat(editing.value);
+    if (isNaN(numVal) || numVal < 0) {
+      setEditError(true);
       return;
     }
 
@@ -131,6 +140,7 @@ export function PriceListMatrix({
     setTimeout(() => setSavedCell(null), 600);
 
     setEditing(null);
+    setEditError(false);
     setImpact(null);
   }, [editing, impact, onCellSave, onFetchImpact]);
 
@@ -144,6 +154,7 @@ export function PriceListMatrix({
     setTimeout(() => setSavedCell(null), 600);
 
     setEditing(null);
+    setEditError(false);
     setImpact(null);
   }, [impact, editing, onCellSave]);
 
@@ -207,11 +218,15 @@ export function PriceListMatrix({
           <input
             ref={inputRef}
             type="text"
-            className="w-full h-6 px-1 text-xs text-center border-2 border-[#c27890] rounded outline-none bg-white"
+            className={cn(
+              "w-full h-6 px-1 text-xs text-center border-2 rounded outline-none bg-white",
+              editError ? "border-red-500" : "border-[#c27890]"
+            )}
             value={editing.value}
-            onChange={(e) =>
-              setEditing({ ...editing, value: e.target.value })
-            }
+            onChange={(e) => {
+              setEditing({ ...editing, value: e.target.value });
+              setEditError(false);
+            }}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
             autoFocus
