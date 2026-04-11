@@ -36,6 +36,7 @@ export function CustomerPricesPage() {
   const [itemSearch, setItemSearch] = useState("");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [itemPricing, setItemPricing] = useState<ItemPricingData | null>(null);
+  const [itemSelectedIds, setItemSelectedIds] = useState<Set<string>>(new Set());
 
   // Fetch customers and sales items for selectors
   useEffect(() => {
@@ -127,6 +128,49 @@ export function CustomerPricesPage() {
   const handleItemRemoveOverride = async (customerId: string) => {
     if (!selectedItemId) return;
     await api.del(`/api/v1/customers/${customerId}/prices/${selectedItemId}`);
+    await fetchItemPricing(selectedItemId);
+  };
+
+  const handleItemToggleSelect = (id: string) => {
+    setItemSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleItemToggleSelectAll = () => {
+    if (!itemPricing) return;
+    if (itemSelectedIds.size === itemPricing.customers.length) {
+      setItemSelectedIds(new Set());
+    } else {
+      setItemSelectedIds(new Set(itemPricing.customers.map((c) => c.customer_id)));
+    }
+  };
+
+  const handleItemBulkSetPrice = async (customerIds: string[], price: string) => {
+    if (!selectedItemId) return;
+    await Promise.all(
+      customerIds.map((cid) =>
+        api.post(`/api/v1/customers/${cid}/prices`, {
+          sales_item_id: selectedItemId,
+          price,
+        })
+      )
+    );
+    setItemSelectedIds(new Set());
+    await fetchItemPricing(selectedItemId);
+  };
+
+  const handleItemBulkRemoveOverrides = async (customerIds: string[]) => {
+    if (!selectedItemId) return;
+    await Promise.all(
+      customerIds.map((cid) =>
+        api.del(`/api/v1/customers/${cid}/prices/${selectedItemId}`)
+      )
+    );
+    setItemSelectedIds(new Set());
     await fetchItemPricing(selectedItemId);
   };
 
@@ -363,6 +407,11 @@ export function CustomerPricesPage() {
               }
               onSetOverride={handleItemSetOverride}
               onRemoveOverride={handleItemRemoveOverride}
+              selectedIds={itemSelectedIds}
+              onToggleSelect={handleItemToggleSelect}
+              onToggleSelectAll={handleItemToggleSelectAll}
+              onBulkSetPrice={handleItemBulkSetPrice}
+              onBulkRemoveOverrides={handleItemBulkRemoveOverrides}
             />
           ) : (
             <div className="py-12 text-center text-sm text-[#94a3b8]">

@@ -19,13 +19,18 @@ interface ItemPriceGridProps {
   customers: FlatItem[];
   onSetOverride: (customerId: string, price: string) => Promise<void>;
   onRemoveOverride: (customerId: string) => Promise<void>;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onToggleSelectAll: () => void;
+  onBulkSetPrice: (customerIds: string[], price: string) => Promise<void>;
+  onBulkRemoveOverrides: (customerIds: string[]) => Promise<void>;
 }
 
 const COLUMNS: ColumnDef[] = [
   { key: "customer_name", label: "Customer Name", filterable: true },
   { key: "price_list_name", label: "Price List", filterable: true },
-  { key: "price_list_price", label: "List Price", filterable: false },
-  { key: "customer_override", label: "Customer Price", filterable: false },
+  { key: "price_list_price", label: "List Price", filterable: true },
+  { key: "customer_override", label: "Customer Price", filterable: true },
 ];
 
 const SEARCHABLE_FIELDS = ["customer_name", "price_list_name"];
@@ -34,7 +39,14 @@ export function ItemPriceGrid({
   customers,
   onSetOverride,
   onRemoveOverride,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
+  onBulkSetPrice,
+  onBulkRemoveOverrides,
 }: ItemPriceGridProps) {
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkError, setBulkError] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [editError, setEditError] = useState(false);
@@ -176,15 +188,58 @@ export function ItemPriceGrid({
   };
 
   return (
-    <DataTable<FlatItem>
-      columns={COLUMNS}
-      data={customers}
-      tableState={tableState}
-      getRowKey={(item) => item.customer_id}
-      renderCell={renderCell}
-      cellClassName={cellClassName}
-      emptyMessage="No customer pricing data found."
-      footerText={`${tableState.filteredData.length} customer${tableState.filteredData.length !== 1 ? "s" : ""}`}
-    />
+    <div>
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-[#fce7f3] rounded-lg text-xs">
+          <span className="font-semibold text-[#1e3a5f]">{selectedIds.size} selected:</span>
+          <input
+            type="text"
+            placeholder="Price"
+            className={cn(
+              "w-20 h-6 px-2 text-xs border rounded",
+              bulkError ? "border-red-500" : "border-[#e0ddd8]"
+            )}
+            value={bulkPrice}
+            onChange={(e) => { setBulkPrice(e.target.value); setBulkError(false); }}
+          />
+          <button
+            className="px-2 py-0.5 bg-[#c27890] text-white rounded text-xs"
+            onClick={async () => {
+              const num = parseFloat(bulkPrice);
+              if (isNaN(num) || num < 0) { setBulkError(true); return; }
+              await onBulkSetPrice(Array.from(selectedIds), bulkPrice);
+              setBulkPrice("");
+            }}
+          >
+            Set Price
+          </button>
+          <button
+            className="px-2 py-0.5 border border-[#e0ddd8] rounded text-xs text-[#334155]"
+            onClick={() => onBulkRemoveOverrides(Array.from(selectedIds))}
+          >
+            Remove Overrides
+          </button>
+          <button
+            className="ml-auto text-xs text-[#94a3b8]"
+            onClick={() => { onToggleSelectAll(); }}
+          >
+            Clear Selection
+          </button>
+        </div>
+      )}
+      <DataTable<FlatItem>
+        columns={COLUMNS}
+        data={customers}
+        tableState={tableState}
+        getRowKey={(item) => item.customer_id}
+        renderCell={renderCell}
+        cellClassName={cellClassName}
+        selectedIds={selectedIds}
+        onToggleSelect={onToggleSelect}
+        onToggleSelectAll={onToggleSelectAll}
+        emptyMessage="No customer pricing data found."
+        footerText={`${tableState.filteredData.length} customer${tableState.filteredData.length !== 1 ? "s" : ""}`}
+      />
+    </div>
   );
 }
