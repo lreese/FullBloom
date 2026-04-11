@@ -4,6 +4,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from tortoise.exceptions import IntegrityError
+from tortoise.transactions import in_transaction
 
 from app.models.customer import Customer
 from app.models.pricing import (
@@ -337,40 +338,41 @@ async def archive_price_list(price_list_id: UUID) -> dict:
     if pl is None:
         return None
 
-    customers = await Customer.filter(price_list_id=price_list_id).all()
-    plis = await PriceListItem.filter(price_list_id=price_list_id).all()
-    pli_map: dict[str, Decimal] = {str(pli.sales_item_id): pli.price for pli in plis}
+    async with in_transaction():
+        customers = await Customer.filter(price_list_id=price_list_id).all()
+        plis = await PriceListItem.filter(price_list_id=price_list_id).all()
+        pli_map: dict[str, Decimal] = {str(pli.sales_item_id): pli.price for pli in plis}
 
-    customers_converted = 0
-    for customer in customers:
-        existing_overrides = await CustomerPrice.filter(customer_id=customer.id).all()
-        existing_override_items = {str(cp.sales_item_id) for cp in existing_overrides}
+        customers_converted = 0
+        for customer in customers:
+            existing_overrides = await CustomerPrice.filter(customer_id=customer.id).all()
+            existing_override_items = {str(cp.sales_item_id) for cp in existing_overrides}
 
-        for si_id, price in pli_map.items():
-            if si_id not in existing_override_items:
-                try:
-                    await CustomerPrice.create(
-                        customer_id=customer.id,
-                        sales_item_id=si_id,
-                        price=price,
-                    )
-                    await log_price_change(
-                        change_type="customer_override",
-                        action="created",
-                        sales_item_id=UUID(si_id),
-                        customer_id=customer.id,
-                        old_price=None,
-                        new_price=price,
-                    )
-                except IntegrityError:
-                    pass  # Race condition safety
+            for si_id, price in pli_map.items():
+                if si_id not in existing_override_items:
+                    try:
+                        await CustomerPrice.create(
+                            customer_id=customer.id,
+                            sales_item_id=si_id,
+                            price=price,
+                        )
+                        await log_price_change(
+                            change_type="customer_override",
+                            action="created",
+                            sales_item_id=UUID(si_id),
+                            customer_id=customer.id,
+                            old_price=None,
+                            new_price=price,
+                        )
+                    except IntegrityError:
+                        pass  # Race condition safety
 
-        customer.price_list_id = None
-        await customer.save()
-        customers_converted += 1
+            customer.price_list_id = None
+            await customer.save()
+            customers_converted += 1
 
-    pl.is_active = False
-    await pl.save()
+        pl.is_active = False
+        await pl.save()
 
     return {
         "id": str(pl.id),

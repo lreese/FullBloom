@@ -44,6 +44,8 @@ async def test_list_sales_items_for_variety(async_client, variety):
     for item in data:
         assert set(item.keys()) == {
             "id",
+            "variety_id",
+            "variety_name",
             "name",
             "stems_per_order",
             "retail_price",

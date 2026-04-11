@@ -11,6 +11,7 @@ from app.models.pricing import PriceList, PriceListItem
 from app.models.product import SalesItem, Variety
 from app.schemas.sales_item import (
     SalesItemCreateRequest,
+    SalesItemFlatCreateRequest,
     SalesItemResponse,
     SalesItemUpdateRequest,
 )
@@ -24,8 +25,22 @@ def _build_sales_item_response(
     price_list_prices: dict[str, str] | None = None,
 ) -> SalesItemResponse:
     """Build a SalesItemResponse from a SalesItem instance."""
+    variety_id = None
+    variety_name = None
+    # If variety is prefetched, include it
+    try:
+        if si.variety:
+            variety_id = str(si.variety.id)
+            variety_name = si.variety.name
+    except Exception:
+        # variety not prefetched — use the FK directly
+        if si.variety_id:
+            variety_id = str(si.variety_id)
+
     return SalesItemResponse(
         id=str(si.id),
+        variety_id=variety_id,
+        variety_name=variety_name,
         name=si.name,
         stems_per_order=si.stems_per_order,
         retail_price=str(si.retail_price),
@@ -98,6 +113,38 @@ async def list_all_sales_items(include_inactive: bool = False) -> dict:
     return {"data": data}
 
 
+@router.post("/sales-items", status_code=201)
+async def create_sales_item_flat(data: SalesItemFlatCreateRequest) -> dict:
+    """Create a new sales item (flat endpoint, variety_id in body)."""
+    variety = await Variety.get_or_none(id=data.variety_id)
+    if variety is None:
+        raise HTTPException(status_code=404, detail="Variety not found")
+
+    existing = await SalesItem.filter(name=data.name).first()
+    if existing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Sales item name '{data.name}' already exists",
+        )
+
+    create_data = data.model_dump(exclude={"variety_id"})
+    si = await SalesItem.create(variety_id=data.variety_id, **create_data)
+
+    # Pre-populate PriceListItems for all active price lists at retail price
+    active_lists = await PriceList.filter(is_active=True).all()
+    for pl in active_lists:
+        await PriceListItem.create(
+            price_list=pl, sales_item=si, price=si.retail_price
+        )
+
+    plp = await _get_price_list_prices(si.id)
+    await si.fetch_related("variety")
+
+    return {
+        "data": _build_sales_item_response(si, customer_prices_count=0, price_list_prices=plp)
+    }
+
+
 @router.post("/varieties/{variety_id}/sales-items", status_code=201)
 async def create_sales_item(
     variety_id: UUID, data: SalesItemCreateRequest
@@ -124,6 +171,7 @@ async def create_sales_item(
         )
 
     plp = await _get_price_list_prices(si.id)
+    await si.fetch_related("variety")
 
     return {
         "data": _build_sales_item_response(si, customer_prices_count=0, price_list_prices=plp)
@@ -155,7 +203,7 @@ async def update_sales_item(
             )
 
     await si.update_from_dict(update_data).save()
-    await si.fetch_related("customer_prices")
+    await si.fetch_related("customer_prices", "variety")
     plp = await _get_price_list_prices(si.id)
 
     return {

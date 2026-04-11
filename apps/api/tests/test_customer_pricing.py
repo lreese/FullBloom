@@ -117,8 +117,8 @@ async def test_set_customer_price_create(async_client, customer_with_list, sales
         f"/api/v1/customers/{customer_with_list.id}/prices",
         json={"sales_item_id": str(sales_item.id), "price": "7.50"},
     )
-    # Should return 200 (the endpoint uses 200/201 internally but returns 200)
-    assert resp.status_code == 200
+    # Returns 201 when creating a new override
+    assert resp.status_code == 201
 
     data = resp.json()["data"]
     assert data["customer_id"] == str(customer_with_list.id)

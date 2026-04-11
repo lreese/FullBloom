@@ -6,7 +6,10 @@ from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_CSV_ROWS = 10_000
 
 from app.models.customer import Customer
 from app.models.pricing import CustomerPrice
@@ -103,13 +106,16 @@ async def set_customer_price(customer_id: UUID, body: CustomerPriceCreateRequest
         )
         status_code = 201
 
-    return {
-        "data": {
-            "customer_id": str(customer_id),
-            "sales_item_id": str(body.sales_item_id),
-            "price": str(new_price),
-        }
-    }
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "data": {
+                "customer_id": str(customer_id),
+                "sales_item_id": str(body.sales_item_id),
+                "price": str(new_price),
+            }
+        },
+    )
 
 
 @router.delete("/customers/{customer_id}/prices/{sales_item_id}", status_code=204)
@@ -289,14 +295,30 @@ async def import_customer_prices_csv(customer_id: UUID, file: UploadFile) -> dic
         raise HTTPException(status_code=404, detail="Customer not found")
 
     content = await file.read()
-    text = content.decode("utf-8")
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large ({len(content)} bytes). Maximum is {MAX_UPLOAD_BYTES} bytes.",
+        )
+
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=422, detail="File must be UTF-8 encoded")
+
     reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
+    if len(rows) > MAX_CSV_ROWS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Too many rows ({len(rows)}). Maximum is {MAX_CSV_ROWS}.",
+        )
 
     created_count = 0
     updated_count = 0
     not_found_count = 0
 
-    for row in reader:
+    for row in rows:
         name = row.get("Sales Item", "").strip()
         price_str = row.get("Price", "").strip()
         if not name or not price_str:
@@ -310,6 +332,10 @@ async def import_customer_prices_csv(customer_id: UUID, file: UploadFile) -> dic
         try:
             price = Decimal(price_str.replace("$", "").replace(",", ""))
         except InvalidOperation:
+            not_found_count += 1
+            continue
+
+        if price < 0:
             not_found_count += 1
             continue
 

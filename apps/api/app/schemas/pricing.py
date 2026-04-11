@@ -48,6 +48,41 @@ class PriceListUpdateRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class PriceListItemUpdateRequest(BaseModel):
+    """Request body for updating a single price list item cell."""
+    price: str
+
+    @field_validator("price")
+    @classmethod
+    def price_is_numeric(cls, v: str) -> str:
+        cleaned = v.replace("$", "").replace(",", "").strip()
+        try:
+            d = Decimal(cleaned)
+            if d < 0:
+                raise ValueError("Price cannot be negative")
+            return str(d)
+        except InvalidOperation:
+            raise ValueError("Price must be a valid number")
+
+
+class RetailPriceUpdateRequest(BaseModel):
+    """Request body for updating the retail price of a sales item."""
+    sales_item_id: UUID
+    price: str
+
+    @field_validator("price")
+    @classmethod
+    def price_is_numeric(cls, v: str) -> str:
+        cleaned = v.replace("$", "").replace(",", "").strip()
+        try:
+            d = Decimal(cleaned)
+            if d < 0:
+                raise ValueError("Price cannot be negative")
+            return str(d)
+        except InvalidOperation:
+            raise ValueError("Price must be a valid number")
+
+
 class PriceListItemResponse(BaseModel):
     price_list_id: str
     sales_item_id: str
@@ -156,7 +191,7 @@ class CustomerPriceCreateRequest(BaseModel):
 
 class BulkCustomerPriceRequest(BaseModel):
     action: str  # "set_price" | "remove_overrides" | "reset_to_list"
-    sales_item_ids: list[UUID]
+    sales_item_ids: list[UUID] = Field(max_length=1000)
     price: str | None = None
 
     @field_validator("action")
@@ -189,7 +224,7 @@ class BulkCustomerPriceRequest(BaseModel):
 
 class BulkPriceListItemRequest(BaseModel):
     price_list_id: UUID
-    sales_item_ids: list[UUID]
+    sales_item_ids: list[UUID] = Field(max_length=1000)
     price: str
 
     @field_validator("price")

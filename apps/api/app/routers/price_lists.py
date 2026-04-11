@@ -8,13 +8,18 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_CSV_ROWS = 10_000
+
 from app.models.customer import Customer
 from app.models.pricing import PriceList, PriceListItem
 from app.models.product import SalesItem
 from app.schemas.pricing import (
     BulkPriceListItemRequest,
     PriceListCreateRequest,
+    PriceListItemUpdateRequest,
     PriceListUpdateRequest,
+    RetailPriceUpdateRequest,
 )
 from app.services.pricing_service import (
     archive_price_list,
@@ -148,19 +153,10 @@ async def price_list_matrix() -> dict:
 
 @router.patch("/price-list-items/{price_list_id}/{sales_item_id}")
 async def update_price_list_item(
-    price_list_id: UUID, sales_item_id: UUID, body: dict
+    price_list_id: UUID, sales_item_id: UUID, body: PriceListItemUpdateRequest
 ) -> dict:
     """Update a single cell in the price list matrix."""
-    price_str = body.get("price")
-    if price_str is None:
-        raise HTTPException(status_code=422, detail="price is required")
-
-    try:
-        new_price = Decimal(str(price_str).replace("$", "").replace(",", "").strip())
-        if new_price < 0:
-            raise HTTPException(status_code=422, detail="Price cannot be negative")
-    except InvalidOperation:
-        raise HTTPException(status_code=422, detail="Price must be a valid number")
+    new_price = Decimal(body.price)
 
     pli = await PriceListItem.filter(
         price_list_id=price_list_id, sales_item_id=sales_item_id
@@ -256,22 +252,11 @@ async def bulk_update_price_list_items(body: BulkPriceListItemRequest) -> dict:
 
 
 @router.patch("/price-lists/matrix/retail")
-async def update_retail_price(body: dict) -> dict:
+async def update_retail_price(body: RetailPriceUpdateRequest) -> dict:
     """Update the retail price for a sales item (edits SalesItem.retail_price)."""
-    si_id = body.get("sales_item_id")
-    price_str = body.get("price")
+    new_price = Decimal(body.price)
 
-    if not si_id or price_str is None:
-        raise HTTPException(status_code=422, detail="sales_item_id and price are required")
-
-    try:
-        new_price = Decimal(str(price_str).replace("$", "").replace(",", "").strip())
-        if new_price < 0:
-            raise HTTPException(status_code=422, detail="Price cannot be negative")
-    except InvalidOperation:
-        raise HTTPException(status_code=422, detail="Price must be a valid number")
-
-    si = await SalesItem.get_or_none(id=si_id)
+    si = await SalesItem.get_or_none(id=body.sales_item_id)
     if si is None:
         raise HTTPException(status_code=404, detail="Sales item not found")
 
@@ -367,13 +352,29 @@ async def import_price_list_csv(price_list_id: UUID, file: UploadFile) -> dict:
         raise HTTPException(status_code=404, detail="Price list not found")
 
     content = await file.read()
-    text = content.decode("utf-8")
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large ({len(content)} bytes). Maximum is {MAX_UPLOAD_BYTES} bytes.",
+        )
+
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=422, detail="File must be UTF-8 encoded")
+
     reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
+    if len(rows) > MAX_CSV_ROWS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Too many rows ({len(rows)}). Maximum is {MAX_CSV_ROWS}.",
+        )
 
     updated_count = 0
     not_found_count = 0
 
-    for row in reader:
+    for row in rows:
         name = row.get("Sales Item", "").strip()
         price_str = row.get("Price", "").strip()
         if not name or not price_str:
@@ -387,6 +388,10 @@ async def import_price_list_csv(price_list_id: UUID, file: UploadFile) -> dict:
         try:
             price = Decimal(price_str.replace("$", "").replace(",", ""))
         except InvalidOperation:
+            not_found_count += 1
+            continue
+
+        if price < 0:
             not_found_count += 1
             continue
 
