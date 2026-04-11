@@ -58,17 +58,58 @@ export function PriceListMatrix({
   const [editError, setEditError] = useState(false);
   const [impact, setImpact] = useState<ImpactState | null>(null);
   const [savedCell, setSavedCell] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const handleSort = useCallback((key: string) => {
+    setSortConfig((prev) => {
+      if (!prev || prev.key !== key) return { key, direction: "asc" };
+      if (prev.direction === "asc") return { key, direction: "desc" };
+      return null;
+    });
+  }, []);
+
   const filteredItems = useMemo(() => {
-    if (!searchTerm) return items;
-    const term = searchTerm.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.sales_item_name.toLowerCase().includes(term) ||
-        item.variety_name.toLowerCase().includes(term)
-    );
-  }, [items, searchTerm]);
+    let result = items;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.sales_item_name.toLowerCase().includes(term) ||
+          item.variety_name.toLowerCase().includes(term)
+      );
+    }
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        let aVal: string | number;
+        let bVal: string | number;
+        if (sortConfig.key === "sales_item_name") {
+          aVal = a.sales_item_name;
+          bVal = b.sales_item_name;
+        } else if (sortConfig.key === "variety_name") {
+          aVal = a.variety_name;
+          bVal = b.variety_name;
+        } else if (sortConfig.key === "stems_per_order") {
+          aVal = a.stems_per_order;
+          bVal = b.stems_per_order;
+        } else if (sortConfig.key === "retail") {
+          aVal = parseFloat(a.retail_price) || 0;
+          bVal = parseFloat(b.retail_price) || 0;
+        } else {
+          // Price list column
+          aVal = parseFloat(a.prices[sortConfig.key] ?? "0") || 0;
+          bVal = parseFloat(b.prices[sortConfig.key] ?? "0") || 0;
+        }
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortConfig.direction === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        }
+        const numA = typeof aVal === "number" ? aVal : 0;
+        const numB = typeof bVal === "number" ? bVal : 0;
+        return sortConfig.direction === "asc" ? numA - numB : numB - numA;
+      });
+    }
+    return result;
+  }, [items, searchTerm, sortConfig]);
 
   const allSelected =
     filteredItems.length > 0 && selectedIds.size === filteredItems.length;
@@ -309,47 +350,57 @@ export function PriceListMatrix({
                     onCheckedChange={onToggleSelectAll}
                   />
                 </th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap">
-                  Sales Item
+                <th
+                  className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap cursor-pointer select-none"
+                  onClick={() => handleSort("sales_item_name")}
+                >
+                  Sales Item {sortConfig?.key === "sales_item_name" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap">
-                  Variety
+                <th
+                  className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap cursor-pointer select-none"
+                  onClick={() => handleSort("variety_name")}
+                >
+                  Variety {sortConfig?.key === "variety_name" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-16">
-                  Stems
+                <th
+                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-16 cursor-pointer select-none"
+                  onClick={() => handleSort("stems_per_order")}
+                >
+                  Stems {sortConfig?.key === "stems_per_order" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20 bg-[#fce7f3]">
-                  Retail
+                <th
+                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20 bg-[#fce7f3] cursor-pointer select-none"
+                  onClick={() => handleSort("retail")}
+                >
+                  Retail {sortConfig?.key === "retail" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
                 {priceLists.map((pl) => (
                   <th
                     key={pl.id}
-                    className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20"
+                    className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20 cursor-pointer select-none"
+                    onClick={() => handleSort(pl.id)}
                   >
-                    {onRename && onArchive ? (
-                      <PriceListHeaderPopover
-                        priceList={pl}
-                        onRename={onRename}
-                        onArchive={onArchive}
-                      >
-                        <button className="w-full cursor-pointer hover:bg-[#f4f1ec] rounded px-1 py-0.5">
-                          <div>{pl.name}</div>
-                          <div className="text-[#94a3b8] font-normal">
-                            {pl.customer_count} customers
-                          </div>
-                        </button>
-                      </PriceListHeaderPopover>
-                    ) : (
-                      <button
-                        className="w-full cursor-pointer hover:bg-[#f4f1ec] rounded px-1 py-0.5"
-                        onClick={() => onHeaderClick?.(pl)}
-                      >
-                        <div>{pl.name}</div>
-                        <div className="text-[#94a3b8] font-normal">
-                          {pl.customer_count} customers
-                        </div>
-                      </button>
-                    )}
+                    <div>
+                      {onRename && onArchive ? (
+                        <span onClick={(e) => e.stopPropagation()}>
+                          <PriceListHeaderPopover
+                            priceList={pl}
+                            onRename={onRename}
+                            onArchive={onArchive}
+                          >
+                            <button className="cursor-pointer hover:bg-[#f4f1ec] rounded px-1 py-0.5">
+                              {pl.name}
+                            </button>
+                          </PriceListHeaderPopover>
+                        </span>
+                      ) : (
+                        <span>{pl.name}</span>
+                      )}
+                      {sortConfig?.key === pl.id && <span className="text-[#c27890] ml-0.5">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                      <div className="text-[#94a3b8] font-normal">
+                        {pl.customer_count} customers
+                      </div>
+                    </div>
                   </th>
                 ))}
                 <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap w-24">
