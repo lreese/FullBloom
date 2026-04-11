@@ -2,7 +2,7 @@
 
 **Feature Branch**: `004-price-management`  
 **Created**: 2026-04-11  
-**Status**: in-progress  
+**Status**: implemented  
 **Input**: Price management with sales items, price lists, customer prices, and pricing analytics for salespeople.
 
 ## Clarifications
