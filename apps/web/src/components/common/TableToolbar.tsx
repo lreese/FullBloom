@@ -1,4 +1,3 @@
-import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Settings2, GripVertical } from "lucide-react";
+import { Search, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ColumnDef, UseTableStateReturn } from "@/hooks/useTableState";
 
@@ -39,62 +38,12 @@ export function TableToolbar({
     clearAllFilters,
     columnPrefs,
     toggleColumn,
-    reorderColumns,
   } = tableState;
-
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [dropIdx, setDropIdx] = useState<number | null>(null);
-
-  const columnMap = columns
-    ? Object.fromEntries(columns.map((c) => [c.key, c]))
-    : {};
 
   const handleViewChange = (view: "active" | "archived") => {
     clearAllFilters();
     onViewChange?.(view);
   };
-
-  const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
-    setDragIdx(idx);
-    e.dataTransfer.effectAllowed = "move";
-    if (e.currentTarget instanceof HTMLElement) {
-      // Create a clone positioned off-screen so the browser renders a clean drag ghost
-      const clone = e.currentTarget.cloneNode(true) as HTMLElement;
-      clone.style.position = "fixed";
-      clone.style.top = "-1000px";
-      clone.style.left = "-1000px";
-      clone.style.width = `${e.currentTarget.offsetWidth}px`;
-      clone.style.backgroundColor = "#faf8f5";
-      clone.style.borderRadius = "4px";
-      clone.style.padding = "4px 6px";
-      clone.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
-      document.body.appendChild(clone);
-      const rect = e.currentTarget.getBoundingClientRect();
-      e.dataTransfer.setDragImage(clone, e.clientX - rect.left, e.clientY - rect.top);
-      requestAnimationFrame(() => document.body.removeChild(clone));
-    }
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const insertIdx = e.clientY < midY ? idx : idx + 1;
-    setDropIdx(insertIdx);
-  }, []);
-
-  const handleDrop = useCallback(() => {
-    if (dragIdx === null || dropIdx === null) return;
-    reorderColumns(dragIdx, dropIdx);
-    setDragIdx(null);
-    setDropIdx(null);
-  }, [dragIdx, dropIdx, reorderColumns]);
-
-  const handleDragEnd = useCallback(() => {
-    setDragIdx(null);
-    setDropIdx(null);
-  }, []);
 
   const showColumnsPopover = columnPrefs && columns;
 
@@ -158,48 +107,16 @@ export function TableToolbar({
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-56 p-2" align="end">
-            <div
-              className="space-y-0.5"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-            >
-              {columnPrefs.order.map((key, idx) => {
-                const col = columnMap[key];
-                if (!col) return null;
-                return (
-                  <div key={col.key}>
-                    {dropIdx === idx &&
-                      dragIdx !== idx &&
-                      dragIdx !== idx - 1 && (
-                        <div className="h-0.5 bg-[#c27890] rounded-full mx-1 my-0.5" />
-                      )}
-                    <div
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, idx)}
-                      onDragOver={(e) => handleDragOver(e, idx)}
-                      onDrop={handleDrop}
-                      onDragEnd={handleDragEnd}
-                      className={cn(
-                        "flex items-center gap-1.5 px-1 py-1 text-sm rounded hover:bg-[#f4f1ec] cursor-grab active:cursor-grabbing",
-                        dragIdx === idx && "opacity-50"
-                      )}
-                    >
-                      <GripVertical className="h-3 w-3 text-[#94a3b8] shrink-0" />
-                      <Checkbox
-                        checked={columnPrefs.visible.includes(col.key)}
-                        onCheckedChange={() => toggleColumn(col.key)}
-                      />
-                      <span className="text-[#334155] select-none">
-                        {col.label}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              {dropIdx === columnPrefs.order.length &&
-                dragIdx !== columnPrefs.order.length - 1 && (
-                  <div className="h-0.5 bg-[#c27890] rounded-full mx-1 my-0.5" />
-                )}
+            <div className="space-y-0.5">
+              {columns.map((col) => (
+                <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer">
+                  <Checkbox
+                    checked={columnPrefs?.visible.includes(col.key) ?? true}
+                    onCheckedChange={() => toggleColumn(col.key)}
+                  />
+                  <span className="text-[#334155] select-none">{col.label || col.key}</span>
+                </label>
+              ))}
             </div>
           </PopoverContent>
         </Popover>
