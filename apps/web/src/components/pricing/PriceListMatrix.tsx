@@ -321,6 +321,13 @@ export function PriceListMatrix({
       );
     }
 
+    // Check for anomaly: price list price >20% different from retail
+    const retail = parseFloat(item.retail_price) || 0;
+    const cellPrice = parseFloat(value) || 0;
+    const isAnomaly = columnId !== "retail" && retail > 0 && cellPrice > 0 &&
+      Math.abs(cellPrice - retail) / retail > 0.2;
+    const anomalyPct = isAnomaly ? Math.round(((cellPrice - retail) / retail) * 100) : 0;
+
     return (
       <button
         className={cn(
@@ -330,6 +337,14 @@ export function PriceListMatrix({
         onClick={() => handleCellClick(item, columnId)}
       >
         {value ? `$${Number(value).toFixed(2)}` : "\u2014"}
+        {isAnomaly && (
+          <span
+            className="ml-0.5 inline-flex items-center text-[7px] bg-white border border-[#c27890] text-[#c27890] px-0.5 rounded"
+            title={`${anomalyPct > 0 ? "+" : ""}${anomalyPct}% from retail`}
+          >
+            ⚠ {anomalyPct > 0 ? "+" : ""}{anomalyPct}%
+          </span>
+        )}
       </button>
     );
   };
