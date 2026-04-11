@@ -236,6 +236,7 @@ export function VarietyTable({
         tableState={tableState}
         onRowClick={onRowClick}
         getRowKey={(v) => v.id}
+        onReorderColumns={(from, to) => tableState.reorderColumns(from, to)}
         renderCell={renderCell}
         cellClassName={(col) =>
           cn(

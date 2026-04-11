@@ -68,6 +68,7 @@ export function CustomerTable({
         tableState={tableState}
         onRowClick={onRowClick}
         getRowKey={(c) => c.id}
+        onReorderColumns={(from, to) => tableState.reorderColumns(from, to)}
         cellClassName={(col) =>
           cn(
             col.key === "name" && "font-medium",
