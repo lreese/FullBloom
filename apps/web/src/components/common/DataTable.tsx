@@ -88,7 +88,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
-      <div className="overflow-x-auto">
+      <div>
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
