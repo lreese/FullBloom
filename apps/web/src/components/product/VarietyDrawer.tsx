@@ -61,7 +61,6 @@ export function VarietyDrawer({
     name: "",
     product_line_id: "",
     color_id: "",
-    hex_color: "#000000",
     flowering_type: "",
     weekly_sales_category: "",
     show: true,
@@ -82,7 +81,6 @@ export function VarietyDrawer({
         name: variety.name,
         product_line_id: variety.product_line_id,
         color_id: variety.color_id ?? "",
-        hex_color: variety.hex_color ?? "#000000",
         flowering_type: variety.flowering_type ?? "",
         weekly_sales_category: variety.weekly_sales_category ?? "",
         show: variety.show,
@@ -96,7 +94,6 @@ export function VarietyDrawer({
         name: "",
         product_line_id: "",
         color_id: "",
-        hex_color: "#000000",
         flowering_type: "",
         weekly_sales_category: "",
         show: true,
@@ -126,7 +123,6 @@ export function VarietyDrawer({
           name: form.name.trim(),
           product_line_id: form.product_line_id,
           color_id: form.color_id || null,
-          hex_color: form.hex_color || null,
           flowering_type: form.flowering_type || null,
           weekly_sales_category: form.weekly_sales_category || null,
           show: form.show,
@@ -140,7 +136,6 @@ export function VarietyDrawer({
           name: form.name.trim(),
           product_line_id: form.product_line_id,
           color_id: form.color_id || null,
-          hex_color: form.hex_color || null,
           flowering_type: form.flowering_type || null,
           weekly_sales_category: form.weekly_sales_category || null,
           show: form.show,
@@ -273,25 +268,7 @@ export function VarietyDrawer({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Hex Color</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Input
-                    className="h-8 text-sm flex-1"
-                    value={form.hex_color}
-                    onChange={(e) => setField("hex_color", e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="#000000"
-                  />
-                  <input
-                    type="color"
-                    value={form.hex_color || "#000000"}
-                    onChange={(e) => setField("hex_color", e.target.value)}
-                    disabled={isReadOnly}
-                    className="h-8 w-8 rounded border border-[#e0ddd8] cursor-pointer p-0"
-                  />
-                </div>
+                <p className="text-[10px] text-[#94a3b8] mt-1">Hex colors are managed on the Colors page</p>
               </div>
             </div>
           </div>
