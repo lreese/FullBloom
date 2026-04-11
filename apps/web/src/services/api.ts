@@ -63,4 +63,25 @@ export function del<T>(path: string): Promise<T> {
   return request<T>(path, { method: "DELETE" });
 }
 
-export const api = { get, post, patch, del };
+export async function postFile<T>(path: string, file: File): Promise<T> {
+  const url = `${BASE_URL}${path}`;
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+
+  const body = await res.json();
+
+  if (!res.ok) {
+    const errorMessage =
+      (body as ApiError).error ?? body.detail ?? `Request failed with status ${res.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return (body as ApiResponse<T>).data;
+}
+
+export const api = { get, post, patch, del, postFile };

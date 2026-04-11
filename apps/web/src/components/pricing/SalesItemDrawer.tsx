@@ -71,7 +71,7 @@ export function SalesItemDrawer({
     if (mode === "edit" && salesItem) {
       setForm({
         name: salesItem.name,
-        variety_id: (salesItem as Record<string, unknown>).variety_id as string ?? "",
+        variety_id: salesItem.variety_id ?? "",
         stems_per_order: salesItem.stems_per_order,
         retail_price: salesItem.retail_price,
       });

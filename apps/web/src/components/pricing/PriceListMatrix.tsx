@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PriceListHeaderPopover } from "@/components/pricing/PriceListDialog";
 import type { PriceList, PriceListMatrixRow, ImpactPreview } from "@/types";
 
 interface PriceListMatrixProps {
@@ -19,6 +20,8 @@ interface PriceListMatrixProps {
     newPrice: string
   ) => Promise<ImpactPreview>;
   onHeaderClick?: (priceList: PriceList) => void;
+  onRename?: (id: string, newName: string) => Promise<void>;
+  onArchive?: (id: string) => Promise<void>;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onToggleSelectAll: () => void;
@@ -44,6 +47,8 @@ export function PriceListMatrix({
   onCellSave,
   onFetchImpact,
   onHeaderClick,
+  onRename,
+  onArchive,
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
@@ -304,13 +309,32 @@ export function PriceListMatrix({
                 {priceLists.map((pl) => (
                   <th
                     key={pl.id}
-                    className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20 cursor-pointer hover:bg-[#f4f1ec]"
-                    onClick={() => onHeaderClick?.(pl)}
+                    className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20"
                   >
-                    <div>{pl.name}</div>
-                    <div className="text-[#94a3b8] font-normal">
-                      {pl.customer_count} customers
-                    </div>
+                    {onRename && onArchive ? (
+                      <PriceListHeaderPopover
+                        priceList={pl}
+                        onRename={onRename}
+                        onArchive={onArchive}
+                      >
+                        <button className="w-full cursor-pointer hover:bg-[#f4f1ec] rounded px-1 py-0.5">
+                          <div>{pl.name}</div>
+                          <div className="text-[#94a3b8] font-normal">
+                            {pl.customer_count} customers
+                          </div>
+                        </button>
+                      </PriceListHeaderPopover>
+                    ) : (
+                      <button
+                        className="w-full cursor-pointer hover:bg-[#f4f1ec] rounded px-1 py-0.5"
+                        onClick={() => onHeaderClick?.(pl)}
+                      >
+                        <div>{pl.name}</div>
+                        <div className="text-[#94a3b8] font-normal">
+                          {pl.customer_count} customers
+                        </div>
+                      </button>
+                    )}
                   </th>
                 ))}
                 <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap w-24">

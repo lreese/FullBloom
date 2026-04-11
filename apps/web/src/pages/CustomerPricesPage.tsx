@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "@/services/api";
 import { CustomerPriceGrid } from "@/components/pricing/CustomerPriceGrid";
 import { ItemPriceGrid } from "@/components/pricing/ItemPriceGrid";
@@ -130,6 +130,21 @@ export function CustomerPricesPage() {
     await fetchItemPricing(selectedItemId);
   };
 
+  // Import handler
+  const importFileRef = useRef<HTMLInputElement>(null);
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedCustomerId) return;
+    try {
+      await api.postFile(`/api/v1/customers/${selectedCustomerId}/prices/import`, file);
+      await fetchCustomerPricing(selectedCustomerId);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Import failed");
+    }
+    e.target.value = "";
+  };
+
   // Export handler
   const handleExport = () => {
     if (viewMode === "customer" && selectedCustomerId) {
@@ -195,14 +210,31 @@ export function CustomerPricesPage() {
         <div className="flex-1" />
 
         {viewMode === "customer" && selectedCustomerId && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            onClick={handleExport}
-          >
-            Export CSV
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => importFileRef.current?.click()}
+            >
+              Import CSV
+            </Button>
+            <input
+              ref={importFileRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={handleImportFile}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={handleExport}
+            >
+              Export CSV
+            </Button>
+          </>
         )}
       </div>
 
@@ -235,9 +267,9 @@ export function CustomerPricesPage() {
                     }}
                   >
                     <span className="text-[#334155]">{c.name}</span>
-                    {c.price_type && (
+                    {c.price_list_name && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#dbeafe] text-[#1e3a5f]">
-                        {c.price_type}
+                        {c.price_list_name}
                       </span>
                     )}
                   </button>

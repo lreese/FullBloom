@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "@/services/api";
 import { SalesItemTable } from "@/components/pricing/SalesItemTable";
 import { SalesItemDrawer } from "@/components/pricing/SalesItemDrawer";
@@ -27,6 +27,21 @@ export function SalesItemsPage() {
 
   // Archive dialog state
   const [archiveTarget, setArchiveTarget] = useState<FlatSalesItem | null>(null);
+
+  // Import
+  const importFileRef = useRef<HTMLInputElement>(null);
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await api.postFile("/api/v1/import/pricing", file);
+      await fetchSalesItems();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Import failed");
+    }
+    e.target.value = "";
+  };
 
   const fetchSalesItems = useCallback(async () => {
     const data = await api.get<FlatSalesItem[]>(
@@ -79,7 +94,11 @@ export function SalesItemsPage() {
     selected_price_lists?: string[];
   }) => {
     if (drawerMode === "add") {
-      await api.post("/api/v1/sales-items", data);
+      // Backend expects POST /varieties/{variety_id}/sales-items
+      const varietyId = data.variety_id;
+      if (!varietyId) throw new Error("Variety is required to create a sales item");
+      const { variety_id: _, ...body } = data;
+      await api.post(`/api/v1/varieties/${varietyId}/sales-items`, body);
     } else if (selectedItem) {
       await api.patch(`/api/v1/sales-items/${selectedItem.id}`, data);
       // Update individual price list prices
@@ -116,6 +135,22 @@ export function SalesItemsPage() {
 
   return (
     <>
+      <div className="flex justify-end mb-1">
+        <button
+          className="text-xs text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 hover:bg-[#f4f1ec]"
+          onClick={() => importFileRef.current?.click()}
+        >
+          Import CSV
+        </button>
+        <input
+          ref={importFileRef}
+          type="file"
+          accept=".csv"
+          className="hidden"
+          onChange={handleImportFile}
+        />
+      </div>
+
       <SalesItemTable
         salesItems={salesItems}
         priceLists={priceLists}

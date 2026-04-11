@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "@/services/api";
 import { PriceListMatrix } from "@/components/pricing/PriceListMatrix";
 import {
@@ -27,6 +27,8 @@ export function PriceListsPage() {
   const [items, setItems] = useState<PriceListMatrixRow[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [importPriceListId, setImportPriceListId] = useState("");
+  const importFileRef = useRef<HTMLInputElement>(null);
 
   // Bulk action state
   const [bulkPriceListId, setBulkPriceListId] = useState("");
@@ -123,6 +125,18 @@ export function PriceListsPage() {
     // Header popover is rendered in the matrix header, handled by PriceListHeaderPopover
   };
 
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !importPriceListId) return;
+    try {
+      await api.postFile(`/api/v1/price-lists/${importPriceListId}/import`, file);
+      await fetchMatrix();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Import failed");
+    }
+    e.target.value = "";
+  };
+
   return (
     <div>
       {/* Toolbar */}
@@ -131,6 +145,34 @@ export function PriceListsPage() {
           Price Lists
         </h1>
         <div className="flex-1" />
+        <Select value={importPriceListId} onValueChange={setImportPriceListId}>
+          <SelectTrigger className="h-8 w-40 text-xs">
+            <SelectValue placeholder="Import into..." />
+          </SelectTrigger>
+          <SelectContent>
+            {priceLists.map((pl) => (
+              <SelectItem key={pl.id} value={pl.id}>
+                {pl.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs"
+          disabled={!importPriceListId}
+          onClick={() => importFileRef.current?.click()}
+        >
+          Import CSV
+        </Button>
+        <input
+          ref={importFileRef}
+          type="file"
+          accept=".csv"
+          className="hidden"
+          onChange={handleImportFile}
+        />
         <Button
           size="sm"
           className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
@@ -192,6 +234,8 @@ export function PriceListsPage() {
         onCellSave={handleCellSave}
         onFetchImpact={handleFetchImpact}
         onHeaderClick={handleHeaderClick}
+        onRename={handleRename}
+        onArchive={handleArchive}
         selectedIds={selectedIds}
         onToggleSelect={handleToggleSelect}
         onToggleSelectAll={handleToggleSelectAll}

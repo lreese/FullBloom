@@ -11,7 +11,7 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "default_ship_via", label: "Ship Via", filterable: true, defaultVisible: true },
   { key: "location", label: "Location", filterable: true, defaultVisible: true },
   { key: "payment_terms", label: "Terms", filterable: true, defaultVisible: true },
-  { key: "price_type", label: "Price Type", filterable: true, defaultVisible: true },
+  { key: "price_list_name", label: "Price List", filterable: true, defaultVisible: true },
   { key: "contact_name", label: "Contact", filterable: true, defaultVisible: true },
   { key: "salesperson", label: "Sales", filterable: true, defaultVisible: true },
   { key: "phone", label: "Phone", filterable: true, defaultVisible: false },

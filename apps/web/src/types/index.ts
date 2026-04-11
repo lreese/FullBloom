@@ -27,7 +27,8 @@ export interface Customer {
   payment_terms: string | null;
   email: string | null;
   notes: string | null;
-  price_type: string;
+  price_list_id: string | null;
+  price_list_name: string | null;
   is_active: boolean;
   stores?: Store[];
 }
@@ -36,7 +37,7 @@ export interface CustomerCreateRequest {
   customer_number: number;
   name: string;
   salesperson?: string | null;
-  price_type?: string;
+  price_list_id?: string | null;
   contact_name?: string | null;
   default_ship_via?: string | null;
   phone?: string | null;
@@ -49,7 +50,7 @@ export interface CustomerCreateRequest {
 export interface CustomerUpdateRequest {
   name?: string;
   salesperson?: string | null;
-  price_type?: string;
+  price_list_id?: string | null;
   contact_name?: string | null;
   default_ship_via?: string | null;
   phone?: string | null;
@@ -63,7 +64,6 @@ export interface DropdownOptions {
   salesperson: string[];
   default_ship_via: string[];
   payment_terms: string[];
-  price_type: string[];
 }
 
 // ── Products ─────────────────────────────────────────────────
@@ -71,6 +71,8 @@ export interface DropdownOptions {
 export interface SalesItem {
   id: string;
   name: string;
+  variety_id: string | null;
+  variety_name: string | null;
   stems_per_order: number;
   retail_price: string;
   is_active: boolean;
