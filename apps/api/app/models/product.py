@@ -64,7 +64,6 @@ class Variety(Model):
     color = fields.ForeignKeyField(
         "models.Color", related_name="varieties", on_delete=fields.SET_NULL, null=True
     )
-    hex_color = fields.CharField(max_length=7, null=True)
     flowering_type = fields.CharField(max_length=50, null=True)
     can_replace = fields.BooleanField(default=False)
     show = fields.BooleanField(default=True)
