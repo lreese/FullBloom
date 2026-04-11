@@ -68,9 +68,15 @@ function loadColumnPrefs(
       const order = parsed.order ?? defaultOrder;
       const allKeys = new Set(defaultOrder);
       const missing = defaultOrder.filter((k) => !order.includes(k));
+      // New columns not in stored visible list get added if defaultVisible !== false
+      const storedVisible: string[] = parsed.visible ?? defaultVisible;
+      const newVisible = missing.filter((k) => {
+        const col = columns.find((c) => c.key === k);
+        return col && col.defaultVisible !== false;
+      });
       return {
         order: [...order.filter((k: string) => allKeys.has(k)), ...missing],
-        visible: parsed.visible ?? defaultVisible,
+        visible: [...storedVisible, ...newVisible],
       };
     }
   } catch {
