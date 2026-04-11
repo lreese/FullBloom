@@ -58,8 +58,20 @@ export function TableToolbar({
     setDragIdx(idx);
     e.dataTransfer.effectAllowed = "move";
     if (e.currentTarget instanceof HTMLElement) {
+      // Create a clone positioned off-screen so the browser renders a clean drag ghost
+      const clone = e.currentTarget.cloneNode(true) as HTMLElement;
+      clone.style.position = "fixed";
+      clone.style.top = "-1000px";
+      clone.style.left = "-1000px";
+      clone.style.width = `${e.currentTarget.offsetWidth}px`;
+      clone.style.backgroundColor = "#faf8f5";
+      clone.style.borderRadius = "4px";
+      clone.style.padding = "4px 6px";
+      clone.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+      document.body.appendChild(clone);
       const rect = e.currentTarget.getBoundingClientRect();
-      e.dataTransfer.setDragImage(e.currentTarget, e.clientX - rect.left, e.clientY - rect.top);
+      e.dataTransfer.setDragImage(clone, e.clientX - rect.left, e.clientY - rect.top);
+      requestAnimationFrame(() => document.body.removeChild(clone));
     }
   }, []);
 
