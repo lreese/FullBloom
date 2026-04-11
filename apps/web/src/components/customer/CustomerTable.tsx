@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,8 +99,8 @@ export function CustomerTable({
     {}
   );
   const [columnPrefs, setColumnPrefs] = useState<ColumnPrefs>(loadColumnPrefs);
-  const dragItem = useRef<number | null>(null);
-  const dragOver = useRef<number | null>(null);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
 
   const hasActiveFilters =
     searchTerm.length > 0 ||
@@ -127,36 +127,47 @@ export function CustomerTable({
     });
   };
 
-  const [dragging, setDragging] = useState(false);
-
   const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
-    dragItem.current = idx;
-    setDragging(true);
+    setDragIdx(idx);
     e.dataTransfer.effectAllowed = "move";
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+    }
   }, []);
 
-  const handleDragEnter = useCallback((idx: number) => {
-    dragOver.current = idx;
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const insertIdx = e.clientY < midY ? idx : idx + 1;
+    setDropIdx(insertIdx);
   }, []);
 
-  const handleDragEnd = useCallback(() => {
-    setDragging(false);
-    if (dragItem.current === null || dragOver.current === null) return;
-    if (dragItem.current === dragOver.current) {
-      dragItem.current = null;
-      dragOver.current = null;
+  const handleDrop = useCallback(() => {
+    if (dragIdx === null || dropIdx === null) return;
+    let targetIdx = dropIdx;
+    if (dragIdx < targetIdx) targetIdx--;
+    if (dragIdx === targetIdx) {
+      setDragIdx(null);
+      setDropIdx(null);
       return;
     }
     setColumnPrefs((prev) => {
       const order = [...prev.order];
-      const [removed] = order.splice(dragItem.current!, 1);
-      order.splice(dragOver.current!, 0, removed);
-      dragItem.current = null;
-      dragOver.current = null;
+      const [removed] = order.splice(dragIdx, 1);
+      order.splice(targetIdx, 0, removed);
       const next = { ...prev, order };
       saveColumnPrefs(next);
       return next;
     });
+    setDragIdx(null);
+    setDropIdx(null);
+  }, [dragIdx, dropIdx]);
+
+  const handleDragEnd = useCallback(() => {
+    setDragIdx(null);
+    setDropIdx(null);
   }, []);
 
   // Compute distinct values for filterable columns
@@ -266,31 +277,43 @@ export function CustomerTable({
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-52 p-2" align="end">
-            <div className="space-y-0.5">
+            <div
+              className="space-y-0.5"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDrop}
+            >
               {columnPrefs.order.map((key, idx) => {
                 const col = COLUMN_MAP[key];
                 if (!col) return null;
                 return (
-                  <div
-                    key={col.key}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, idx)}
-                    onDragEnter={() => handleDragEnter(idx)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()}
-                    className="flex items-center gap-1.5 px-1 py-1 text-sm rounded hover:bg-[#f4f1ec] cursor-grab active:cursor-grabbing"
-                  >
-                    <GripVertical className="h-3 w-3 text-[#94a3b8] shrink-0" />
-                    <span className={dragging ? "pointer-events-none" : ""}>
+                  <div key={col.key}>
+                    {dropIdx === idx && dragIdx !== idx && dragIdx !== idx - 1 && (
+                      <div className="h-0.5 bg-[#c27890] rounded-full mx-1 my-0.5" />
+                    )}
+                    <div
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, idx)}
+                      onDragOver={(e) => handleDragOver(e, idx)}
+                      onDrop={handleDrop}
+                      onDragEnd={handleDragEnd}
+                      className={cn(
+                        "flex items-center gap-1.5 px-1 py-1 text-sm rounded hover:bg-[#f4f1ec] cursor-grab active:cursor-grabbing",
+                        dragIdx === idx && "opacity-50"
+                      )}
+                    >
+                      <GripVertical className="h-3 w-3 text-[#94a3b8] shrink-0" />
                       <Checkbox
                         checked={columnPrefs.visible.includes(col.key)}
                         onCheckedChange={() => toggleColumn(col.key)}
                       />
-                    </span>
-                    <span className={cn("text-[#334155] select-none", dragging && "pointer-events-none")}>{col.label}</span>
+                      <span className="text-[#334155] select-none">{col.label}</span>
+                    </div>
                   </div>
                 );
               })}
+              {dropIdx === columnPrefs.order.length && dragIdx !== columnPrefs.order.length - 1 && (
+                <div className="h-0.5 bg-[#c27890] rounded-full mx-1 my-0.5" />
+              )}
             </div>
           </PopoverContent>
         </Popover>
