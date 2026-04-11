@@ -107,7 +107,6 @@ export interface VarietyCreateRequest {
   name: string;
   product_line_id: string;
   color_id?: string | null;
-  hex_color?: string | null;
   flowering_type?: string | null;
   can_replace?: boolean;
   show?: boolean;
@@ -120,7 +119,6 @@ export interface VarietyUpdateRequest {
   name?: string;
   product_line_id?: string;
   color_id?: string | null;
-  hex_color?: string | null;
   flowering_type?: string | null;
   can_replace?: boolean;
   show?: boolean;
