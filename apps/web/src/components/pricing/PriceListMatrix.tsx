@@ -235,12 +235,13 @@ export function PriceListMatrix({
   };
 
   const getSpread = (item: PriceListMatrixRow): { text: string; hasSpread: boolean } => {
-    const prices = Object.values(item.prices)
-      .map(Number)
-      .filter((p) => !isNaN(p));
-    if (prices.length < 2) return { text: "No Spread", hasSpread: false };
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
+    const allPrices = [
+      parseFloat(item.retail_price),
+      ...Object.values(item.prices).map(Number),
+    ].filter((p) => !isNaN(p));
+    if (allPrices.length < 2) return { text: "No Spread", hasSpread: false };
+    const min = Math.min(...allPrices);
+    const max = Math.max(...allPrices);
     if (max - min < 0.01) return { text: "No Spread", hasSpread: false };
     return { text: `$${min.toFixed(2)}\u2013$${max.toFixed(2)}`, hasSpread: true };
   };
