@@ -130,10 +130,34 @@ export function CustomerPriceGrid({
     setSelectedIds(new Set());
   };
 
+  const renderPriceTooltip = (item: FlatItem, children: React.ReactNode) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent className="text-xs">
+          <div>Price List: {priceListName}</div>
+          <div>List Price: ${Number(item.price_list_price).toFixed(2)}</div>
+          <div>
+            Override:{" "}
+            {item.customer_override
+              ? `$${Number(item.customer_override).toFixed(2)}`
+              : "No override"}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
   const renderCell = (col: ColumnDef, item: FlatItem) => {
     if (col.key === "price_list_price") {
       const val = item.price_list_price;
-      return val ? `$${Number(val).toFixed(2)}` : "\u2014";
+      if (!val) return "\u2014";
+      return renderPriceTooltip(
+        item,
+        <span className="cursor-default">
+          ${Number(val).toFixed(2)}
+        </span>
+      );
     }
 
     if (col.key === "customer_override") {
@@ -165,49 +189,38 @@ export function CustomerPriceGrid({
       }
 
       if (hasOverride) {
-        return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1">
-                  <button
-                    className="text-xs font-medium text-[#334155] hover:underline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEdit(item);
-                    }}
-                  >
-                    ${Number(item.customer_override).toFixed(2)}
-                  </button>
-                  <PriceAnomalyBadge
-                    listPrice={item.price_list_price}
-                    overridePrice={item.customer_override!}
-                  />
-                  <button
-                    className="text-[#94a3b8] hover:text-red-500 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveOverride(item.sales_item_id);
-                    }}
-                    title="Remove override"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="text-xs">
-                <div>Price List: {priceListName}</div>
-                <div>List Price: ${Number(item.price_list_price).toFixed(2)}</div>
-                <div>
-                  Override: ${Number(item.customer_override).toFixed(2)}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        return renderPriceTooltip(
+          item,
+          <span className="inline-flex items-center gap-1">
+            <button
+              className="text-xs font-medium text-[#334155] hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                startEdit(item);
+              }}
+            >
+              ${Number(item.customer_override).toFixed(2)}
+            </button>
+            <PriceAnomalyBadge
+              listPrice={item.price_list_price}
+              overridePrice={item.customer_override!}
+            />
+            <button
+              className="text-[#94a3b8] hover:text-red-500 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveOverride(item.sales_item_id);
+              }}
+              title="Remove override"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </span>
         );
       }
 
-      return (
+      return renderPriceTooltip(
+        item,
         <button
           className="text-xs italic text-[#94a3b8] hover:text-[#c27890] transition-colors"
           onClick={(e) => {

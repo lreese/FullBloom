@@ -68,6 +68,29 @@ async def _get_price_list_prices(si_id: UUID) -> dict[str, str]:
     }
 
 
+async def _batch_price_list_prices(
+    sales_item_ids: list[UUID],
+) -> dict[str, dict[str, str]]:
+    """Batch-load price list prices for multiple sales items in one query."""
+    active_pl_ids = set(
+        str(pl.id) for pl in await PriceList.filter(is_active=True).all()
+    )
+    all_pli = await PriceListItem.filter(
+        sales_item_id__in=sales_item_ids
+    ).values("sales_item_id", "price_list_id", "price")
+
+    pli_map: dict[str, dict[str, str]] = {}
+    for pli in all_pli:
+        pl_id = str(pli["price_list_id"])
+        if pl_id not in active_pl_ids:
+            continue
+        sid = str(pli["sales_item_id"])
+        if sid not in pli_map:
+            pli_map[sid] = {}
+        pli_map[sid][pl_id] = str(pli["price"])
+    return pli_map
+
+
 @router.get("/varieties/{variety_id}/sales-items")
 async def list_sales_items(
     variety_id: UUID, active: bool | None = True
@@ -83,16 +106,16 @@ async def list_sales_items(
 
     sales_items = await qs.prefetch_related("customer_prices").order_by("name")
 
-    data = []
-    for si in sales_items:
-        plp = await _get_price_list_prices(si.id)
-        data.append(
-            _build_sales_item_response(
-                si,
-                customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
-                price_list_prices=plp,
-            )
+    pli_map = await _batch_price_list_prices([si.id for si in sales_items])
+
+    data = [
+        _build_sales_item_response(
+            si,
+            customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+            price_list_prices=pli_map.get(str(si.id), {}),
         )
+        for si in sales_items
+    ]
 
     return {"data": data}
 
@@ -106,16 +129,16 @@ async def list_all_sales_items(active: bool | None = True) -> dict:
 
     sales_items = await qs.prefetch_related("customer_prices", "variety").order_by("name")
 
-    data = []
-    for si in sales_items:
-        plp = await _get_price_list_prices(si.id)
-        data.append(
-            _build_sales_item_response(
-                si,
-                customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
-                price_list_prices=plp,
-            )
+    pli_map = await _batch_price_list_prices([si.id for si in sales_items])
+
+    data = [
+        _build_sales_item_response(
+            si,
+            customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+            price_list_prices=pli_map.get(str(si.id), {}),
         )
+        for si in sales_items
+    ]
 
     return {"data": data}
 

@@ -133,6 +133,17 @@ export function SalesItemsPage() {
     await fetchSalesItems();
   };
 
+  const handleBulkUpdate = async (ids: string[], field: string, value: string) => {
+    // PATCH each selected item individually
+    const updateData = field === "retail_price"
+      ? { retail_price: value }
+      : { [field]: value };
+    await Promise.all(
+      ids.map((id) => api.patch(`/api/v1/sales-items/${id}`, updateData))
+    );
+    await fetchSalesItems();
+  };
+
   return (
     <>
       <div className="flex justify-end mb-1">
@@ -154,12 +165,14 @@ export function SalesItemsPage() {
       <SalesItemTable
         salesItems={salesItems}
         priceLists={priceLists}
+        varieties={varieties}
         activeView={activeView}
         onViewChange={setActiveView}
         onRowClick={handleRowClick}
         onAddClick={handleAddClick}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
+        onBulkUpdate={handleBulkUpdate}
       />
 
       <SalesItemDrawer

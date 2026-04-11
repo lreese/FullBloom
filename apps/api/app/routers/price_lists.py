@@ -49,15 +49,22 @@ async def list_price_lists(active: bool | None = True) -> dict:
         qs = qs.filter(is_active=active)
     price_lists = await qs.order_by("name")
 
-    data = []
-    for pl in price_lists:
-        count = await Customer.filter(price_list_id=pl.id, is_active=True).count()
-        data.append({
+    # Batch-load active customer counts in a single query instead of N+1
+    pl_ids = [pl.id for pl in price_lists]
+    count_rows = await Customer.filter(
+        price_list_id__in=pl_ids, is_active=True
+    ).annotate(cnt=Count("id")).group_by("price_list_id").values("price_list_id", "cnt")
+    count_map = {str(row["price_list_id"]): row["cnt"] for row in count_rows}
+
+    data = [
+        {
             "id": str(pl.id),
             "name": pl.name,
             "is_active": pl.is_active,
-            "customer_count": count,
-        })
+            "customer_count": count_map.get(str(pl.id), 0),
+        }
+        for pl in price_lists
+    ]
 
     return {"data": data}
 
