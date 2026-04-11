@@ -1,9 +1,22 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ColumnFilter } from "@/components/common/ColumnFilter";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProductType } from "@/types";
+
+interface ColumnDef {
+  key: string;
+  label: string;
+  filterable: boolean;
+  sortable: boolean;
+}
+
+const COLUMNS: ColumnDef[] = [
+  { key: "name", label: "Name", filterable: true, sortable: true },
+  { key: "product_line_count", label: "Product Lines", filterable: true, sortable: true },
+];
 
 interface ProductTypeTableProps {
   productTypes: ProductType[];
@@ -21,19 +34,76 @@ export function ProductTypeTable({
   onAddClick,
 }: ProductTypeTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (!prev || prev.key !== key) return { key, direction: "asc" };
+      if (prev.direction === "asc") return { key, direction: "desc" };
+      return null;
+    });
+  };
+
+  const hasActiveFilters =
+    searchTerm.length > 0 ||
+    Object.values(columnFilters).some((v) => v.length > 0);
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setColumnFilters({});
+  };
 
   const handleViewChange = (view: "active" | "archived") => {
-    setSearchTerm("");
+    clearAllFilters();
     onViewChange(view);
   };
 
+  const distinctValues = useMemo(() => {
+    const result: Record<string, string[]> = {};
+    for (const col of COLUMNS) {
+      if (!col.filterable) continue;
+      const values = new Set<string>();
+      for (const pt of productTypes) {
+        const val = pt[col.key as keyof ProductType];
+        if (val != null && val !== "") values.add(String(val));
+      }
+      result[col.key] = Array.from(values).sort();
+    }
+    return result;
+  }, [productTypes]);
+
   const filtered = useMemo(() => {
-    if (!searchTerm) return productTypes;
-    const term = searchTerm.toLowerCase();
-    return productTypes.filter((pt) =>
-      pt.name.toLowerCase().includes(term)
-    );
-  }, [productTypes, searchTerm]);
+    let result = productTypes;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((pt) => pt.name.toLowerCase().includes(term));
+    }
+
+    for (const [key, selected] of Object.entries(columnFilters)) {
+      if (selected.length === 0) continue;
+      result = result.filter((pt) => {
+        const val = pt[key as keyof ProductType];
+        return val != null && selected.includes(String(val));
+      });
+    }
+
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        const aVal = a[sortConfig.key as keyof ProductType];
+        const bVal = b[sortConfig.key as keyof ProductType];
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        if (typeof aVal === "boolean") return sortConfig.direction === "asc" ? (aVal ? 1 : -1) - ((bVal as boolean) ? 1 : -1) : ((bVal as boolean) ? 1 : -1) - (aVal ? 1 : -1);
+        if (typeof aVal === "number") return sortConfig.direction === "asc" ? aVal - (bVal as number) : (bVal as number) - aVal;
+        return sortConfig.direction === "asc" ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
+      });
+    }
+
+    return result;
+  }, [productTypes, searchTerm, columnFilters, sortConfig]);
 
   return (
     <div>
@@ -78,10 +148,10 @@ export function ProductTypeTable({
           </button>
         </div>
 
-        {searchTerm.length > 0 && (
+        {hasActiveFilters && (
           <button
             className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1"
-            onClick={() => setSearchTerm("")}
+            onClick={clearAllFilters}
           >
             Clear Filters
           </button>
@@ -102,24 +172,38 @@ export function ProductTypeTable({
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap">
-                  Name
-                </th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap">
-                  Product Lines
-                </th>
+                {COLUMNS.map((col) => (
+                  <th
+                    key={col.key}
+                    className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap cursor-pointer select-none"
+                    onClick={() => col.sortable && handleSort(col.key)}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      {sortConfig?.key === col.key && (
+                        <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+                      )}
+                      {col.filterable && distinctValues[col.key] && (
+                        <ColumnFilter
+                          values={distinctValues[col.key]}
+                          selected={columnFilters[col.key] ?? []}
+                          onChange={(selected) =>
+                            setColumnFilters((prev) => ({ ...prev, [col.key]: selected }))
+                          }
+                        />
+                      )}
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={2} className="px-3 py-8 text-center text-[#94a3b8]">
+                  <td colSpan={COLUMNS.length} className="px-3 py-8 text-center text-[#94a3b8]">
                     No product types found.
-                    {searchTerm.length > 0 && (
-                      <button
-                        className="ml-2 text-[#c27890] hover:underline"
-                        onClick={() => setSearchTerm("")}
-                      >
+                    {hasActiveFilters && (
+                      <button className="ml-2 text-[#c27890] hover:underline" onClick={clearAllFilters}>
                         Clear filters
                       </button>
                     )}
