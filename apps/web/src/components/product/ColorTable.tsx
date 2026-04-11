@@ -1,9 +1,23 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ColumnFilter } from "@/components/common/ColumnFilter";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Color } from "@/types";
+
+interface ColumnDef {
+  key: string;
+  label: string;
+  filterable: boolean;
+  sortable: boolean;
+}
+
+const COLUMNS: ColumnDef[] = [
+  { key: "hex_color", label: "Swatch", filterable: false, sortable: false },
+  { key: "name", label: "Name", filterable: true, sortable: true },
+  { key: "variety_count", label: "Varieties", filterable: true, sortable: true },
+];
 
 interface ColorTableProps {
   colors: Color[];
@@ -21,11 +35,24 @@ export function ColorTable({
   onAddClick,
 }: ColorTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
-  const hasActiveFilters = searchTerm.length > 0;
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (!prev || prev.key !== key) return { key, direction: "asc" };
+      if (prev.direction === "asc") return { key, direction: "desc" };
+      return null;
+    });
+  };
+
+  const hasActiveFilters =
+    searchTerm.length > 0 ||
+    Object.values(columnFilters).some((v) => v.length > 0);
 
   const clearAllFilters = () => {
     setSearchTerm("");
+    setColumnFilters({});
   };
 
   const handleViewChange = (view: "active" | "archived") => {
@@ -33,15 +60,53 @@ export function ColorTable({
     onViewChange(view);
   };
 
-  const sorted = useMemo(() => {
-    return [...colors].sort((a, b) => a.name.localeCompare(b.name));
+  const distinctValues = useMemo(() => {
+    const result: Record<string, string[]> = {};
+    for (const col of COLUMNS) {
+      if (!col.filterable) continue;
+      const values = new Set<string>();
+      for (const c of colors) {
+        const val = c[col.key as keyof Color];
+        if (val != null && val !== "") values.add(String(val));
+      }
+      result[col.key] = Array.from(values).sort();
+    }
+    return result;
   }, [colors]);
 
   const filtered = useMemo(() => {
-    if (!searchTerm) return sorted;
-    const term = searchTerm.toLowerCase();
-    return sorted.filter((c) => c.name.toLowerCase().includes(term));
-  }, [sorted, searchTerm]);
+    let result = colors;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((c) => c.name.toLowerCase().includes(term));
+    }
+
+    for (const [key, selected] of Object.entries(columnFilters)) {
+      if (selected.length === 0) continue;
+      result = result.filter((c) => {
+        const val = c[key as keyof Color];
+        return val != null && selected.includes(String(val));
+      });
+    }
+
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        const aVal = a[sortConfig.key as keyof Color];
+        const bVal = b[sortConfig.key as keyof Color];
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        if (typeof aVal === "boolean") return sortConfig.direction === "asc" ? (aVal ? 1 : -1) - ((bVal as boolean) ? 1 : -1) : ((bVal as boolean) ? 1 : -1) - (aVal ? 1 : -1);
+        if (typeof aVal === "number") return sortConfig.direction === "asc" ? aVal - (bVal as number) : (bVal as number) - aVal;
+        return sortConfig.direction === "asc" ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
+      });
+    } else {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return result;
+  }, [colors, searchTerm, columnFilters, sortConfig]);
 
   return (
     <div>
@@ -110,15 +175,40 @@ export function ColorTable({
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-10">Swatch</th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f]">Name</th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-24">Varieties</th>
+                {COLUMNS.map((col) => (
+                  <th
+                    key={col.key}
+                    className={cn(
+                      "px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap",
+                      col.sortable && "cursor-pointer select-none",
+                      col.key === "hex_color" && "w-10",
+                      col.key === "variety_count" && "w-24"
+                    )}
+                    onClick={() => col.sortable && handleSort(col.key)}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      {sortConfig?.key === col.key && (
+                        <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+                      )}
+                      {col.filterable && distinctValues[col.key] && (
+                        <ColumnFilter
+                          values={distinctValues[col.key]}
+                          selected={columnFilters[col.key] ?? []}
+                          onChange={(selected) =>
+                            setColumnFilters((prev) => ({ ...prev, [col.key]: selected }))
+                          }
+                        />
+                      )}
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-3 py-8 text-center text-[#94a3b8]">
+                  <td colSpan={COLUMNS.length} className="px-3 py-8 text-center text-[#94a3b8]">
                     No colors found.
                     {hasActiveFilters && (
                       <button className="ml-2 text-[#c27890] hover:underline" onClick={clearAllFilters}>
