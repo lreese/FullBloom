@@ -88,7 +88,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
-      <div className="overflow-x-auto">
+      <div>
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
@@ -186,12 +186,12 @@ export function DataTable<T extends Record<string, unknown>>({
                     {hasBulkSelect && (
                       <td
                         className="px-2 py-1.5 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleSelect(rowKey);
-                        }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Checkbox checked={isSelected} />
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => onToggleSelect(rowKey)}
+                        />
                       </td>
                     )}
                     {activeColumns.map((col) => (

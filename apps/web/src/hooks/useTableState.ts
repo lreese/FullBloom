@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 
 export interface ColumnDef {
   key: string;
@@ -68,9 +68,15 @@ function loadColumnPrefs(
       const order = parsed.order ?? defaultOrder;
       const allKeys = new Set(defaultOrder);
       const missing = defaultOrder.filter((k) => !order.includes(k));
+      // New columns not in stored visible list get added if defaultVisible !== false
+      const storedVisible: string[] = parsed.visible ?? defaultVisible;
+      const newVisible = missing.filter((k) => {
+        const col = columns.find((c) => c.key === k);
+        return col && col.defaultVisible !== false;
+      });
       return {
         order: [...order.filter((k: string) => allKeys.has(k)), ...missing],
-        visible: parsed.visible ?? defaultVisible,
+        visible: [...storedVisible, ...newVisible],
       };
     }
   } catch {
@@ -123,6 +129,30 @@ export function useTableState<T extends Record<string, unknown>>(
   const [columnPrefs, setColumnPrefs] = useState<ColumnPrefs | null>(() =>
     storageKey ? loadColumnPrefs(storageKey, columns) : null
   );
+
+  // Sync column prefs when columns change (e.g., dynamic price list columns loaded async)
+  useEffect(() => {
+    if (!storageKey) return;
+    setColumnPrefs((prev) => {
+      if (!prev) return loadColumnPrefs(storageKey, columns);
+      const currentKeys = new Set(columns.map((c) => c.key));
+      const prevKeys = new Set(prev.order);
+      const newKeys = columns.filter((c) => !prevKeys.has(c.key));
+      const removedKeys = [...prevKeys].filter((k) => !currentKeys.has(k));
+      if (newKeys.length === 0 && removedKeys.length === 0) return prev;
+      const newOrder = [
+        ...prev.order.filter((k) => currentKeys.has(k)),
+        ...newKeys.map((c) => c.key),
+      ];
+      const newVisible = [
+        ...prev.visible.filter((k) => currentKeys.has(k)),
+        ...newKeys.filter((c) => c.defaultVisible !== false).map((c) => c.key),
+      ];
+      const next = { order: newOrder, visible: newVisible };
+      saveColumnPrefs(storageKey, next);
+      return next;
+    });
+  }, [columns, storageKey]);
 
   const toggleColumn = useCallback(
     (key: string) => {

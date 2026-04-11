@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Customer, CustomerCreateRequest, CustomerUpdateRequest, DropdownOptions } from "@/types";
+import { api } from "@/services/api";
+import type { Customer, CustomerCreateRequest, CustomerUpdateRequest, DropdownOptions, PriceList } from "@/types";
 
 interface CustomerDrawerProps {
   open: boolean;
@@ -46,7 +47,7 @@ export function CustomerDrawer({
     customer_number: 0,
     name: "",
     salesperson: "",
-    price_type: "Retail",
+    price_list_id: "" as string,
     contact_name: "",
     default_ship_via: "",
     phone: "",
@@ -55,8 +56,14 @@ export function CustomerDrawer({
     email: "",
     notes: "",
   });
+  const [priceLists, setPriceLists] = useState<PriceList[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Fetch price lists for the dropdown
+  useEffect(() => {
+    api.get<PriceList[]>("/api/v1/price-lists?active=true").then(setPriceLists);
+  }, []);
 
   const isArchived = customer ? !customer.is_active : false;
   const isReadOnly = mode === "edit" && isArchived;
@@ -67,7 +74,7 @@ export function CustomerDrawer({
         customer_number: customer.customer_number,
         name: customer.name,
         salesperson: customer.salesperson ?? "",
-        price_type: customer.price_type ?? "Retail",
+        price_list_id: customer.price_list_id ?? "",
         contact_name: customer.contact_name ?? "",
         default_ship_via: customer.default_ship_via ?? "",
         phone: customer.phone ?? "",
@@ -81,7 +88,7 @@ export function CustomerDrawer({
         customer_number: nextNumber ?? 0,
         name: "",
         salesperson: "",
-        price_type: "Retail",
+        price_list_id: "",
         contact_name: "",
         default_ship_via: "",
         phone: "",
@@ -107,7 +114,7 @@ export function CustomerDrawer({
           customer_number: form.customer_number,
           name: form.name.trim(),
           salesperson: form.salesperson || null,
-          price_type: form.price_type || "Retail",
+          price_list_id: form.price_list_id || null,
           contact_name: form.contact_name || null,
           default_ship_via: form.default_ship_via || null,
           phone: form.phone || null,
@@ -121,7 +128,7 @@ export function CustomerDrawer({
         const data: CustomerUpdateRequest = {
           name: form.name.trim(),
           salesperson: form.salesperson || null,
-          price_type: form.price_type || "Retail",
+          price_list_id: form.price_list_id || null,
           contact_name: form.contact_name || null,
           default_ship_via: form.default_ship_via || null,
           phone: form.phone || null,
@@ -225,12 +232,26 @@ export function CustomerDrawer({
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-              {renderSelect(
-                "price_type",
-                "Price Type",
-                dropdownOptions.price_type,
-                form.price_type
-              )}
+              <div>
+                <Label className="text-xs font-semibold text-[#1e3a5f]">Price List</Label>
+                <Select
+                  value={form.price_list_id || "__none__"}
+                  onValueChange={(v) => setField("price_list_id", v === "__none__" ? "" : v)}
+                  disabled={isReadOnly}
+                >
+                  <SelectTrigger className="mt-1 h-8 text-sm">
+                    <SelectValue placeholder="Select price list" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None (Retail)</SelectItem>
+                    {priceLists.map((pl) => (
+                      <SelectItem key={pl.id} value={pl.id}>
+                        {pl.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="mt-3">
               <Label className="text-xs font-semibold text-[#1e3a5f]">

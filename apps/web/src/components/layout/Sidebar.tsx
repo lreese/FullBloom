@@ -16,6 +16,8 @@ import {
   FolderTree,
   Palette,
   Boxes,
+  Tag,
+  LayoutGrid,
 } from "lucide-react";
 import {
   Popover,
@@ -51,7 +53,16 @@ const navItems: NavItem[] = [
       { label: "Product Types", icon: Boxes, href: "/products/product-types" },
     ],
   },
-  { label: "Pricing", icon: DollarSign, href: "/pricing" },
+  {
+    label: "Pricing",
+    icon: DollarSign,
+    href: "/pricing",
+    children: [
+      { label: "Sales Items", icon: Tag, href: "/pricing/sales-items" },
+      { label: "Price Lists", icon: LayoutGrid, href: "/pricing/price-lists" },
+      { label: "Customer Prices", icon: Users, href: "/pricing/customer-prices" },
+    ],
+  },
   { label: "Import", icon: Upload, href: "/import" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
@@ -63,7 +74,7 @@ interface SidebarProps {
 
 export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const location = useLocation();
   const navigate = useNavigate();
   const activePath = location.pathname;
@@ -123,10 +134,18 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
       }
 
       // Expanded mode: toggle dropdown
+      const isDropdownOpen = openDropdowns.has(href);
       return (
         <div key={href}>
           <button
-            onClick={() => setDropdownOpen((prev) => !prev)}
+            onClick={() =>
+              setOpenDropdowns((prev) => {
+                const next = new Set(prev);
+                if (next.has(href)) next.delete(href);
+                else next.add(href);
+                return next;
+              })
+            }
             className={cn(
               "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
               childActive && "bg-sidebar-hover text-white"
@@ -137,11 +156,11 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
             <ChevronDown
               className={cn(
                 "h-4 w-4 shrink-0 transition-transform",
-                dropdownOpen && "rotate-180"
+                isDropdownOpen && "rotate-180"
               )}
             />
           </button>
-          {dropdownOpen && (
+          {isDropdownOpen && (
             <div className="ml-4 mt-0.5 space-y-0.5">
               {children.map((child) => {
                 const ChildIcon = child.icon;

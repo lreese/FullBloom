@@ -7,6 +7,9 @@ import { VarietiesPage } from "@/pages/VarietiesPage";
 import { ProductLinesPage } from "@/pages/ProductLinesPage";
 import { ColorsPage } from "@/pages/ColorsPage";
 import { ProductTypesPage } from "@/pages/ProductTypesPage";
+import { SalesItemsPage } from "@/pages/SalesItemsPage";
+import { PriceListsPage } from "@/pages/PriceListsPage";
+import { CustomerPricesPage } from "@/pages/CustomerPricesPage";
 import "@/index.css";
 
 function App() {
@@ -22,6 +25,10 @@ function App() {
             <Route path="/products/product-lines" element={<ProductLinesPage />} />
             <Route path="/products/colors" element={<ColorsPage />} />
             <Route path="/products/product-types" element={<ProductTypesPage />} />
+            <Route path="/pricing" element={<Navigate to="/pricing/sales-items" replace />} />
+            <Route path="/pricing/sales-items" element={<SalesItemsPage />} />
+            <Route path="/pricing/price-lists" element={<PriceListsPage />} />
+            <Route path="/pricing/customer-prices" element={<CustomerPricesPage />} />
             <Route path="*" element={<Navigate to="/orders" replace />} />
           </Routes>
         </AppShell>

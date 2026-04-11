@@ -27,7 +27,8 @@ export interface Customer {
   payment_terms: string | null;
   email: string | null;
   notes: string | null;
-  price_type: string;
+  price_list_id: string | null;
+  price_list_name: string | null;
   is_active: boolean;
   stores?: Store[];
 }
@@ -36,7 +37,7 @@ export interface CustomerCreateRequest {
   customer_number: number;
   name: string;
   salesperson?: string | null;
-  price_type?: string;
+  price_list_id?: string | null;
   contact_name?: string | null;
   default_ship_via?: string | null;
   phone?: string | null;
@@ -49,7 +50,7 @@ export interface CustomerCreateRequest {
 export interface CustomerUpdateRequest {
   name?: string;
   salesperson?: string | null;
-  price_type?: string;
+  price_list_id?: string | null;
   contact_name?: string | null;
   default_ship_via?: string | null;
   phone?: string | null;
@@ -63,7 +64,6 @@ export interface DropdownOptions {
   salesperson: string[];
   default_ship_via: string[];
   payment_terms: string[];
-  price_type: string[];
 }
 
 // ── Products ─────────────────────────────────────────────────
@@ -71,6 +71,8 @@ export interface DropdownOptions {
 export interface SalesItem {
   id: string;
   name: string;
+  variety_id: string | null;
+  variety_name: string | null;
   stems_per_order: number;
   retail_price: string;
   is_active: boolean;
@@ -187,6 +189,108 @@ export interface CustomerPricing {
   customer_price: string;
   retail_price: string;
   is_custom: boolean;
+}
+
+export interface PriceList {
+  id: string;
+  name: string;
+  is_active: boolean;
+  customer_count: number;
+}
+
+export interface PriceListItem {
+  price_list_id: string;
+  sales_item_id: string;
+  price: string;
+}
+
+export interface PriceListMatrixRow {
+  sales_item_id: string;
+  sales_item_name: string;
+  variety_name: string;
+  stems_per_order: number;
+  retail_price: string;
+  prices: Record<string, string>;
+}
+
+export interface PriceListMatrixData {
+  price_lists: PriceList[];
+  items: PriceListMatrixRow[];
+}
+
+export interface CustomerPricingItem {
+  sales_item_id: string;
+  sales_item_name: string;
+  variety_name: string;
+  stems_per_order: number;
+  retail_price: string;
+  price_list_price: string;
+  customer_override: string | null;
+  effective_price: string;
+  source: "override" | "price_list" | "retail";
+  anomaly: boolean;
+}
+
+export interface ItemPricingCustomer {
+  customer_id: string;
+  customer_name: string;
+  price_list_name: string;
+  price_list_price: string;
+  customer_override: string | null;
+  effective_price: string;
+  source: "override" | "price_list" | "retail";
+  anomaly: boolean;
+}
+
+export interface PricingSummary {
+  total_items: number;
+  override_count: number;
+  override_percentage: number;
+}
+
+export interface CustomerPricingData {
+  customer: {
+    id: string;
+    name: string;
+    price_list_id: string | null;
+    price_list_name: string;
+  };
+  items: CustomerPricingItem[];
+  summary: PricingSummary;
+}
+
+export interface ItemPricingData {
+  sales_item: {
+    id: string;
+    name: string;
+    retail_price: string;
+  };
+  customers: ItemPricingCustomer[];
+}
+
+export interface CustomerPriceCreateRequest {
+  sales_item_id: string;
+  price: string;
+}
+
+export interface BulkCustomerPriceRequest {
+  action: "set_price" | "remove_overrides" | "reset_to_list";
+  sales_item_ids: string[];
+  price?: string;
+}
+
+export interface BulkPriceListItemRequest {
+  price_list_id: string;
+  sales_item_ids: string[];
+  price: string;
+}
+
+export interface ImpactPreview {
+  customers_on_list: number;
+  customers_with_overrides: number;
+  customers_affected: number;
+  current_price: string;
+  new_price: string;
 }
 
 // ── Orders ───────────────────────────────────────────────────
