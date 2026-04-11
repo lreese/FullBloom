@@ -20,17 +20,15 @@ async def get_next_customer_number() -> int:
 async def get_dropdown_options() -> dict[str, list[str]]:
     """Return distinct values for dropdown fields from existing data."""
     customers = await Customer.all().values(
-        "salesperson", "default_ship_via", "payment_terms", "price_type"
+        "salesperson", "default_ship_via", "payment_terms"
     )
 
     salesperson = sorted({c["salesperson"] for c in customers if c["salesperson"]})
     default_ship_via = sorted({c["default_ship_via"] for c in customers if c["default_ship_via"]})
     payment_terms = sorted({c["payment_terms"] for c in customers if c["payment_terms"]})
-    price_type = sorted({c["price_type"] for c in customers if c["price_type"]})
 
     return {
         "salesperson": salesperson,
         "default_ship_via": default_ship_via,
         "payment_terms": payment_terms,
-        "price_type": price_type,
     }

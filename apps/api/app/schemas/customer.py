@@ -1,5 +1,7 @@
 """Pydantic schemas for customer endpoints."""
 
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -24,7 +26,8 @@ class CustomerListResponse(BaseModel):
     payment_terms: str | None
     email: str | None
     notes: str | None
-    price_type: str
+    price_list_id: str | None
+    price_list_name: str | None
     is_active: bool
 
 
@@ -36,7 +39,7 @@ class CustomerCreateRequest(BaseModel):
     customer_number: int = Field(gt=0)
     name: str = Field(max_length=255)
     salesperson: str | None = Field(None, max_length=10)
-    price_type: str = Field("Retail", max_length=50)
+    price_list_id: UUID | None = None
     contact_name: str | None = Field(None, max_length=255)
     default_ship_via: str | None = Field(None, max_length=100)
     phone: str | None = Field(None, max_length=50)
@@ -56,7 +59,7 @@ class CustomerCreateRequest(BaseModel):
 class CustomerUpdateRequest(BaseModel):
     name: str | None = Field(None, max_length=255)
     salesperson: str | None = Field(None, max_length=10)
-    price_type: str | None = Field(None, max_length=50)
+    price_list_id: UUID | None = None
     contact_name: str | None = Field(None, max_length=255)
     default_ship_via: str | None = Field(None, max_length=100)
     phone: str | None = Field(None, max_length=50)
@@ -77,7 +80,6 @@ class DropdownOptionsResponse(BaseModel):
     salesperson: list[str]
     default_ship_via: list[str]
     payment_terms: list[str]
-    price_type: list[str]
 
 
 class NextNumberResponse(BaseModel):

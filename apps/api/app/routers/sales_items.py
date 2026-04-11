@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
+from app.models.pricing import PriceList, PriceListItem
 from app.models.product import SalesItem, Variety
 from app.schemas.sales_item import (
     SalesItemCreateRequest,
@@ -15,6 +16,34 @@ from app.schemas.sales_item import (
 )
 
 router = APIRouter(prefix="/api/v1", tags=["sales-items"])
+
+
+def _build_sales_item_response(
+    si: SalesItem,
+    customer_prices_count: int,
+    price_list_prices: dict[str, str] | None = None,
+) -> SalesItemResponse:
+    """Build a SalesItemResponse from a SalesItem instance."""
+    return SalesItemResponse(
+        id=str(si.id),
+        name=si.name,
+        stems_per_order=si.stems_per_order,
+        retail_price=str(si.retail_price),
+        cost_price=str(si.cost_price) if si.cost_price is not None else None,
+        is_active=si.is_active,
+        customer_prices_count=customer_prices_count,
+        price_list_prices=price_list_prices or {},
+    )
+
+
+async def _get_price_list_prices(si_id: UUID) -> dict[str, str]:
+    """Get price list prices for a sales item as a {price_list_id: price} map."""
+    plis = await PriceListItem.filter(sales_item_id=si_id).prefetch_related("price_list").all()
+    return {
+        str(pli.price_list_id): str(pli.price)
+        for pli in plis
+        if pli.price_list.is_active  # type: ignore[union-attr]
+    }
 
 
 @router.get("/varieties/{variety_id}/sales-items")
@@ -32,19 +61,41 @@ async def list_sales_items(
 
     sales_items = await qs.prefetch_related("customer_prices").order_by("name")
 
-    return {
-        "data": [
-            SalesItemResponse(
-                id=str(si.id),
-                name=si.name,
-                stems_per_order=si.stems_per_order,
-                retail_price=str(si.retail_price),
-                is_active=si.is_active,
+    data = []
+    for si in sales_items:
+        plp = await _get_price_list_prices(si.id)
+        data.append(
+            _build_sales_item_response(
+                si,
                 customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+                price_list_prices=plp,
             )
-            for si in sales_items
-        ]
-    }
+        )
+
+    return {"data": data}
+
+
+@router.get("/sales-items")
+async def list_all_sales_items(include_inactive: bool = False) -> dict:
+    """List all sales items across all varieties."""
+    qs = SalesItem.all()
+    if not include_inactive:
+        qs = qs.filter(is_active=True)
+
+    sales_items = await qs.prefetch_related("customer_prices", "variety").order_by("name")
+
+    data = []
+    for si in sales_items:
+        plp = await _get_price_list_prices(si.id)
+        data.append(
+            _build_sales_item_response(
+                si,
+                customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+                price_list_prices=plp,
+            )
+        )
+
+    return {"data": data}
 
 
 @router.post("/varieties/{variety_id}/sales-items", status_code=201)
@@ -64,15 +115,18 @@ async def create_sales_item(
         )
 
     si = await SalesItem.create(variety_id=variety_id, **data.model_dump())
-    return {
-        "data": SalesItemResponse(
-            id=str(si.id),
-            name=si.name,
-            stems_per_order=si.stems_per_order,
-            retail_price=str(si.retail_price),
-            is_active=si.is_active,
-            customer_prices_count=0,
+
+    # Pre-populate PriceListItems for all active price lists at retail price
+    active_lists = await PriceList.filter(is_active=True).all()
+    for pl in active_lists:
+        await PriceListItem.create(
+            price_list=pl, sales_item=si, price=si.retail_price
         )
+
+    plp = await _get_price_list_prices(si.id)
+
+    return {
+        "data": _build_sales_item_response(si, customer_prices_count=0, price_list_prices=plp)
     }
 
 
@@ -102,15 +156,13 @@ async def update_sales_item(
 
     await si.update_from_dict(update_data).save()
     await si.fetch_related("customer_prices")
+    plp = await _get_price_list_prices(si.id)
 
     return {
-        "data": SalesItemResponse(
-            id=str(si.id),
-            name=si.name,
-            stems_per_order=si.stems_per_order,
-            retail_price=str(si.retail_price),
-            is_active=si.is_active,
+        "data": _build_sales_item_response(
+            si,
             customer_prices_count=len(si.customer_prices),  # type: ignore[attr-defined]
+            price_list_prices=plp,
         )
     }
 

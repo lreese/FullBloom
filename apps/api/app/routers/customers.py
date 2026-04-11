@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 
 from app.models.customer import Customer
+from app.models.pricing import PriceList
 from app.schemas.customer import (
     CustomerCreateRequest,
     CustomerListResponse,
@@ -18,6 +19,34 @@ from app.services.customer_service import get_dropdown_options, get_next_custome
 router = APIRouter(prefix="/api/v1", tags=["customers"])
 
 
+async def _get_price_list_name(price_list_id) -> str | None:
+    """Resolve price list name from ID."""
+    if price_list_id is None:
+        return None
+    pl = await PriceList.get_or_none(id=price_list_id)
+    return pl.name if pl else None
+
+
+async def _build_customer_list_response(c: Customer) -> CustomerListResponse:
+    """Build a CustomerListResponse with price_list_name resolved."""
+    return CustomerListResponse(
+        id=str(c.id),
+        customer_number=c.customer_number,
+        name=c.name,
+        salesperson=c.salesperson,
+        contact_name=c.contact_name,
+        default_ship_via=c.default_ship_via,
+        phone=c.phone,
+        location=c.location,
+        payment_terms=c.payment_terms,
+        email=c.email,
+        notes=c.notes,
+        price_list_id=str(c.price_list_id) if c.price_list_id else None,
+        price_list_name=await _get_price_list_name(c.price_list_id),
+        is_active=c.is_active,
+    )
+
+
 @router.get("/customers")
 async def list_customers(active: bool | None = True) -> dict:
     """List customers filtered by active status."""
@@ -26,24 +55,7 @@ async def list_customers(active: bool | None = True) -> dict:
         qs = qs.filter(is_active=active)
     customers = await qs.order_by("name")
     return {
-        "data": [
-            CustomerListResponse(
-                id=str(c.id),
-                customer_number=c.customer_number,
-                name=c.name,
-                salesperson=c.salesperson,
-                contact_name=c.contact_name,
-                default_ship_via=c.default_ship_via,
-                phone=c.phone,
-                location=c.location,
-                payment_terms=c.payment_terms,
-                email=c.email,
-                notes=c.notes,
-                price_type=c.price_type,
-                is_active=c.is_active,
-            )
-            for c in customers
-        ]
+        "data": [await _build_customer_list_response(c) for c in customers]
     }
 
 
@@ -80,7 +92,8 @@ async def get_customer(customer_id: UUID) -> dict:
             payment_terms=customer.payment_terms,
             email=customer.email,
             notes=customer.notes,
-            price_type=customer.price_type,
+            price_list_id=str(customer.price_list_id) if customer.price_list_id else None,
+            price_list_name=await _get_price_list_name(customer.price_list_id),
             is_active=customer.is_active,
             stores=[
                 {"id": str(s.id), "name": s.name}
@@ -99,24 +112,15 @@ async def create_customer(data: CustomerCreateRequest) -> dict:
             status_code=422,
             detail=f"Customer number {data.customer_number} already exists",
         )
+
+    # Validate price_list_id if provided
+    if data.price_list_id:
+        pl = await PriceList.get_or_none(id=data.price_list_id)
+        if pl is None:
+            raise HTTPException(status_code=404, detail="Price list not found")
+
     customer = await Customer.create(**data.model_dump())
-    return {
-        "data": CustomerListResponse(
-            id=str(customer.id),
-            customer_number=customer.customer_number,
-            name=customer.name,
-            salesperson=customer.salesperson,
-            contact_name=customer.contact_name,
-            default_ship_via=customer.default_ship_via,
-            phone=customer.phone,
-            location=customer.location,
-            payment_terms=customer.payment_terms,
-            email=customer.email,
-            notes=customer.notes,
-            price_type=customer.price_type,
-            is_active=customer.is_active,
-        )
-    }
+    return {"data": await _build_customer_list_response(customer)}
 
 
 @router.patch("/customers/{customer_id}")
@@ -135,24 +139,14 @@ async def update_customer(customer_id: UUID, data: CustomerUpdateRequest) -> dic
     if not update_data:
         raise HTTPException(status_code=422, detail="No fields to update")
 
+    # Validate price_list_id if provided
+    if "price_list_id" in update_data and update_data["price_list_id"] is not None:
+        pl = await PriceList.get_or_none(id=update_data["price_list_id"])
+        if pl is None:
+            raise HTTPException(status_code=404, detail="Price list not found")
+
     await customer.update_from_dict(update_data).save()
-    return {
-        "data": CustomerListResponse(
-            id=str(customer.id),
-            customer_number=customer.customer_number,
-            name=customer.name,
-            salesperson=customer.salesperson,
-            contact_name=customer.contact_name,
-            default_ship_via=customer.default_ship_via,
-            phone=customer.phone,
-            location=customer.location,
-            payment_terms=customer.payment_terms,
-            email=customer.email,
-            notes=customer.notes,
-            price_type=customer.price_type,
-            is_active=customer.is_active,
-        )
-    }
+    return {"data": await _build_customer_list_response(customer)}
 
 
 @router.post("/customers/{customer_id}/archive")
