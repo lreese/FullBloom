@@ -131,6 +131,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         </span>
                       )}
                       {col.filterable && distinctValues[col.key] && (
+                        <span onClick={(e) => e.stopPropagation()}>
                         <ColumnFilter
                           values={distinctValues[col.key]}
                           selected={columnFilters[col.key] ?? []}
@@ -138,6 +139,7 @@ export function DataTable<T extends Record<string, unknown>>({
                             setColumnFilter(col.key, selected)
                           }
                         />
+                        </span>
                       )}
                     </span>
 
