@@ -127,8 +127,12 @@ export function CustomerTable({
     });
   };
 
-  const handleDragStart = useCallback((idx: number) => {
+  const [dragging, setDragging] = useState(false);
+
+  const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
     dragItem.current = idx;
+    setDragging(true);
+    e.dataTransfer.effectAllowed = "move";
   }, []);
 
   const handleDragEnter = useCallback((idx: number) => {
@@ -136,6 +140,7 @@ export function CustomerTable({
   }, []);
 
   const handleDragEnd = useCallback(() => {
+    setDragging(false);
     if (dragItem.current === null || dragOver.current === null) return;
     if (dragItem.current === dragOver.current) {
       dragItem.current = null;
@@ -269,18 +274,20 @@ export function CustomerTable({
                   <div
                     key={col.key}
                     draggable
-                    onDragStart={() => handleDragStart(idx)}
+                    onDragStart={(e) => handleDragStart(e, idx)}
                     onDragEnter={() => handleDragEnter(idx)}
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => e.preventDefault()}
                     className="flex items-center gap-1.5 px-1 py-1 text-sm rounded hover:bg-[#f4f1ec] cursor-grab active:cursor-grabbing"
                   >
                     <GripVertical className="h-3 w-3 text-[#94a3b8] shrink-0" />
-                    <Checkbox
-                      checked={columnPrefs.visible.includes(col.key)}
-                      onCheckedChange={() => toggleColumn(col.key)}
-                    />
-                    <span className="text-[#334155] select-none">{col.label}</span>
+                    <span className={dragging ? "pointer-events-none" : ""}>
+                      <Checkbox
+                        checked={columnPrefs.visible.includes(col.key)}
+                        onCheckedChange={() => toggleColumn(col.key)}
+                      />
+                    </span>
+                    <span className={cn("text-[#334155] select-none", dragging && "pointer-events-none")}>{col.label}</span>
                   </div>
                 );
               })}
