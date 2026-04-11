@@ -13,6 +13,9 @@ class Customer(Model):
     customer_number = fields.IntField(unique=True)
     name = fields.CharField(max_length=255)
     price_type = fields.CharField(max_length=50, default="Retail")
+    price_list = fields.ForeignKeyField(
+        "models.PriceList", related_name="customers", on_delete=fields.SET_NULL, null=True
+    )
     is_active = fields.BooleanField(default=True)
     salesperson = fields.CharField(max_length=10, null=True)
     contact_name = fields.CharField(max_length=255, null=True)

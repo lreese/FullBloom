@@ -90,6 +90,7 @@ class SalesItem(Model):
     name = fields.CharField(max_length=100, unique=True)
     stems_per_order = fields.IntField()
     retail_price = fields.DecimalField(max_digits=10, decimal_places=2)
+    cost_price = fields.DecimalField(max_digits=10, decimal_places=2, null=True)
     is_active = fields.BooleanField(default=True)
 
     class Meta:
