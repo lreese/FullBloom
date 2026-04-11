@@ -215,9 +215,12 @@ async def test_bulk_remove_overrides(async_client, setup_pricing):
 
 
 async def test_bulk_reset_to_list(async_client, setup_pricing):
-    """Bulk reset_to_list sets override to price list price."""
+    """Bulk reset_to_list deletes overrides so customer falls through to price list price."""
     customer = setup_pricing["customer"]
     si = setup_pricing["sales_item"]
+
+    # Create an override first
+    await CustomerPrice.create(customer=customer, sales_item=si, price=8.00)
 
     resp = await async_client.post(
         f"/api/v1/customers/{customer.id}/prices/bulk",
@@ -229,10 +232,11 @@ async def test_bulk_reset_to_list(async_client, setup_pricing):
     assert resp.status_code == 200
     assert resp.json()["data"]["affected_count"] == 1
 
+    # Override should be deleted, not updated
     cp = await CustomerPrice.filter(
         customer_id=customer.id, sales_item_id=si.id
     ).first()
-    assert float(cp.price) == 10.00  # matches PriceListItem price
+    assert cp is None  # override removed; customer falls through to price list
 
 
 # ---------------------------------------------------------------------------

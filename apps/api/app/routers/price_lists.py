@@ -1,5 +1,6 @@
 """Price list endpoints — CRUD, matrix, inline edit, bulk, import/export."""
 
+import asyncio
 import csv
 import io
 from decimal import Decimal, InvalidOperation
@@ -7,9 +8,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from tortoise.transactions import in_transaction
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_CSV_ROWS = 10_000
+_import_lock = asyncio.Lock()
 
 from app.models.customer import Customer
 from app.models.pricing import PriceList, PriceListItem
@@ -210,29 +213,38 @@ async def bulk_update_price_list_items(body: BulkPriceListItemRequest) -> dict:
     if pl is None:
         raise HTTPException(status_code=404, detail="Price list not found")
 
+    # M3: Validate all sales_item_ids exist before processing
+    existing_items = await SalesItem.filter(id__in=body.sales_item_ids).values_list("id", flat=True)
+    existing_ids = {str(sid) for sid in existing_items}
+    missing = [str(sid) for sid in body.sales_item_ids if str(sid) not in existing_ids]
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Sales items not found: {', '.join(missing[:10])}",
+        )
+
     new_price = Decimal(body.price)
     updated = 0
 
-    for si_id in body.sales_item_ids:
-        pli = await PriceListItem.filter(
-            price_list_id=body.price_list_id, sales_item_id=si_id
-        ).first()
-        if pli:
-            old_price = pli.price
-            pli.price = new_price
-            await pli.save()
-            await log_price_change(
-                change_type="price_list_item",
-                action="updated",
-                sales_item_id=si_id,
-                price_list_id=body.price_list_id,
-                old_price=old_price,
-                new_price=new_price,
-            )
-            updated += 1
-        else:
-            si = await SalesItem.get_or_none(id=si_id)
-            if si:
+    async with in_transaction():
+        for si_id in body.sales_item_ids:
+            pli = await PriceListItem.filter(
+                price_list_id=body.price_list_id, sales_item_id=si_id
+            ).first()
+            if pli:
+                old_price = pli.price
+                pli.price = new_price
+                await pli.save()
+                await log_price_change(
+                    change_type="price_list_item",
+                    action="updated",
+                    sales_item_id=si_id,
+                    price_list_id=body.price_list_id,
+                    old_price=old_price,
+                    new_price=new_price,
+                )
+                updated += 1
+            else:
                 await PriceListItem.create(
                     price_list_id=body.price_list_id,
                     sales_item_id=si_id,
@@ -347,84 +359,93 @@ async def export_matrix_csv() -> StreamingResponse:
 @router.post("/price-lists/{price_list_id}/import")
 async def import_price_list_csv(price_list_id: UUID, file: UploadFile) -> dict:
     """Import prices for a price list from CSV. Matches by sales item name."""
+    # M6: Rate limiting via import lock
+    if _import_lock.locked():
+        raise HTTPException(status_code=409, detail="Another import is in progress")
+
     pl = await PriceList.get_or_none(id=price_list_id)
     if pl is None:
         raise HTTPException(status_code=404, detail="Price list not found")
 
-    content = await file.read()
-    if len(content) > MAX_UPLOAD_BYTES:
-        raise HTTPException(
-            status_code=413,
-            detail=f"File too large ({len(content)} bytes). Maximum is {MAX_UPLOAD_BYTES} bytes.",
-        )
+    async with _import_lock:
+        content = await file.read()
+        if len(content) > MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large ({len(content)} bytes). Maximum is {MAX_UPLOAD_BYTES} bytes.",
+            )
 
-    try:
-        text = content.decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=422, detail="File must be UTF-8 encoded")
-
-    reader = csv.DictReader(io.StringIO(text))
-    rows = list(reader)
-    if len(rows) > MAX_CSV_ROWS:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Too many rows ({len(rows)}). Maximum is {MAX_CSV_ROWS}.",
-        )
-
-    updated_count = 0
-    not_found_count = 0
-
-    for row in rows:
-        name = row.get("Sales Item", "").strip()
-        price_str = row.get("Price", "").strip()
-        if not name or not price_str:
-            continue
-
-        si = await SalesItem.filter(name=name).first()
-        if si is None:
-            not_found_count += 1
-            continue
-
+        # M4: Handle BOM and non-UTF-8 files gracefully
         try:
-            price = Decimal(price_str.replace("$", "").replace(",", ""))
-        except InvalidOperation:
-            not_found_count += 1
-            continue
-
-        if price < 0:
-            not_found_count += 1
-            continue
-
-        pli = await PriceListItem.filter(
-            price_list_id=price_list_id, sales_item_id=si.id
-        ).first()
-
-        if pli:
-            old_price = pli.price
-            pli.price = price
-            await pli.save()
-            await log_price_change(
-                change_type="price_list_item",
-                action="updated",
-                sales_item_id=si.id,
-                price_list_id=price_list_id,
-                old_price=old_price,
-                new_price=price,
+            text = content.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            raise HTTPException(
+                status_code=422,
+                detail="File is not valid UTF-8. Please save as UTF-8 CSV.",
             )
-        else:
-            await PriceListItem.create(
-                price_list_id=price_list_id,
-                sales_item_id=si.id,
-                price=price,
+
+        reader = csv.DictReader(io.StringIO(text))
+        rows = list(reader)
+        if len(rows) > MAX_CSV_ROWS:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Too many rows ({len(rows)}). Maximum is {MAX_CSV_ROWS}.",
             )
-            await log_price_change(
-                change_type="price_list_item",
-                action="created",
-                sales_item_id=si.id,
-                price_list_id=price_list_id,
-                old_price=None,
-                new_price=price,
-            )
-        updated_count += 1
+
+        updated_count = 0
+        not_found_count = 0
+
+        for row in rows:
+            name = row.get("Sales Item", "").strip()
+            price_str = row.get("Price", "").strip()
+            if not name or not price_str:
+                continue
+
+            si = await SalesItem.filter(name=name).first()
+            if si is None:
+                not_found_count += 1
+                continue
+
+            try:
+                price = Decimal(price_str.replace("$", "").replace(",", ""))
+            except InvalidOperation:
+                not_found_count += 1
+                continue
+
+            if price < 0:
+                not_found_count += 1
+                continue
+
+            pli = await PriceListItem.filter(
+                price_list_id=price_list_id, sales_item_id=si.id
+            ).first()
+
+            if pli:
+                old_price = pli.price
+                pli.price = price
+                await pli.save()
+                await log_price_change(
+                    change_type="price_list_item",
+                    action="updated",
+                    sales_item_id=si.id,
+                    price_list_id=price_list_id,
+                    old_price=old_price,
+                    new_price=price,
+                )
+            else:
+                await PriceListItem.create(
+                    price_list_id=price_list_id,
+                    sales_item_id=si.id,
+                    price=price,
+                )
+                await log_price_change(
+                    change_type="price_list_item",
+                    action="created",
+                    sales_item_id=si.id,
+                    price_list_id=price_list_id,
+                    old_price=None,
+                    new_price=price,
+                )
+            updated_count += 1
 
     return {"data": {"updated_count": updated_count, "not_found_count": not_found_count}}

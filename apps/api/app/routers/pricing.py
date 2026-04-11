@@ -1,5 +1,6 @@
 """Customer pricing endpoints — overrides, bulk actions, import/export."""
 
+import asyncio
 import csv
 import io
 from decimal import Decimal, InvalidOperation
@@ -7,9 +8,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
+from tortoise.transactions import in_transaction
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_CSV_ROWS = 10_000
+_import_lock = asyncio.Lock()
 
 from app.models.customer import Customer
 from app.models.pricing import CustomerPrice
@@ -152,78 +155,30 @@ async def bulk_customer_prices(customer_id: UUID, body: BulkCustomerPriceRequest
     if customer is None:
         raise HTTPException(status_code=404, detail="Customer not found")
 
+    # M3: Validate all sales_item_ids exist before processing
+    existing_items = await SalesItem.filter(id__in=body.sales_item_ids).values_list("id", flat=True)
+    existing_ids = {str(sid) for sid in existing_items}
+    missing = [str(sid) for sid in body.sales_item_ids if str(sid) not in existing_ids]
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Sales items not found: {', '.join(missing[:10])}",
+        )
+
     affected = 0
 
-    if body.action == "set_price":
-        if body.price is None:
-            raise HTTPException(status_code=422, detail="price is required for set_price action")
-        new_price = Decimal(body.price)
-        for si_id in body.sales_item_ids:
-            existing = await CustomerPrice.filter(
-                customer_id=customer_id, sales_item_id=si_id
-            ).first()
-            if existing:
-                old_price = existing.price
-                existing.price = new_price
-                await existing.save()
-                await log_price_change(
-                    change_type="customer_override",
-                    action="updated",
-                    sales_item_id=si_id,
-                    customer_id=customer_id,
-                    old_price=old_price,
-                    new_price=new_price,
-                )
-            else:
-                await CustomerPrice.create(
-                    customer_id=customer_id,
-                    sales_item_id=si_id,
-                    price=new_price,
-                )
-                await log_price_change(
-                    change_type="customer_override",
-                    action="created",
-                    sales_item_id=si_id,
-                    customer_id=customer_id,
-                    old_price=None,
-                    new_price=new_price,
-                )
-            affected += 1
-
-    elif body.action == "remove_overrides":
-        for si_id in body.sales_item_ids:
-            cp = await CustomerPrice.filter(
-                customer_id=customer_id, sales_item_id=si_id
-            ).first()
-            if cp:
-                old_price = cp.price
-                await cp.delete()
-                await log_price_change(
-                    change_type="customer_override",
-                    action="deleted",
-                    sales_item_id=si_id,
-                    customer_id=customer_id,
-                    old_price=old_price,
-                    new_price=None,
-                )
-                affected += 1
-
-    elif body.action == "reset_to_list":
-        from app.models.pricing import PriceListItem
-
-        for si_id in body.sales_item_ids:
-            pli = None
-            if customer.price_list_id:
-                pli = await PriceListItem.filter(
-                    price_list_id=customer.price_list_id, sales_item_id=si_id
-                ).first()
-            if pli:
+    async with in_transaction():
+        if body.action == "set_price":
+            if body.price is None:
+                raise HTTPException(status_code=422, detail="price is required for set_price action")
+            new_price = Decimal(body.price)
+            for si_id in body.sales_item_ids:
                 existing = await CustomerPrice.filter(
                     customer_id=customer_id, sales_item_id=si_id
                 ).first()
                 if existing:
                     old_price = existing.price
-                    existing.price = pli.price
+                    existing.price = new_price
                     await existing.save()
                     await log_price_change(
                         change_type="customer_override",
@@ -231,13 +186,13 @@ async def bulk_customer_prices(customer_id: UUID, body: BulkCustomerPriceRequest
                         sales_item_id=si_id,
                         customer_id=customer_id,
                         old_price=old_price,
-                        new_price=pli.price,
+                        new_price=new_price,
                     )
                 else:
                     await CustomerPrice.create(
                         customer_id=customer_id,
                         sales_item_id=si_id,
-                        price=pli.price,
+                        price=new_price,
                     )
                     await log_price_change(
                         change_type="customer_override",
@@ -245,9 +200,46 @@ async def bulk_customer_prices(customer_id: UUID, body: BulkCustomerPriceRequest
                         sales_item_id=si_id,
                         customer_id=customer_id,
                         old_price=None,
-                        new_price=pli.price,
+                        new_price=new_price,
                     )
                 affected += 1
+
+        elif body.action == "remove_overrides":
+            for si_id in body.sales_item_ids:
+                cp = await CustomerPrice.filter(
+                    customer_id=customer_id, sales_item_id=si_id
+                ).first()
+                if cp:
+                    old_price = cp.price
+                    await cp.delete()
+                    await log_price_change(
+                        change_type="customer_override",
+                        action="deleted",
+                        sales_item_id=si_id,
+                        customer_id=customer_id,
+                        old_price=old_price,
+                        new_price=None,
+                    )
+                    affected += 1
+
+        elif body.action == "reset_to_list":
+            # M5: Delete overrides so customers fall through to price list price
+            for si_id in body.sales_item_ids:
+                cp = await CustomerPrice.filter(
+                    customer_id=customer_id, sales_item_id=si_id
+                ).first()
+                if cp:
+                    old_price = cp.price
+                    await cp.delete()
+                    await log_price_change(
+                        change_type="customer_override",
+                        action="deleted",
+                        sales_item_id=si_id,
+                        customer_id=customer_id,
+                        old_price=old_price,
+                        new_price=None,
+                    )
+                    affected += 1
 
     return {"data": {"affected_count": affected}}
 
@@ -290,87 +282,96 @@ async def export_customer_pricing_csv(customer_id: UUID) -> StreamingResponse:
 @router.post("/customers/{customer_id}/prices/import")
 async def import_customer_prices_csv(customer_id: UUID, file: UploadFile) -> dict:
     """Import customer price overrides from CSV."""
+    # M6: Rate limiting via import lock
+    if _import_lock.locked():
+        raise HTTPException(status_code=409, detail="Another import is in progress")
+
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    content = await file.read()
-    if len(content) > MAX_UPLOAD_BYTES:
-        raise HTTPException(
-            status_code=413,
-            detail=f"File too large ({len(content)} bytes). Maximum is {MAX_UPLOAD_BYTES} bytes.",
-        )
+    async with _import_lock:
+        content = await file.read()
+        if len(content) > MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large ({len(content)} bytes). Maximum is {MAX_UPLOAD_BYTES} bytes.",
+            )
 
-    try:
-        text = content.decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=422, detail="File must be UTF-8 encoded")
-
-    reader = csv.DictReader(io.StringIO(text))
-    rows = list(reader)
-    if len(rows) > MAX_CSV_ROWS:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Too many rows ({len(rows)}). Maximum is {MAX_CSV_ROWS}.",
-        )
-
-    created_count = 0
-    updated_count = 0
-    not_found_count = 0
-
-    for row in rows:
-        name = row.get("Sales Item", "").strip()
-        price_str = row.get("Price", "").strip()
-        if not name or not price_str:
-            continue
-
-        si = await SalesItem.filter(name=name).first()
-        if si is None:
-            not_found_count += 1
-            continue
-
+        # M4: Handle BOM and non-UTF-8 files gracefully
         try:
-            price = Decimal(price_str.replace("$", "").replace(",", ""))
-        except InvalidOperation:
-            not_found_count += 1
-            continue
-
-        if price < 0:
-            not_found_count += 1
-            continue
-
-        existing = await CustomerPrice.filter(
-            customer_id=customer_id, sales_item_id=si.id
-        ).first()
-
-        if existing:
-            old_price = existing.price
-            existing.price = price
-            await existing.save()
-            await log_price_change(
-                change_type="customer_override",
-                action="updated",
-                sales_item_id=si.id,
-                customer_id=customer_id,
-                old_price=old_price,
-                new_price=price,
+            text = content.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            raise HTTPException(
+                status_code=422,
+                detail="File is not valid UTF-8. Please save as UTF-8 CSV.",
             )
-            updated_count += 1
-        else:
-            await CustomerPrice.create(
-                customer_id=customer_id,
-                sales_item_id=si.id,
-                price=price,
+
+        reader = csv.DictReader(io.StringIO(text))
+        rows = list(reader)
+        if len(rows) > MAX_CSV_ROWS:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Too many rows ({len(rows)}). Maximum is {MAX_CSV_ROWS}.",
             )
-            await log_price_change(
-                change_type="customer_override",
-                action="created",
-                sales_item_id=si.id,
-                customer_id=customer_id,
-                old_price=None,
-                new_price=price,
-            )
-            created_count += 1
+
+        created_count = 0
+        updated_count = 0
+        not_found_count = 0
+
+        for row in rows:
+            name = row.get("Sales Item", "").strip()
+            price_str = row.get("Price", "").strip()
+            if not name or not price_str:
+                continue
+
+            si = await SalesItem.filter(name=name).first()
+            if si is None:
+                not_found_count += 1
+                continue
+
+            try:
+                price = Decimal(price_str.replace("$", "").replace(",", ""))
+            except InvalidOperation:
+                not_found_count += 1
+                continue
+
+            if price < 0:
+                not_found_count += 1
+                continue
+
+            existing = await CustomerPrice.filter(
+                customer_id=customer_id, sales_item_id=si.id
+            ).first()
+
+            if existing:
+                old_price = existing.price
+                existing.price = price
+                await existing.save()
+                await log_price_change(
+                    change_type="customer_override",
+                    action="updated",
+                    sales_item_id=si.id,
+                    customer_id=customer_id,
+                    old_price=old_price,
+                    new_price=price,
+                )
+                updated_count += 1
+            else:
+                await CustomerPrice.create(
+                    customer_id=customer_id,
+                    sales_item_id=si.id,
+                    price=price,
+                )
+                await log_price_change(
+                    change_type="customer_override",
+                    action="created",
+                    sales_item_id=si.id,
+                    customer_id=customer_id,
+                    old_price=None,
+                    new_price=price,
+                )
+                created_count += 1
 
     return {
         "data": {
