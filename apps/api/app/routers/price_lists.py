@@ -1,0 +1,425 @@
+"""Price list endpoints — CRUD, matrix, inline edit, bulk, import/export."""
+
+import csv
+import io
+from decimal import Decimal, InvalidOperation
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
+
+from app.models.customer import Customer
+from app.models.pricing import PriceList, PriceListItem
+from app.models.product import SalesItem
+from app.schemas.pricing import (
+    BulkPriceListItemRequest,
+    PriceListCreateRequest,
+    PriceListUpdateRequest,
+)
+from app.services.pricing_service import (
+    archive_price_list,
+    create_price_list,
+    get_impact_preview,
+    get_price_list_matrix,
+    log_price_change,
+)
+
+router = APIRouter(prefix="/api/v1", tags=["price-lists"])
+
+
+# ---------------------------------------------------------------------------
+# Price List CRUD
+# ---------------------------------------------------------------------------
+
+
+@router.get("/price-lists")
+async def list_price_lists(active: bool | None = True) -> dict:
+    """List price lists with customer counts."""
+    qs = PriceList.all()
+    if active is not None:
+        qs = qs.filter(is_active=active)
+    price_lists = await qs.order_by("name")
+
+    data = []
+    for pl in price_lists:
+        count = await Customer.filter(price_list_id=pl.id, is_active=True).count()
+        data.append({
+            "id": str(pl.id),
+            "name": pl.name,
+            "is_active": pl.is_active,
+            "customer_count": count,
+        })
+
+    return {"data": data}
+
+
+@router.post("/price-lists", status_code=201)
+async def create_price_list_endpoint(body: PriceListCreateRequest) -> dict:
+    """Create a new price list, pre-populating items from a source."""
+    existing = await PriceList.filter(name=body.name).first()
+    if existing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Price list '{body.name}' already exists",
+        )
+
+    if body.copy_from:
+        source = await PriceList.get_or_none(id=body.copy_from)
+        if source is None:
+            raise HTTPException(status_code=404, detail="Source price list not found")
+
+    pl = await create_price_list(body.name, body.copy_from)
+
+    return {
+        "data": {
+            "id": str(pl.id),
+            "name": pl.name,
+            "is_active": pl.is_active,
+            "customer_count": 0,
+        }
+    }
+
+
+@router.patch("/price-lists/{price_list_id}")
+async def rename_price_list(price_list_id: UUID, body: PriceListUpdateRequest) -> dict:
+    """Rename a price list."""
+    pl = await PriceList.get_or_none(id=price_list_id)
+    if pl is None:
+        raise HTTPException(status_code=404, detail="Price list not found")
+
+    # Check uniqueness
+    existing = await PriceList.filter(name=body.name).exclude(id=price_list_id).first()
+    if existing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Price list '{body.name}' already exists",
+        )
+
+    pl.name = body.name
+    await pl.save()
+    count = await Customer.filter(price_list_id=pl.id, is_active=True).count()
+
+    return {
+        "data": {
+            "id": str(pl.id),
+            "name": pl.name,
+            "is_active": pl.is_active,
+            "customer_count": count,
+        }
+    }
+
+
+@router.post("/price-lists/{price_list_id}/archive")
+async def archive_price_list_endpoint(price_list_id: UUID) -> dict:
+    """Archive a price list, converting customer assignments to overrides."""
+    result = await archive_price_list(price_list_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Price list not found")
+    return {"data": result}
+
+
+@router.post("/price-lists/{price_list_id}/restore")
+async def restore_price_list(price_list_id: UUID) -> dict:
+    """Restore an archived price list."""
+    pl = await PriceList.get_or_none(id=price_list_id)
+    if pl is None:
+        raise HTTPException(status_code=404, detail="Price list not found")
+    pl.is_active = True
+    await pl.save()
+    return {"data": {"id": str(pl.id), "is_active": True}}
+
+
+# ---------------------------------------------------------------------------
+# Matrix
+# ---------------------------------------------------------------------------
+
+
+@router.get("/price-lists/matrix")
+async def price_list_matrix() -> dict:
+    """Get the full price matrix: all active sales items x all active price lists."""
+    data = await get_price_list_matrix()
+    return {"data": data}
+
+
+# ---------------------------------------------------------------------------
+# Price List Item (cell) Endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.patch("/price-list-items/{price_list_id}/{sales_item_id}")
+async def update_price_list_item(
+    price_list_id: UUID, sales_item_id: UUID, body: dict
+) -> dict:
+    """Update a single cell in the price list matrix."""
+    price_str = body.get("price")
+    if price_str is None:
+        raise HTTPException(status_code=422, detail="price is required")
+
+    try:
+        new_price = Decimal(str(price_str).replace("$", "").replace(",", "").strip())
+        if new_price < 0:
+            raise HTTPException(status_code=422, detail="Price cannot be negative")
+    except InvalidOperation:
+        raise HTTPException(status_code=422, detail="Price must be a valid number")
+
+    pli = await PriceListItem.filter(
+        price_list_id=price_list_id, sales_item_id=sales_item_id
+    ).first()
+
+    if pli is None:
+        # Create if not exists
+        pl = await PriceList.get_or_none(id=price_list_id)
+        si = await SalesItem.get_or_none(id=sales_item_id)
+        if pl is None or si is None:
+            raise HTTPException(status_code=404, detail="Price list or sales item not found")
+        pli = await PriceListItem.create(
+            price_list_id=price_list_id,
+            sales_item_id=sales_item_id,
+            price=new_price,
+        )
+        await log_price_change(
+            change_type="price_list_item",
+            action="created",
+            sales_item_id=sales_item_id,
+            price_list_id=price_list_id,
+            old_price=None,
+            new_price=new_price,
+        )
+    else:
+        old_price = pli.price
+        pli.price = new_price
+        await pli.save()
+        await log_price_change(
+            change_type="price_list_item",
+            action="updated",
+            sales_item_id=sales_item_id,
+            price_list_id=price_list_id,
+            old_price=old_price,
+            new_price=new_price,
+        )
+
+    return {
+        "data": {
+            "price_list_id": str(price_list_id),
+            "sales_item_id": str(sales_item_id),
+            "price": str(pli.price),
+        }
+    }
+
+
+@router.patch("/price-list-items/bulk")
+async def bulk_update_price_list_items(body: BulkPriceListItemRequest) -> dict:
+    """Bulk set a price for multiple sales items on a price list."""
+    pl = await PriceList.get_or_none(id=body.price_list_id)
+    if pl is None:
+        raise HTTPException(status_code=404, detail="Price list not found")
+
+    new_price = Decimal(body.price)
+    updated = 0
+
+    for si_id in body.sales_item_ids:
+        pli = await PriceListItem.filter(
+            price_list_id=body.price_list_id, sales_item_id=si_id
+        ).first()
+        if pli:
+            old_price = pli.price
+            pli.price = new_price
+            await pli.save()
+            await log_price_change(
+                change_type="price_list_item",
+                action="updated",
+                sales_item_id=si_id,
+                price_list_id=body.price_list_id,
+                old_price=old_price,
+                new_price=new_price,
+            )
+            updated += 1
+        else:
+            si = await SalesItem.get_or_none(id=si_id)
+            if si:
+                await PriceListItem.create(
+                    price_list_id=body.price_list_id,
+                    sales_item_id=si_id,
+                    price=new_price,
+                )
+                await log_price_change(
+                    change_type="price_list_item",
+                    action="created",
+                    sales_item_id=si_id,
+                    price_list_id=body.price_list_id,
+                    old_price=None,
+                    new_price=new_price,
+                )
+                updated += 1
+
+    return {"data": {"updated_count": updated}}
+
+
+@router.patch("/price-lists/matrix/retail")
+async def update_retail_price(body: dict) -> dict:
+    """Update the retail price for a sales item (edits SalesItem.retail_price)."""
+    si_id = body.get("sales_item_id")
+    price_str = body.get("price")
+
+    if not si_id or price_str is None:
+        raise HTTPException(status_code=422, detail="sales_item_id and price are required")
+
+    try:
+        new_price = Decimal(str(price_str).replace("$", "").replace(",", "").strip())
+        if new_price < 0:
+            raise HTTPException(status_code=422, detail="Price cannot be negative")
+    except InvalidOperation:
+        raise HTTPException(status_code=422, detail="Price must be a valid number")
+
+    si = await SalesItem.get_or_none(id=si_id)
+    if si is None:
+        raise HTTPException(status_code=404, detail="Sales item not found")
+
+    old_price = si.retail_price
+    si.retail_price = new_price
+    await si.save()
+
+    await log_price_change(
+        change_type="retail_price",
+        action="updated",
+        sales_item_id=si.id,
+        old_price=old_price,
+        new_price=new_price,
+    )
+
+    return {
+        "data": {
+            "sales_item_id": str(si.id),
+            "retail_price": str(si.retail_price),
+        }
+    }
+
+
+# ---------------------------------------------------------------------------
+# Impact Preview
+# ---------------------------------------------------------------------------
+
+
+@router.get("/price-list-items/{price_list_id}/{sales_item_id}/impact")
+async def impact_preview(
+    price_list_id: UUID, sales_item_id: UUID, new_price: str = ""
+) -> dict:
+    """Preview the impact of changing a price list item price."""
+    if not new_price:
+        raise HTTPException(status_code=422, detail="new_price query parameter is required")
+
+    try:
+        price_decimal = Decimal(new_price.replace("$", "").replace(",", "").strip())
+    except InvalidOperation:
+        raise HTTPException(status_code=422, detail="new_price must be a valid number")
+
+    result = await get_impact_preview(price_list_id, sales_item_id, price_decimal)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Price list item not found")
+
+    return {"data": result}
+
+
+# ---------------------------------------------------------------------------
+# Export / Import
+# ---------------------------------------------------------------------------
+
+
+@router.get("/price-lists/matrix/export")
+async def export_matrix_csv() -> StreamingResponse:
+    """Export the price list matrix as CSV."""
+    matrix = await get_price_list_matrix()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header row
+    header = ["Sales Item", "Variety", "Stems", "Retail"]
+    for pl in matrix["price_lists"]:
+        header.append(pl["name"])
+    writer.writerow(header)
+
+    # Data rows
+    for item in matrix["items"]:
+        row = [
+            item["sales_item_name"],
+            item["variety_name"],
+            item["stems_per_order"],
+            item["retail_price"],
+        ]
+        for pl in matrix["price_lists"]:
+            row.append(item["prices"].get(pl["id"], ""))
+        writer.writerow(row)
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=price_list_matrix.csv"},
+    )
+
+
+@router.post("/price-lists/{price_list_id}/import")
+async def import_price_list_csv(price_list_id: UUID, file: UploadFile) -> dict:
+    """Import prices for a price list from CSV. Matches by sales item name."""
+    pl = await PriceList.get_or_none(id=price_list_id)
+    if pl is None:
+        raise HTTPException(status_code=404, detail="Price list not found")
+
+    content = await file.read()
+    text = content.decode("utf-8")
+    reader = csv.DictReader(io.StringIO(text))
+
+    updated_count = 0
+    not_found_count = 0
+
+    for row in reader:
+        name = row.get("Sales Item", "").strip()
+        price_str = row.get("Price", "").strip()
+        if not name or not price_str:
+            continue
+
+        si = await SalesItem.filter(name=name).first()
+        if si is None:
+            not_found_count += 1
+            continue
+
+        try:
+            price = Decimal(price_str.replace("$", "").replace(",", ""))
+        except InvalidOperation:
+            not_found_count += 1
+            continue
+
+        pli = await PriceListItem.filter(
+            price_list_id=price_list_id, sales_item_id=si.id
+        ).first()
+
+        if pli:
+            old_price = pli.price
+            pli.price = price
+            await pli.save()
+            await log_price_change(
+                change_type="price_list_item",
+                action="updated",
+                sales_item_id=si.id,
+                price_list_id=price_list_id,
+                old_price=old_price,
+                new_price=price,
+            )
+        else:
+            await PriceListItem.create(
+                price_list_id=price_list_id,
+                sales_item_id=si.id,
+                price=price,
+            )
+            await log_price_change(
+                change_type="price_list_item",
+                action="created",
+                sales_item_id=si.id,
+                price_list_id=price_list_id,
+                old_price=None,
+                new_price=price,
+            )
+        updated_count += 1
+
+    return {"data": {"updated_count": updated_count, "not_found_count": not_found_count}}
