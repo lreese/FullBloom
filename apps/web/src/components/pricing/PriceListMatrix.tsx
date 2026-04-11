@@ -234,15 +234,15 @@ export function PriceListMatrix({
     }
   };
 
-  const getSpread = (item: PriceListMatrixRow): string | null => {
+  const getSpread = (item: PriceListMatrixRow): { text: string; hasSpread: boolean } => {
     const prices = Object.values(item.prices)
       .map(Number)
-      .filter((p) => !isNaN(p) && p > 0);
-    if (prices.length < 2) return null;
+      .filter((p) => !isNaN(p));
+    if (prices.length < 2) return { text: "No Spread", hasSpread: false };
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    if (max - min < 0.01) return null;
-    return `$${min.toFixed(2)}\u2013$${max.toFixed(2)}`;
+    if (max - min < 0.01) return { text: "No Spread", hasSpread: false };
+    return { text: `$${min.toFixed(2)}\u2013$${max.toFixed(2)}`, hasSpread: true };
   };
 
   const renderCell = (item: PriceListMatrixRow, columnId: string) => {
@@ -455,7 +455,9 @@ export function PriceListMatrix({
                         </td>
                       ))}
                       <td className="px-2 py-1 text-center text-[10px] text-[#94a3b8]">
-                        {spread ?? "\u2014"}
+                        <span className={spread.hasSpread ? "" : "text-[#94a3b8] italic"}>
+                          {spread.text}
+                        </span>
                       </td>
                     </tr>
                   );
