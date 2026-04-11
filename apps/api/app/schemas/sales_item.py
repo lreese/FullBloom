@@ -16,6 +16,7 @@ class SalesItemResponse(BaseModel):
     stems_per_order: int
     retail_price: str
     cost_price: str | None
+    margin: str | None = None
     is_active: bool
     customer_prices_count: int
     price_list_prices: dict[str, str]  # price_list_id -> price

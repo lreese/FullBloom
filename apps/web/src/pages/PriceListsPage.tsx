@@ -145,6 +145,19 @@ export function PriceListsPage() {
           Price Lists
         </h1>
         <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs"
+          onClick={() =>
+            window.open(
+              `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api/v1/price-lists/matrix/export`,
+              "_blank"
+            )
+          }
+        >
+          Export CSV
+        </Button>
         <Select value={importPriceListId} onValueChange={setImportPriceListId}>
           <SelectTrigger className="h-8 w-40 text-xs">
             <SelectValue placeholder="Import into..." />

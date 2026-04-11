@@ -3,6 +3,7 @@
 Create and list are nested under varieties. Update, archive, and restore are flat.
 """
 
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
@@ -37,6 +38,11 @@ def _build_sales_item_response(
         if si.variety_id:
             variety_id = str(si.variety_id)
 
+    # Compute margin when cost_price is available
+    margin = None
+    if si.cost_price is not None:
+        margin = str(Decimal(str(si.retail_price)) - Decimal(str(si.cost_price)))
+
     return SalesItemResponse(
         id=str(si.id),
         variety_id=variety_id,
@@ -45,6 +51,7 @@ def _build_sales_item_response(
         stems_per_order=si.stems_per_order,
         retail_price=str(si.retail_price),
         cost_price=str(si.cost_price) if si.cost_price is not None else None,
+        margin=margin,
         is_active=si.is_active,
         customer_prices_count=customer_prices_count,
         price_list_prices=price_list_prices or {},
@@ -63,7 +70,7 @@ async def _get_price_list_prices(si_id: UUID) -> dict[str, str]:
 
 @router.get("/varieties/{variety_id}/sales-items")
 async def list_sales_items(
-    variety_id: UUID, include_inactive: bool = False
+    variety_id: UUID, active: bool | None = True
 ) -> dict:
     """List sales items for a variety."""
     variety = await Variety.get_or_none(id=variety_id)
@@ -71,8 +78,8 @@ async def list_sales_items(
         raise HTTPException(status_code=404, detail="Variety not found")
 
     qs = SalesItem.filter(variety_id=variety_id)
-    if not include_inactive:
-        qs = qs.filter(is_active=True)
+    if active is not None:
+        qs = qs.filter(is_active=active)
 
     sales_items = await qs.prefetch_related("customer_prices").order_by("name")
 
@@ -91,11 +98,11 @@ async def list_sales_items(
 
 
 @router.get("/sales-items")
-async def list_all_sales_items(include_inactive: bool = False) -> dict:
+async def list_all_sales_items(active: bool | None = True) -> dict:
     """List all sales items across all varieties."""
     qs = SalesItem.all()
-    if not include_inactive:
-        qs = qs.filter(is_active=True)
+    if active is not None:
+        qs = qs.filter(is_active=active)
 
     sales_items = await qs.prefetch_related("customer_prices", "variety").order_by("name")
 

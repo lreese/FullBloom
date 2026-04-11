@@ -50,6 +50,7 @@ async def test_list_sales_items_for_variety(async_client, variety):
             "stems_per_order",
             "retail_price",
             "cost_price",
+            "margin",
             "is_active",
             "customer_prices_count",
             "price_list_prices",
@@ -57,7 +58,7 @@ async def test_list_sales_items_for_variety(async_client, variety):
 
 
 async def test_list_sales_items_include_inactive(async_client, variety):
-    """include_inactive=true returns all items."""
+    """active param: omit or None returns all items."""
     await SalesItem.create(
         variety=variety, name="Active Item", stems_per_order=10, retail_price=5.00
     )
@@ -69,11 +70,21 @@ async def test_list_sales_items_include_inactive(async_client, variety):
         is_active=False,
     )
 
+    # active=false returns only archived items
     resp = await async_client.get(
-        f"/api/v1/varieties/{variety.id}/sales-items?include_inactive=true"
+        f"/api/v1/varieties/{variety.id}/sales-items?active=false"
     )
     assert resp.status_code == 200
-    assert len(resp.json()["data"]) == 2
+    assert len(resp.json()["data"]) == 1
+    assert resp.json()["data"][0]["name"] == "Inactive Item"
+
+    # active=true returns only active items (default)
+    resp = await async_client.get(
+        f"/api/v1/varieties/{variety.id}/sales-items?active=true"
+    )
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) == 1
+    assert resp.json()["data"][0]["name"] == "Active Item"
 
 
 async def test_list_sales_items_variety_not_found(async_client):
