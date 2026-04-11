@@ -31,6 +31,13 @@ def _variety_color_name(v) -> str | None:
     return None
 
 
+def _variety_hex_color(v) -> str | None:
+    """Extract hex_color from the prefetched Color relation."""
+    if v.color_id and v.color:
+        return v.color.hex_color  # type: ignore[attr-defined]
+    return None
+
+
 @router.get("/varieties")
 async def list_varieties(active: bool = True) -> dict:
     """List varieties filtered by active status."""
@@ -54,7 +61,7 @@ async def list_varieties(active: bool = True) -> dict:
                 product_type_name=v.product_line.product_type.name,  # type: ignore[attr-defined]
                 color_id=_variety_color_id(v),
                 color_name=_variety_color_name(v),
-                hex_color=v.hex_color,
+                hex_color=_variety_hex_color(v),
                 flowering_type=v.flowering_type,
                 can_replace=v.can_replace,
                 show=v.show,
@@ -106,7 +113,7 @@ async def get_variety(variety_id: UUID) -> dict:
             product_type_name=variety.product_line.product_type.name,  # type: ignore[attr-defined]
             color_id=_variety_color_id(variety),
             color_name=_variety_color_name(variety),
-            hex_color=variety.hex_color,
+            hex_color=_variety_hex_color(variety),
             flowering_type=variety.flowering_type,
             can_replace=variety.can_replace,
             show=variety.show,
@@ -154,7 +161,7 @@ async def create_variety(data: VarietyCreateRequest) -> dict:
             product_type_name=variety.product_line.product_type.name,  # type: ignore[attr-defined]
             color_id=_variety_color_id(variety),
             color_name=_variety_color_name(variety),
-            hex_color=variety.hex_color,
+            hex_color=_variety_hex_color(variety),
             flowering_type=variety.flowering_type,
             can_replace=variety.can_replace,
             show=variety.show,
@@ -225,7 +232,7 @@ async def update_variety(variety_id: UUID, data: VarietyUpdateRequest) -> dict:
             product_type_name=variety.product_line.product_type.name,  # type: ignore[attr-defined]
             color_id=_variety_color_id(variety),
             color_name=_variety_color_name(variety),
-            hex_color=variety.hex_color,
+            hex_color=_variety_hex_color(variety),
             flowering_type=variety.flowering_type,
             can_replace=variety.can_replace,
             show=variety.show,
