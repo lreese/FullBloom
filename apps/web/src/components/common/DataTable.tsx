@@ -101,7 +101,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 </th>
               )}
               {activeColumns.map((col, idx) => {
-                const isSortable = col.sortable !== undefined ? col.sortable : false;
+                const isSortable = col.sortable !== false;
                 const isSorted = sortConfig?.key === col.key;
                 return (
                   <th

@@ -4,7 +4,7 @@ export interface ColumnDef {
   key: string;
   label: string;
   filterable: boolean;
-  sortable?: boolean;
+  sortable?: boolean;  // defaults to true if omitted
   defaultVisible?: boolean;
 }
 
