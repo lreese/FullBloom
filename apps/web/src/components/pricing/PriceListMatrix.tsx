@@ -431,11 +431,11 @@ export function PriceListMatrix({
                         isSelected && "bg-[#fce7f3]"
                       )}
                     >
-                      <td
-                        className="px-2 py-1 w-8"
-                        onClick={() => onToggleSelect(item.sales_item_id)}
-                      >
-                        <Checkbox checked={isSelected} />
+                      <td className="px-2 py-1 w-8">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => onToggleSelect(item.sales_item_id)}
+                        />
                       </td>
                       <td className="px-2 py-1 text-[#334155] font-medium whitespace-nowrap">
                         {item.sales_item_name}
