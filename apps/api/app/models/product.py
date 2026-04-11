@@ -11,6 +11,7 @@ class ProductType(Model):
 
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=100, unique=True)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "product_types"
@@ -27,10 +28,26 @@ class ProductLine(Model):
         "models.ProductType", related_name="product_lines", on_delete=fields.CASCADE
     )
     name = fields.CharField(max_length=100)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "product_lines"
         unique_together = (("product_type", "name"),)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Color(Model):
+    """A color reference for varieties."""
+
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    name = fields.CharField(max_length=100, unique=True)
+    hex_color = fields.CharField(max_length=7, null=True)
+    is_active = fields.BooleanField(default=True)
+
+    class Meta:
+        table = "colors"
 
     def __str__(self) -> str:
         return self.name
@@ -44,11 +61,13 @@ class Variety(Model):
         "models.ProductLine", related_name="varieties", on_delete=fields.CASCADE
     )
     name = fields.CharField(max_length=100)
-    color = fields.CharField(max_length=100, null=True)
-    hex_color = fields.CharField(max_length=7, null=True)
+    color = fields.ForeignKeyField(
+        "models.Color", related_name="varieties", on_delete=fields.SET_NULL, null=True
+    )
     flowering_type = fields.CharField(max_length=50, null=True)
     can_replace = fields.BooleanField(default=False)
     show = fields.BooleanField(default=True)
+    is_active = fields.BooleanField(default=True)
     weekly_sales_category = fields.CharField(max_length=100, null=True)
     item_group_id = fields.IntField(null=True)
     item_group_description = fields.CharField(max_length=255, null=True)
@@ -71,26 +90,10 @@ class SalesItem(Model):
     name = fields.CharField(max_length=100, unique=True)
     stems_per_order = fields.IntField()
     retail_price = fields.DecimalField(max_digits=10, decimal_places=2)
+    is_active = fields.BooleanField(default=True)
 
     class Meta:
         table = "sales_items"
 
     def __str__(self) -> str:
         return self.name
-
-
-class VarietyColor(Model):
-    """Helper table for tracking known color names for a variety."""
-
-    id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    variety = fields.ForeignKeyField(
-        "models.Variety", related_name="variety_colors", on_delete=fields.CASCADE
-    )
-    color_name = fields.CharField(max_length=100)
-
-    class Meta:
-        table = "variety_colors"
-        unique_together = (("variety", "color_name"),)
-
-    def __str__(self) -> str:
-        return self.color_name

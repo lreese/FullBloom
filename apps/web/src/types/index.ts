@@ -73,18 +73,109 @@ export interface SalesItem {
   name: string;
   stems_per_order: number;
   retail_price: string;
+  is_active: boolean;
+  customer_prices_count: number;
+}
+
+export interface SalesItemCreateRequest {
+  name: string;
+  stems_per_order: number;
+  retail_price: string;
 }
 
 export interface Variety {
   id: string;
-  type: string;
-  product_line: string;
   name: string;
-  color: string | null;
+  product_line_id: string;
+  product_line_name: string;
+  product_type_name: string;
+  color_id: string | null;
+  color_name: string | null;
   hex_color: string | null;
   flowering_type: string | null;
+  can_replace: boolean;
   show: boolean;
-  sales_items: SalesItem[];
+  is_active: boolean;
+  weekly_sales_category: string | null;
+  item_group_id: number | null;
+  item_group_description: string | null;
+  sales_items_count?: number;
+  sales_items?: SalesItem[];
+}
+
+export interface VarietyCreateRequest {
+  name: string;
+  product_line_id: string;
+  color_id?: string | null;
+  flowering_type?: string | null;
+  can_replace?: boolean;
+  show?: boolean;
+  weekly_sales_category?: string | null;
+  item_group_id?: number | null;
+  item_group_description?: string | null;
+}
+
+export interface VarietyUpdateRequest {
+  name?: string;
+  product_line_id?: string;
+  color_id?: string | null;
+  flowering_type?: string | null;
+  can_replace?: boolean;
+  show?: boolean;
+  weekly_sales_category?: string | null;
+  item_group_id?: number | null;
+  item_group_description?: string | null;
+}
+
+export interface BulkUpdateRequest {
+  ids: string[];
+  field: string;
+  value: string | boolean;
+}
+
+export interface VarietyDropdownOptions {
+  product_lines: { id: string; name: string; product_type: string }[];
+  colors: { id: string; name: string; hex_color: string | null }[];
+  flowering_types: string[];
+  weekly_sales_categories: string[];
+}
+
+export interface ProductType {
+  id: string;
+  name: string;
+  is_active: boolean;
+  product_line_count: number;
+}
+
+export interface ProductTypeCreateRequest {
+  name: string;
+}
+
+export interface ProductLine {
+  id: string;
+  name: string;
+  product_type_id: string;
+  product_type_name: string;
+  is_active: boolean;
+  variety_count: number;
+}
+
+export interface ProductLineCreateRequest {
+  name: string;
+  product_type_id: string;
+}
+
+export interface Color {
+  id: string;
+  name: string;
+  hex_color: string | null;
+  is_active: boolean;
+  variety_count: number;
+}
+
+export interface ColorCreateRequest {
+  name: string;
+  hex_color?: string | null;
 }
 
 // ── Pricing ──────────────────────────────────────────────────

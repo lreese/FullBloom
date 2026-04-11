@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface CustomerColumnFilterProps {
+interface ColumnFilterProps {
   values: string[];
   selected: string[];
   onChange: (selected: string[]) => void;
 }
 
-export function CustomerColumnFilter({
+export function ColumnFilter({
   values,
   selected,
   onChange,
-}: CustomerColumnFilterProps) {
+}: ColumnFilterProps) {
   const [open, setOpen] = useState(false);
   const isActive = selected.length > 0 && selected.length < values.length;
 

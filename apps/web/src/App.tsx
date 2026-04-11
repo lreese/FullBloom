@@ -3,6 +3,10 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { OrderForm } from "@/components/order/OrderForm";
 import { CustomersPage } from "@/pages/CustomersPage";
+import { VarietiesPage } from "@/pages/VarietiesPage";
+import { ProductLinesPage } from "@/pages/ProductLinesPage";
+import { ColorsPage } from "@/pages/ColorsPage";
+import { ProductTypesPage } from "@/pages/ProductTypesPage";
 import "@/index.css";
 
 function App() {
@@ -13,6 +17,11 @@ function App() {
           <Routes>
             <Route path="/orders" element={<OrderForm />} />
             <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/products" element={<Navigate to="/products/varieties" replace />} />
+            <Route path="/products/varieties" element={<VarietiesPage />} />
+            <Route path="/products/product-lines" element={<ProductLinesPage />} />
+            <Route path="/products/colors" element={<ColorsPage />} />
+            <Route path="/products/product-types" element={<ProductTypesPage />} />
             <Route path="*" element={<Navigate to="/orders" replace />} />
           </Routes>
         </AppShell>

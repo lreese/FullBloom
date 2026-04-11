@@ -92,7 +92,7 @@ async def import_varieties(rows: list[dict]) -> ImportVarietiesResult:
             "type_name": type_name,
             "line_name": line_name,
             "name": variety_name,
-            "color": (row.get("Color") or "").strip() or None,
+            # "color" is now managed via the colors table, not a variety field
             "flowering_type": (row.get("Flowering") or "").strip() or None,
             "can_replace": _parse_bool(row.get("Can Replace")),
             "show": _parse_bool(row.get("Show?")),
@@ -169,33 +169,31 @@ async def import_varieties(rows: list[dict]) -> ImportVarietiesResult:
         values_parts = []
         params = []
         for i, v in enumerate(chunk):
-            offset = i * 11
+            offset = i * 9
             values_parts.append(
-                f"(${offset+1}, ${offset+2}, ${offset+3}, ${offset+4}, "
-                f"${offset+5}, ${offset+6}::bool, ${offset+7}::bool, "
-                f"${offset+8}, ${offset+9}::int, ${offset+10}, ${offset+11})"
+                f"(${offset+1}, ${offset+2}, ${offset+3}, "
+                f"${offset+4}, ${offset+5}::bool, ${offset+6}::bool, "
+                f"${offset+7}, ${offset+8}::int, ${offset+9})"
             )
             line_id = line_id_map[(v["type_name"], v["line_name"])]
             params.extend([
                 v["id"],
                 line_id,
                 v["name"],
-                v["color"],
                 v["flowering_type"],
                 v["can_replace"],
                 v["show"],
                 v["weekly_sales_category"],
                 v["item_group_id"],
                 v["item_group_description"],
-                None,  # hex_color — set by import_colors, not from Varieties CSV
             ])
         sql = (
-            f"INSERT INTO varieties (id, product_line_id, name, color, flowering_type, "
+            f"INSERT INTO varieties (id, product_line_id, name, flowering_type, "
             f"can_replace, show, weekly_sales_category, item_group_id, "
-            f"item_group_description, hex_color) "
+            f"item_group_description) "
             f"VALUES {', '.join(values_parts)} "
             f"ON CONFLICT (product_line_id, name) DO UPDATE SET "
-            f"color = EXCLUDED.color, flowering_type = EXCLUDED.flowering_type, "
+            f"flowering_type = EXCLUDED.flowering_type, "
             f"can_replace = EXCLUDED.can_replace, show = EXCLUDED.show, "
             f"weekly_sales_category = EXCLUDED.weekly_sales_category, "
             f"item_group_id = EXCLUDED.item_group_id, "
@@ -417,7 +415,11 @@ async def import_pricing(rows: list[dict]) -> ImportPricingResult:
 # ---------------------------------------------------------------------------
 
 async def import_colors(rows: list[dict]) -> ImportColorsResult:
-    """Import hex color values for varieties."""
+    """Import hex color values by updating Color records via variety lookup.
+
+    The CSV maps variety names to hex colors. We find each variety's
+    associated Color and update that Color's hex_color.
+    """
     conn = Tortoise.get_connection("default")
     result = ImportColorsResult()
 
@@ -428,8 +430,12 @@ async def import_colors(rows: list[dict]) -> ImportColorsResult:
         if not variety_name or not hex_color:
             continue
 
+        # Find the variety's color_id, then update that color's hex_color
         _, affected = await conn.execute_query(
-            "UPDATE varieties SET hex_color = $1 WHERE name = $2 RETURNING id",
+            """UPDATE colors c SET hex_color = $1
+               FROM varieties v
+               WHERE v.color_id = c.id AND v.name = $2
+               RETURNING c.id""",
             [hex_color, variety_name],
         )
         if affected:
