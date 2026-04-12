@@ -415,18 +415,16 @@ export function SalesItemsPage() {
             </button>
           </div>
         ) : (
-          <>
+          <div className="flex flex-wrap items-center gap-2.5 mb-3">
             <TableToolbar
               title="Sales Items"
               tableState={tableState}
               activeView={activeView}
               onViewChange={handleViewChange}
-              addButtonLabel="+ Add Sales Item"
-              onAddClick={handleAddClick}
               columns={allColumns}
               searchPlaceholder="Search sales items..."
             />
-            <div className="flex items-center gap-2 mb-3">
+            <div className="ml-auto flex items-center gap-2">
               <button
                 className="text-xs text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 hover:bg-[#f4f1ec]"
                 onClick={() => importFileRef.current?.click()}
@@ -440,8 +438,15 @@ export function SalesItemsPage() {
                 className="hidden"
                 onChange={handleImportFile}
               />
+              <Button
+                size="sm"
+                className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+                onClick={handleAddClick}
+              >
+                + Add Sales Item
+              </Button>
             </div>
-          </>
+          </div>
         )}
 
         {/* ── Table ──────────────────────────────────────── */}
