@@ -18,6 +18,7 @@ export function AvailabilityPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [hideNoCount, setHideNoCount] = useState(false);
+  const [viewMode, setViewMode] = useState<"counts" | "estimates">("counts");
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +98,33 @@ export function AvailabilityPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8]"
           />
+
+          {/* Counts / Estimates toggle */}
+          <div className="flex rounded-lg border border-[#e0ddd8] overflow-hidden shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("counts")}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === "counts"
+                  ? "bg-[#1e3a5f] text-white"
+                  : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
+              }`}
+            >
+              Counts
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("estimates")}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-[#e0ddd8] ${
+                viewMode === "estimates"
+                  ? "bg-[#1e3a5f] text-white"
+                  : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
+              }`}
+            >
+              Estimates
+            </button>
+          </div>
+
           <label className="flex items-center gap-2 text-sm text-[#334155] whitespace-nowrap cursor-pointer">
             <Checkbox
               checked={hideNoCount}
@@ -126,7 +154,7 @@ export function AvailabilityPage() {
         {!loading && data && (
           <div className="space-y-4">
             {filtered.map((pt) => (
-              <AvailabilityCard key={pt.product_type_id} productType={pt} />
+              <AvailabilityCard key={pt.product_type_id} productType={pt} defaultViewMode={viewMode} />
             ))}
             {filtered.length === 0 && (
               <div className="text-center py-12 text-sm text-[#94a3b8]">
