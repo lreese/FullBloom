@@ -138,15 +138,22 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
     );
   }
 
+  const totalInHarvest = entries.filter((e) => e.in_harvest).length;
+
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <Input
-        placeholder="Search varieties..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8]"
-      />
+      {/* Summary + Search */}
+      <div className="flex items-center gap-3">
+        <Input
+          placeholder="Search varieties..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8]"
+        />
+        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#e8f0e8] text-[#2d4a2d] whitespace-nowrap">
+          {totalInHarvest}/{entries.length} in harvest
+        </span>
+      </div>
 
       {/* Groups */}
       <div className="space-y-4">
