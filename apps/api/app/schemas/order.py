@@ -187,6 +187,7 @@ class OrderListItemResponse(BaseModel):
     lines_count: int
     total_stems: int
     salesperson_email: str | None
+    standing_order_id: str | None = None
     created_at: str
 
 

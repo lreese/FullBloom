@@ -19,6 +19,7 @@ import {
   Plus,
   Search,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import type {
   OrderListItem,
@@ -39,6 +40,7 @@ export function OrdersPage() {
   const [dateTo, setDateTo] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [salesperson, setSalesperson] = useState("");
+  const [fromStandingOrder, setFromStandingOrder] = useState(false);
 
   // ── Data state ────────────────────────────────────────────
   const [items, setItems] = useState<OrderListItem[]>([]);
@@ -46,6 +48,7 @@ export function OrdersPage() {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [salespersonOptions, setSalespersonOptions] = useState<string[]>([]);
 
   // ── Expanded rows ─────────────────────────────────────────
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -68,6 +71,17 @@ export function OrdersPage() {
     api.get<Customer[]>("/api/v1/customers?active=true").then(setCustomers).catch(() => {});
   }, []);
 
+  // Fetch unique salesperson emails for dropdown
+  useEffect(() => {
+    api.get<OrderListResponse>("/api/v1/orders?limit=100&offset=0")
+      .then((res) => {
+        const emails = new Set<string>();
+        res.items.forEach((o) => { if (o.salesperson_email) emails.add(o.salesperson_email); });
+        setSalespersonOptions(Array.from(emails).sort());
+      })
+      .catch(() => {});
+  }, []);
+
   // Fetch orders
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -80,6 +94,7 @@ export function OrdersPage() {
       if (customerId) params.set("customer_id", customerId);
       if (salesperson) params.set("salesperson_email", salesperson);
       if (debouncedSearch) params.set("search", debouncedSearch);
+      if (fromStandingOrder) params.set("from_standing_order", "true");
 
       const res = await api.get<OrderListResponse>(`/api/v1/orders?${params}`);
       setItems(res.items);
@@ -89,11 +104,11 @@ export function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [offset, dateFrom, dateTo, customerId, salesperson, debouncedSearch]);
+  }, [offset, dateFrom, dateTo, customerId, salesperson, debouncedSearch, fromStandingOrder]);
 
   useEffect(() => {
     setOffset(0);
-  }, [dateFrom, dateTo, customerId, salesperson, debouncedSearch]);
+  }, [dateFrom, dateTo, customerId, salesperson, debouncedSearch, fromStandingOrder]);
 
   useEffect(() => {
     detailCache.current = {};
@@ -171,7 +186,7 @@ export function OrdersPage() {
 
         {/* ── Filters ────────────────────────────────────── */}
         <div
-          className="rounded-lg border p-4 mb-4 grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5"
+          className="rounded-lg border p-4 mb-4 grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6"
           style={{ backgroundColor: "white", borderColor: "#e0ddd8" }}
         >
           <div className="relative lg:col-span-1">
@@ -186,18 +201,22 @@ export function OrdersPage() {
               className="pl-8"
             />
           </div>
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            placeholder="From date"
-          />
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            placeholder="To date"
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-[#94a3b8] uppercase tracking-wide">From</span>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-[#94a3b8] uppercase tracking-wide">To</span>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+            />
+          </div>
           <select
             value={customerId}
             onChange={(e) => setCustomerId(e.target.value)}
@@ -210,11 +229,25 @@ export function OrdersPage() {
               </option>
             ))}
           </select>
-          <Input
-            placeholder="Salesperson email"
+          <select
             value={salesperson}
             onChange={(e) => setSalesperson(e.target.value)}
-          />
+            className="h-10 rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+          >
+            <option value="">All Salespeople</option>
+            {salespersonOptions.map((email) => (
+              <option key={email} value={email}>{email}</option>
+            ))}
+          </select>
+          <label className="flex items-center gap-2 text-sm text-[#334155] whitespace-nowrap self-center">
+            <input
+              type="checkbox"
+              checked={fromStandingOrder}
+              onChange={(e) => setFromStandingOrder(e.target.checked)}
+              className="rounded border-input"
+            />
+            From Standing Orders
+          </label>
         </div>
 
         {/* ── Table ──────────────────────────────────────── */}
@@ -416,15 +449,25 @@ function OrderRow({
           />
         </td>
         <td className="px-3 py-2.5">
-          <span
-            className="font-medium hover:underline cursor-pointer"
-            style={{ color: "#c27890" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-          >
-            {order.order_number}
+          <span className="flex items-center gap-1.5">
+            <span
+              className="font-medium hover:underline cursor-pointer"
+              style={{ color: "#c27890" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+              }}
+            >
+              {order.order_number}
+            </span>
+            {order.standing_order_id && (
+              <span
+                className="inline-flex items-center justify-center rounded-full p-1 bg-[#f3e8ff] text-[#6b21a8]"
+                title="From standing order"
+              >
+                <RefreshCw className="h-3 w-3" />
+              </span>
+            )}
           </span>
         </td>
         <td className="px-3 py-2.5" style={{ color: "#334155" }}>

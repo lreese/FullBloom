@@ -27,6 +27,10 @@ class Order(Model):
     po_number = fields.CharField(max_length=100, null=True)
     salesperson_email = fields.CharField(max_length=255, null=True)
     order_label = fields.CharField(max_length=255, null=True)
+    standing_order = fields.ForeignKeyField(
+        "models.StandingOrder", related_name="generated_orders",
+        on_delete=fields.SET_NULL, null=True
+    )
     is_deleted = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)

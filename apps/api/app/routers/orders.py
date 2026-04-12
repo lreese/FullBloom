@@ -38,9 +38,15 @@ async def list_orders(
     customer_id: str | None = Query(None),
     salesperson_email: str | None = Query(None),
     search: str | None = Query(None),
+    from_standing_order: bool | None = Query(None),
 ) -> dict:
     """List orders with pagination and filtering."""
     qs = Order.filter(is_deleted=False)
+
+    if from_standing_order is True:
+        qs = qs.filter(standing_order_id__isnull=False)
+    elif from_standing_order is False:
+        qs = qs.filter(standing_order_id__isnull=True)
 
     if date_from:
         qs = qs.filter(order_date__gte=date_from)
@@ -81,6 +87,7 @@ async def list_orders(
                 lines_count=len(lines),
                 total_stems=sum(l.stems for l in lines),
                 salesperson_email=o.salesperson_email,
+                standing_order_id=str(o.standing_order_id) if o.standing_order_id else None,
                 created_at=o.created_at.isoformat(),
             )
         )

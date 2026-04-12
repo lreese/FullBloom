@@ -2,7 +2,7 @@
 
 **Feature Branch**: `007-standing-orders`  
 **Created**: 2026-04-12  
-**Status**: draft  
+**Status**: implemented  
 **Input**: Recurring orders for specific customers on a regular cadence. Salespeople can create, edit, pause, resume, and cancel standing orders. All changes tracked with audit trail. Standing orders have their own list view and generate regular orders for specific dates.
 
 ## User Scenarios & Testing *(mandatory)*

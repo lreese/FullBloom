@@ -25,6 +25,7 @@ import {
   Sprout,
   List,
   PlusCircle,
+  RefreshCw,
 } from "lucide-react";
 import {
   Popover,
@@ -54,6 +55,7 @@ const navItems: NavItem[] = [
     children: [
       { label: "All Orders", icon: List, href: "/orders" },
       { label: "New Order", icon: PlusCircle, href: "/orders/new" },
+      { label: "Standing Orders", icon: RefreshCw, href: "/standing-orders" },
     ],
   },
   { label: "Customers", icon: Users, href: "/customers" },

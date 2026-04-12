@@ -16,6 +16,8 @@ import { EstimatesPage } from "@/pages/inventory/EstimatesPage";
 import { AvailabilityPage } from "@/pages/inventory/AvailabilityPage";
 import { HarvestStatusPage } from "@/pages/inventory/HarvestStatusPage";
 import { ComparisonPage } from "@/pages/inventory/ComparisonPage";
+import { StandingOrdersPage } from "@/pages/StandingOrdersPage";
+import { StandingOrderForm } from "@/components/standing-orders/StandingOrderForm";
 import "@/index.css";
 
 function App() {
@@ -27,6 +29,9 @@ function App() {
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/orders/new" element={<OrderForm />} />
             <Route path="/orders/:orderId/edit" element={<OrderForm />} />
+            <Route path="/standing-orders" element={<StandingOrdersPage />} />
+            <Route path="/standing-orders/new" element={<StandingOrderForm />} />
+            <Route path="/standing-orders/:standingOrderId/edit" element={<StandingOrderForm />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/products" element={<Navigate to="/products/varieties" replace />} />
             <Route path="/products/varieties" element={<VarietiesPage />} />

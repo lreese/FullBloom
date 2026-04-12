@@ -1,27 +1,21 @@
 <!--
 Sync Impact Report
 ==================
-Version change: N/A → 1.0.0
-Type: MINOR (initial ratification — all principles new)
+Version change: 1.4.0 → 1.5.0
+Type: MINOR (authentication provider changed from Clerk to Supabase Auth)
 
-Added sections:
-  - Core Principles (I–V)
-  - Technology Defaults (Frontend, Backend, Infrastructure, Auth, API, Secrets, Error Handling, Docs, Scale)
-  - Coding Standards
-  - Development Workflow
-  - Governance
-
-Removed sections: None (initial version)
-
-Modified principles: None (initial version)
+Modified sections:
+  - Authentication: Clerk → Supabase Auth
+  - Scale: updated from single-user to multi-tenant SMB SaaS
 
 Templates requiring updates:
-  ✅ plan-template.md — Constitution Check section references constitution generically; no update needed
-  ✅ spec-template.md — No constitution-specific references; no update needed
-  ✅ tasks-template.md — No constitution-specific references; no update needed
-  ✅ No command files found in .specify/templates/commands/
+  ✅ plan-template.md — No auth-specific references; no update needed
+  ✅ spec-template.md — Generic auth placeholder; no update needed
+  ✅ tasks-template.md — Generic auth task; no update needed
 
-Follow-up TODOs: None
+Follow-up TODOs:
+  - Update CLAUDE.md when auth spec is created
+  - Existing spec plans (001–006) reference Clerk historically; no action needed
 -->
 
 # FullBloom Constitution
@@ -96,6 +90,24 @@ standard component library — components are copied into the project (not a pac
 and styled with Tailwind. Do not install alternative component libraries (MUI, Chakra, Mantine,
 Ant Design) — shadcn/ui is the only approved component system for FullBloom frontends.
 
+### Data Tables
+
+All list/table views MUST use the shared `useTableState` hook, `DataTable` component, and
+`TableToolbar` component (from `@/hooks/useTableState`, `@/components/common/DataTable`, and
+`@/components/common/TableToolbar`). These provide a consistent user experience across the
+application:
+
+- **Sortable columns**: Click headers to sort ascending/descending
+- **Column filters**: Filterable columns show a filter popover with distinct values
+- **Column visibility**: Users can show/hide columns via the settings gear icon
+- **Drag-and-drop column reorder**: Users can rearrange columns by dragging headers
+- **Persistent preferences**: Column order and visibility are saved to localStorage per table
+- **Search**: Full-text search across configurable fields
+
+When a table needs expandable rows or custom row rendering that `DataTable` doesn't support
+directly, use `useTableState` and `TableToolbar` for sorting/filtering/preferences but render
+the table body custom. Do NOT build custom sorting, filtering, or column management from scratch.
+
 ### Color Palette
 
 FullBloom uses a **Slate + Rose** palette with deep forest green accents. All apps MUST use
@@ -161,11 +173,16 @@ infrastructure concerns belong in deployment config, not app logic.
 
 ### Authentication
 
-Clerk is the standard auth provider for all apps with user accounts. Use the Clerk React SDK for
-the frontend and validate Clerk-issued JWTs on the FastAPI backend. No custom auth code MUST be
-written — login, signup, password reset, and session management are fully delegated to Clerk. All
-protected API routes MUST verify the Clerk JWT on every request. User identity in the database
-MUST reference the Clerk user ID as the foreign key.
+Supabase Auth is the standard auth provider for all apps with user accounts. Use
+`@supabase/supabase-js` on the React frontend for login flows (Google OAuth, email/password,
+magic links). The FastAPI backend validates Supabase-issued JWTs using the project's JWT secret
+— no Supabase SDK is required server-side, only standard JWT verification. No custom auth code
+MUST be written for login, signup, password reset, or session management — these are fully
+delegated to Supabase Auth. All protected API routes MUST verify the Supabase JWT on every
+request. User identity in the database MUST reference the Supabase user UUID as the foreign key.
+Google OAuth MUST be supported as the primary login method (SMB users expect it). Email/password
+MUST be available as a fallback. The Supabase Auth instance runs independently of any Supabase
+database — FullBloom continues to use Neon for its PostgreSQL database.
 
 ### API Conventions
 
@@ -201,8 +218,11 @@ markdown + YAML frontmatter, no MDX or custom syntax).
 
 ### Scale
 
-Performance and scale targets are personal-project scale by default: single user, local or
-lightweight cloud deployment, no SLA requirements unless a spec explicitly defines them.
+FullBloom is a multi-tenant SaaS targeting SMB flower farms. Each tenant (farm) has its own
+data partition. Performance targets are SMB-scale by default: tens of concurrent users per
+tenant, lightweight cloud deployment (single DigitalOcean Droplet), no SLA requirements unless
+a spec explicitly defines them. Tenant isolation MUST be enforced at the database query layer
+(row-level filtering by tenant ID) — not separate databases per tenant.
 
 ## Coding Standards
 
@@ -291,4 +311,4 @@ Versioning follows semantic rules:
 As a solo project, no formal review process is required — but amendments MUST be intentional and
 reflected here before taking effect in practice.
 
-**Version**: 1.4.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-12
+**Version**: 1.5.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-12

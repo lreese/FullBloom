@@ -17,6 +17,7 @@ from app.routers.customers import router as customers_router
 from app.routers.health import router as health_router
 from app.routers.import_data import router as import_router
 from app.routers.orders import router as orders_router
+from app.routers.standing_orders import router as standing_orders_router
 from app.routers.price_lists import router as price_lists_router
 from app.routers.pricing import router as pricing_router
 from app.routers.product_lines import router as product_lines_router
@@ -151,6 +152,7 @@ app.include_router(sales_items_router)
 app.include_router(pricing_router)
 app.include_router(price_lists_router)
 app.include_router(orders_router)
+app.include_router(standing_orders_router)
 
 # Inventory routers
 app.include_router(counts_router)

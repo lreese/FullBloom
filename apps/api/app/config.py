@@ -5,8 +5,9 @@ import os
 
 DATABASE_URL: str = os.getenv(
     "DATABASE_URL",
-    "postgres://fullbloom:fullbloom@localhost:5432/fullbloom",
+    "postgres://fullbloom:fullbloom@localhost:5432/fullbloom",  # dev-only default; production must set DATABASE_URL
 )
+# TODO: In production, remove default and use: os.environ["DATABASE_URL"]
 
 ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
 
@@ -21,6 +22,9 @@ CORS_ORIGINS: list[str] = [
     if o.strip()
 ]
 
+if ENVIRONMENT != "development" and "*" in CORS_ORIGINS:
+    raise RuntimeError("Wildcard CORS origin ('*') is not allowed outside development")
+
 TORTOISE_ORM = {
     "connections": {
         "default": DATABASE_URL,
@@ -33,6 +37,7 @@ TORTOISE_ORM = {
                 "app.models.pricing",
                 "app.models.order",
                 "app.models.inventory",
+                "app.models.standing_order",
                 "aerich.models",
             ],
             "default_connection": "default",

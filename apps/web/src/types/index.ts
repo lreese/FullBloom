@@ -430,6 +430,7 @@ export interface OrderListItem {
   lines_count: number;
   total_stems: number;
   salesperson_email: string | null;
+  standing_order_id: string | null;
   created_at: string;
 }
 
