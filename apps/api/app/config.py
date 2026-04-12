@@ -32,6 +32,7 @@ TORTOISE_ORM = {
                 "app.models.product",
                 "app.models.pricing",
                 "app.models.order",
+                "app.models.inventory",
                 "aerich.models",
             ],
             "default_connection": "default",

@@ -13,8 +13,17 @@ import asyncio
 from tortoise import Tortoise
 
 from app.config import TORTOISE_ORM
+from app.models.inventory import PullDaySchedule
 from app.services.import_service import import_colors, import_pricing, import_varieties
 from app.utils.csv_parser import parse_csv
+
+
+async def seed_pull_days() -> None:
+    """Create the default PullDaySchedule row if none exists."""
+    exists = await PullDaySchedule.filter(week_start__isnull=True).exists()
+    if not exists:
+        await PullDaySchedule.create(week_start=None, pull_days=[1, 3, 5])
+        print("Seeded default PullDaySchedule (Mon/Wed/Fri)")
 
 
 async def main(args: argparse.Namespace) -> None:

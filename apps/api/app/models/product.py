@@ -67,6 +67,8 @@ class Variety(Model):
     flowering_type = fields.CharField(max_length=50, null=True)
     can_replace = fields.BooleanField(default=False)
     show = fields.BooleanField(default=True)
+    in_harvest = fields.BooleanField(default=True)
+    stems_per_bunch = fields.IntField(default=10)
     is_active = fields.BooleanField(default=True)
     weekly_sales_category = fields.CharField(max_length=100, null=True)
     item_group_id = fields.IntField(null=True)
