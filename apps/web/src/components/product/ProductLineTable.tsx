@@ -32,6 +32,7 @@ export function ProductLineTable({
     data: productLines,
     columns: COLUMNS,
     searchableFields: SEARCHABLE_FIELDS,
+    storageKey: "fullbloom-product-lines-columns",
   });
 
   return (
@@ -43,6 +44,7 @@ export function ProductLineTable({
         onViewChange={onViewChange}
         addButtonLabel="+ Add Product Line"
         onAddClick={onAddClick}
+        columns={COLUMNS}
       />
       <DataTable<ProductLine>
         columns={COLUMNS}
@@ -50,6 +52,7 @@ export function ProductLineTable({
         tableState={tableState}
         onRowClick={onRowClick}
         getRowKey={(pl) => pl.id}
+        onReorderColumns={tableState.reorderColumns}
         cellClassName={(col) =>
           col.key === "name" ? "font-medium" : undefined
         }

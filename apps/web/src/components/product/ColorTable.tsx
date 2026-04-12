@@ -32,6 +32,7 @@ export function ColorTable({
     data: colors,
     columns: COLUMNS,
     searchableFields: SEARCHABLE_FIELDS,
+    storageKey: "fullbloom-colors-columns",
     defaultSort: { key: "name", direction: "asc" },
   });
 
@@ -60,6 +61,7 @@ export function ColorTable({
         onViewChange={onViewChange}
         addButtonLabel="+ Add Color"
         onAddClick={onAddClick}
+        columns={COLUMNS}
       />
       <DataTable<Color>
         columns={COLUMNS}
@@ -67,6 +69,7 @@ export function ColorTable({
         tableState={tableState}
         onRowClick={onRowClick}
         getRowKey={(c) => c.id}
+        onReorderColumns={tableState.reorderColumns}
         renderCell={renderCell}
         cellClassName={(col) =>
           cn(

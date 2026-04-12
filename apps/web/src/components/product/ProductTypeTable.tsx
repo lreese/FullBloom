@@ -30,6 +30,7 @@ export function ProductTypeTable({
     data: productTypes,
     columns: COLUMNS,
     searchableFields: SEARCHABLE_FIELDS,
+    storageKey: "fullbloom-product-types-columns",
   });
 
   return (
@@ -41,6 +42,7 @@ export function ProductTypeTable({
         onViewChange={onViewChange}
         addButtonLabel="+ Add Product Type"
         onAddClick={onAddClick}
+        columns={COLUMNS}
       />
       <DataTable<ProductType>
         columns={COLUMNS}
@@ -48,6 +50,7 @@ export function ProductTypeTable({
         tableState={tableState}
         onRowClick={onRowClick}
         getRowKey={(pt) => pt.id}
+        onReorderColumns={tableState.reorderColumns}
         cellClassName={(col) =>
           col.key === "name" ? "font-medium" : undefined
         }
