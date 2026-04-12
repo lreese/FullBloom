@@ -22,20 +22,28 @@ const INITIAL_OPTIONS = [
 interface ShipViaSelectorProps {
   value: string;
   onChange: (value: string) => void;
+  customerDefault?: string | null;
 }
 
-export function ShipViaSelector({ value, onChange }: ShipViaSelectorProps) {
+export function ShipViaSelector({ value, onChange, customerDefault }: ShipViaSelectorProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [options, setOptions] = useState<string[]>(INITIAL_OPTIONS);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Set default on mount if empty
+  // Apply customer default when it changes, fall back to DEFAULT_SHIP_VIA
   useEffect(() => {
-    if (!value) {
+    if (customerDefault) {
+      setOptions((prev) =>
+        prev.some((o) => o.toLowerCase() === customerDefault.toLowerCase())
+          ? prev
+          : [...prev, customerDefault]
+      );
+      onChange(customerDefault);
+    } else if (!value) {
       onChange(DEFAULT_SHIP_VIA);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [customerDefault]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return;

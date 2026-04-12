@@ -17,7 +17,7 @@ class Order(Model):
     )
     order_date = fields.DateField()
     ship_via = fields.CharField(max_length=100, null=True)
-    price_type = fields.CharField(max_length=50)
+    price_list = fields.CharField(max_length=50)  # Frozen snapshot of customer's price list name at order time
     freight_charge_included = fields.BooleanField(default=False)
     box_charge = fields.DecimalField(max_digits=10, decimal_places=2, null=True)
     holiday_charge_pct = fields.DecimalField(max_digits=5, decimal_places=4, null=True)
@@ -27,6 +27,7 @@ class Order(Model):
     po_number = fields.CharField(max_length=100, null=True)
     salesperson_email = fields.CharField(max_length=255, null=True)
     order_label = fields.CharField(max_length=255, null=True)
+    is_deleted = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
@@ -91,3 +92,22 @@ class OrderLine(Model):
 
     def __str__(self) -> str:
         return f"Line {self.line_number} on {self.order_id}"
+
+
+class OrderAuditLog(Model):
+    """Audit trail for order changes. One entry per save operation."""
+
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    order = fields.ForeignKeyField(
+        "models.Order", related_name="audit_logs", on_delete=fields.CASCADE
+    )
+    action = fields.CharField(max_length=10)  # "created", "updated", "deleted"
+    changes = fields.JSONField(default=list)  # [{field, old_value, new_value}]
+    entered_by = fields.CharField(max_length=100, null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "order_audit_logs"
+
+    def __str__(self) -> str:
+        return f"OrderAuditLog({self.order_id}, {self.action})"

@@ -23,6 +23,8 @@ import {
   TrendingUp,
   Eye,
   Sprout,
+  List,
+  PlusCircle,
 } from "lucide-react";
 import {
   Popover,
@@ -45,7 +47,15 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Orders", icon: ClipboardList, href: "/orders" },
+  {
+    label: "Orders",
+    icon: ClipboardList,
+    href: "/orders",
+    children: [
+      { label: "All Orders", icon: List, href: "/orders" },
+      { label: "New Order", icon: PlusCircle, href: "/orders/new" },
+    ],
+  },
   { label: "Customers", icon: Users, href: "/customers" },
   {
     label: "Products",

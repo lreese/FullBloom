@@ -1,4 +1,12 @@
-"""Import services for varieties, pricing, and color CSV data."""
+"""Import services for varieties, pricing, and color CSV data.
+
+SECURITY NOTE: This module uses f-string SQL construction for bulk upserts.
+All f-string interpolations produce only positional placeholders ($1, $2, etc.)
+— never user-controlled values. Actual data is always passed via the `params`
+array and bound by the database driver. Do NOT add column names, table names,
+or any request-derived values into the f-string SQL. If you need dynamic column
+selection, use a whitelist lookup, not string interpolation.
+"""
 
 from __future__ import annotations
 
@@ -116,6 +124,7 @@ async def import_varieties(rows: list[dict]) -> ImportVarietiesResult:
         params: list = []
         for i, (name, uid) in enumerate(chunk):
             offset = i * 2
+            # SAFE: only $N placeholders interpolated, values bound via params
             values_parts.append(f"(${offset + 1}, ${offset + 2})")
             params.extend([uid, name])
         sql = (
@@ -142,6 +151,7 @@ async def import_varieties(rows: list[dict]) -> ImportVarietiesResult:
         params = []
         for i, ((type_name, line_name), uid) in enumerate(chunk):
             offset = i * 3
+            # SAFE: only $N placeholders interpolated, values bound via params
             values_parts.append(f"(${offset + 1}, ${offset + 2}, ${offset + 3})")
             params.extend([uid, type_id_map[type_name], line_name])
         sql = (
@@ -255,6 +265,7 @@ async def import_pricing(rows: list[dict]) -> ImportPricingResult:
         params: list = []
         for i, (cust_num, info) in enumerate(chunk):
             offset = i * 4
+            # SAFE: only $N placeholders interpolated, values bound via params
             values_parts.append(f"(${offset+1}, ${offset+2}, ${offset+3}, ${offset+4}::bool)")
             params.extend([str(uuid.uuid4()), cust_num, info["name"], info["is_active"]])
         sql = (
@@ -308,6 +319,7 @@ async def import_pricing(rows: list[dict]) -> ImportPricingResult:
         for i, vn in enumerate(chunk):
             offset = i * 3
             vid = str(uuid.uuid4())
+            # SAFE: only $N placeholders interpolated, values bound via params
             values_parts.append(f"(${offset+1}, ${offset+2}, ${offset+3})")
             params.extend([vid, unknown_line_id, vn])
             variety_id_map[vn] = vid
@@ -391,6 +403,7 @@ async def import_pricing(rows: list[dict]) -> ImportPricingResult:
         params = []
         for i, (cust_uuid, si_uuid, price) in enumerate(chunk):
             offset = i * 4
+            # SAFE: only $N placeholders interpolated, values bound via params
             values_parts.append(f"(${offset+1}, ${offset+2}, ${offset+3}, ${offset+4}::numeric)")
             params.extend([str(uuid.uuid4()), cust_uuid, si_uuid, str(price)])
         sql = (

@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { api } from "@/services/api";
 import { DuplicateError } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -16,13 +17,16 @@ import { ProductPickerPanel } from "@/components/order/ProductPickerPanel";
 import { BoxGroupingsLegend } from "@/components/order/BoxGroupingsLegend";
 import { OrderFeesCard } from "@/components/order/OrderFeesCard";
 import { OrderDetailsCard } from "@/components/order/OrderDetailsCard";
+import { OrderAuditLog } from "@/components/order/OrderAuditLog";
 import type {
   Customer,
   CustomerPricing,
-  SalesItem,
-  Variety,
+  CustomerPricingData,
   OrderCreateRequest,
   OrderCreateResponse,
+  OrderDetailResponse,
+  OrderUpdateRequest,
+  OrderLineUpdateRequest,
 } from "@/types";
 
 function todayISO(): string {
@@ -30,12 +34,17 @@ function todayISO(): string {
 }
 
 export function OrderForm() {
+  const { orderId } = useParams<{ orderId: string }>();
+  const navigate = useNavigate();
+  const isEditMode = Boolean(orderId);
+
   // ── Customer & context ──────────────────────────────────────
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [customerPricing, setCustomerPricing] = useState<CustomerPricing[]>([]);
   const [orderLabel, setOrderLabel] = useState("");
   const [orderDate, setOrderDate] = useState(todayISO);
   const [shipVia, setShipVia] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
 
   // ── Line items ──────────────────────────────────────────────
   const [lines, setLines] = useState<OrderLineState[]>([]);
@@ -57,45 +66,185 @@ export function OrderForm() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [duplicateDialog, setDuplicateDialog] = useState<{
     open: boolean;
     message: string;
   }>({ open: false, message: "" });
+
+  // ── Dirty tracking for unsaved changes warning ──────────────
+  const [isDirty, setIsDirty] = useState(false);
+  const initialLoadDone = useRef(false);
+
+  // Mark form dirty on any state change after initial load
+  const markDirty = useCallback(() => {
+    if (initialLoadDone.current) {
+      setIsDirty(true);
+    }
+  }, []);
+
+  // Warn on page unload if dirty
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
+  // ── Fetch existing order in edit mode ───────────────────────
+  useEffect(() => {
+    if (!orderId) {
+      initialLoadDone.current = true;
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+
+    (async () => {
+      try {
+        const order = await api.get<OrderDetailResponse>(
+          `/api/v1/orders/${orderId}`
+        );
+
+        if (cancelled) return;
+
+        // Set customer (partial — enough for display and locking)
+        setCustomer({
+          id: order.customer.id,
+          customer_number: order.customer.customer_number,
+          name: order.customer.name,
+          salesperson: null,
+          contact_name: null,
+          default_ship_via: null,
+          phone: null,
+          location: null,
+          payment_terms: null,
+          email: null,
+          notes: null,
+          price_list_id: null,
+          price_list_name: null,
+          is_active: true,
+        });
+
+        // Fetch customer pricing for the product picker
+        try {
+          const resp = await api.get<CustomerPricingData>(
+            `/api/v1/customers/${order.customer.id}/pricing`
+          );
+          if (!cancelled) {
+            const mapped: CustomerPricing[] = resp.items.map((item) => ({
+              sales_item_id: item.sales_item_id,
+              sales_item_name: item.sales_item_name,
+              stems_per_order: item.stems_per_order,
+              customer_price: item.effective_price,
+              retail_price: item.retail_price,
+              is_custom: item.source !== "retail",
+            }));
+            setCustomerPricing(mapped);
+          }
+        } catch {
+          if (!cancelled) setCustomerPricing([]);
+        }
+
+        setOrderNumber(order.order_number);
+        setOrderDate(order.order_date);
+        setShipVia(order.ship_via ?? "");
+        setOrderLabel(order.order_label ?? "");
+        setBoxCharge(order.box_charge ? parseFloat(order.box_charge) : 0);
+        setHolidayChargePct(order.holiday_charge_pct ? parseFloat(order.holiday_charge_pct) : 0);
+        setSpecialCharge(order.special_charge ? parseFloat(order.special_charge) : 0);
+        setFreightCharge(order.freight_charge ? parseFloat(order.freight_charge) : 0);
+        setFreightChargeIncluded(order.freight_charge_included);
+        setPoNumber(order.po_number ?? "");
+        setSalespersonEmail(order.salesperson_email ?? "");
+        setOrderNotes(order.order_notes ?? "");
+
+        // Convert lines
+        const convertedLines: OrderLineState[] = order.lines.map((l) => ({
+          id: l.id,
+          sales_item_id: l.sales_item.id,
+          stems: l.stems,
+          price_per_stem: parseFloat(l.price_per_stem),
+          varietyId: "",
+          salesItemName: l.sales_item.name,
+          listPrice: parseFloat(l.list_price_per_stem),
+          expanded: false,
+          color_variety: l.color_variety ?? "",
+          box_reference: l.box_reference,
+          item_fee_pct: l.item_fee_pct ? parseFloat(l.item_fee_pct) : 0,
+          item_fee_dollar: l.item_fee_dollar ? parseFloat(l.item_fee_dollar) : 0,
+          box_quantity: l.box_quantity ?? 0,
+          bunches_per_box: l.bunches_per_box ?? 0,
+          stems_per_bunch: l.stems_per_bunch ?? 0,
+          is_special: l.is_special,
+          sleeve: l.sleeve ?? "",
+          upc: l.upc ?? "",
+          notes: l.notes ?? "",
+        }));
+        setLines(convertedLines);
+
+        // Allow dirty tracking after initial load settles
+        setTimeout(() => {
+          initialLoadDone.current = true;
+        }, 0);
+      } catch (err) {
+        if (!cancelled) {
+          setErrors({ submit: err instanceof Error ? err.message : "Failed to load order" });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId]);
 
   // ── Customer selection handler ──────────────────────────────
   const handleCustomerChange = useCallback(async (c: Customer) => {
     setCustomer(c);
     setOrderLabel("");
     setErrors({});
+    markDirty();
 
     try {
-      const pricing = await api.get<CustomerPricing[]>(
+      const resp = await api.get<CustomerPricingData>(
         `/api/v1/customers/${c.id}/pricing`
       );
-      setCustomerPricing(pricing);
+      // Map CustomerPricingItem[] to CustomerPricing[] for the product picker
+      const mapped: CustomerPricing[] = resp.items.map((item) => ({
+        sales_item_id: item.sales_item_id,
+        sales_item_name: item.sales_item_name,
+        stems_per_order: item.stems_per_order,
+        customer_price: item.effective_price,
+        retail_price: item.retail_price,
+        is_custom: item.source !== "retail",
+      }));
+      setCustomerPricing(mapped);
     } catch {
       setCustomerPricing([]);
     }
-  }, []);
+  }, [markDirty]);
 
   // ── Add product from picker ─────────────────────────────────
   const handleAddProduct = useCallback(
-    (salesItem: SalesItem, variety: Variety) => {
-      const cp = customerPricing.find(
-        (p) => p.sales_item_id === salesItem.id
-      );
-      const price = cp
-        ? parseFloat(cp.customer_price)
-        : parseFloat(salesItem.retail_price);
+    (pricing: CustomerPricing) => {
+      const price = parseFloat(pricing.customer_price);
 
       const newLine: OrderLineState = {
         id: crypto.randomUUID(),
-        sales_item_id: salesItem.id,
+        isNew: true,
+        sales_item_id: pricing.sales_item_id,
         stems: 0,
-        price_per_stem: price,
-        varietyId: variety.id,
-        salesItemName: salesItem.name,
-        listPrice: price,
+        price_per_stem: isNaN(price) ? 0 : price,
+        varietyId: "",
+        salesItemName: pricing.sales_item_name,
+        listPrice: isNaN(price) ? 0 : price,
         expanded: false,
         color_variety: "",
         box_reference: null,
@@ -103,16 +252,23 @@ export function OrderForm() {
         item_fee_dollar: 0,
         box_quantity: 0,
         bunches_per_box: 0,
-        stems_per_bunch: 0,
+        stems_per_bunch: pricing.stems_per_order,
         is_special: false,
         sleeve: "",
         upc: "",
         notes: "",
       };
       setLines((prev) => [...prev, newLine]);
+      markDirty();
     },
-    [customerPricing]
+    [markDirty]
   );
+
+  // ── Wrapped setters that mark dirty ─────────────────────────
+  const setLinesWrapped = useCallback((val: OrderLineState[] | ((prev: OrderLineState[]) => OrderLineState[])) => {
+    setLines(val);
+    markDirty();
+  }, [markDirty]);
 
   // ── Fee field handler ───────────────────────────────────────
   const handleFeeChange = useCallback(
@@ -134,8 +290,9 @@ export function OrderForm() {
           setFreightChargeIncluded(value as boolean);
           break;
       }
+      markDirty();
     },
-    []
+    [markDirty]
   );
 
   // ── Detail field handler ────────────────────────────────────
@@ -152,8 +309,9 @@ export function OrderForm() {
           setOrderNotes(value);
           break;
       }
+      markDirty();
     },
-    []
+    [markDirty]
   );
 
   // ── Clear form ──────────────────────────────────────────────
@@ -173,6 +331,7 @@ export function OrderForm() {
     setSalespersonEmail("");
     setOrderNotes("");
     setErrors({});
+    setIsDirty(false);
   }, []);
 
   // ── Submit ──────────────────────────────────────────────────
@@ -192,51 +351,93 @@ export function OrderForm() {
       setErrors({});
       setSubmitting(true);
 
-      const payload: OrderCreateRequest = {
-        customer_id: customer!.id,
-        order_date: orderDate,
-        ship_via: shipVia || undefined,
-        order_label: orderLabel || undefined,
-        freight_charge_included: freightChargeIncluded,
-        box_charge: boxCharge || undefined,
-        holiday_charge_pct: holidayChargePct || undefined,
-        special_charge: specialCharge || undefined,
-        freight_charge: freightCharge || undefined,
-        order_notes: orderNotes || undefined,
-        po_number: poNumber || undefined,
-        salesperson_email: salespersonEmail || undefined,
-        force_duplicate: forceDuplicate,
-        lines: lines.map((l) => ({
-          sales_item_id: l.sales_item_id,
-          stems: l.stems,
-          price_per_stem: l.price_per_stem,
-          assorted: undefined,
-          color_variety: l.color_variety || undefined,
-          item_fee_pct: l.item_fee_pct || undefined,
-          item_fee_dollar: l.item_fee_dollar || undefined,
-          notes: l.notes || undefined,
-          box_quantity: l.box_quantity || undefined,
-          bunches_per_box: l.bunches_per_box || undefined,
-          stems_per_bunch: l.stems_per_bunch || undefined,
-          box_reference: l.box_reference || undefined,
-          is_special: l.is_special || undefined,
-          sleeve: l.sleeve || undefined,
-          upc: l.upc || undefined,
-        })),
-      };
-
       try {
-        const result = await api.post<OrderCreateResponse>(
-          "/api/v1/orders",
-          payload
-        );
-        setSuccessMessage(
-          `Order ${result.order_number} created successfully`
-        );
-        setTimeout(() => {
-          setSuccessMessage("");
-          clearForm();
-        }, 2000);
+        if (isEditMode && orderId) {
+          // ── PUT (update) ──
+          const payload: OrderUpdateRequest = {
+            order_date: orderDate,
+            ship_via: shipVia || undefined,
+            order_label: orderLabel || undefined,
+            freight_charge_included: freightChargeIncluded,
+            box_charge: boxCharge || undefined,
+            holiday_charge_pct: holidayChargePct || undefined,
+            special_charge: specialCharge || undefined,
+            freight_charge: freightCharge || undefined,
+            order_notes: orderNotes || undefined,
+            po_number: poNumber || undefined,
+            salesperson_email: salespersonEmail || undefined,
+            lines: lines.map((l): OrderLineUpdateRequest => ({
+              id: l.isNew ? null : l.id,
+              sales_item_id: l.sales_item_id,
+              assorted: false,
+              color_variety: l.color_variety || null,
+              stems: l.stems,
+              price_per_stem: l.price_per_stem,
+              item_fee_pct: l.item_fee_pct || null,
+              item_fee_dollar: l.item_fee_dollar || null,
+              notes: l.notes || null,
+              box_quantity: l.box_quantity || null,
+              bunches_per_box: l.bunches_per_box || null,
+              stems_per_bunch: l.stems_per_bunch || null,
+              box_reference: l.box_reference || null,
+              is_special: l.is_special,
+              sleeve: l.sleeve || null,
+              upc: l.upc || null,
+            })),
+          };
+
+          await api.put(`/api/v1/orders/${orderId}`, payload);
+          setSuccessMessage("Order updated successfully");
+          setIsDirty(false);
+          setTimeout(() => setSuccessMessage(""), 3000);
+        } else {
+          // ── POST (create) ──
+          const payload: OrderCreateRequest = {
+            customer_id: customer!.id,
+            order_date: orderDate,
+            ship_via: shipVia || undefined,
+            order_label: orderLabel || undefined,
+            freight_charge_included: freightChargeIncluded,
+            box_charge: boxCharge || undefined,
+            holiday_charge_pct: holidayChargePct || undefined,
+            special_charge: specialCharge || undefined,
+            freight_charge: freightCharge || undefined,
+            order_notes: orderNotes || undefined,
+            po_number: poNumber || undefined,
+            salesperson_email: salespersonEmail || undefined,
+            force_duplicate: forceDuplicate,
+            lines: lines.map((l) => ({
+              sales_item_id: l.sales_item_id,
+              stems: l.stems,
+              price_per_stem: l.price_per_stem,
+              assorted: undefined,
+              color_variety: l.color_variety || undefined,
+              item_fee_pct: l.item_fee_pct || undefined,
+              item_fee_dollar: l.item_fee_dollar || undefined,
+              notes: l.notes || undefined,
+              box_quantity: l.box_quantity || undefined,
+              bunches_per_box: l.bunches_per_box || undefined,
+              stems_per_bunch: l.stems_per_bunch || undefined,
+              box_reference: l.box_reference || undefined,
+              is_special: l.is_special || undefined,
+              sleeve: l.sleeve || undefined,
+              upc: l.upc || undefined,
+            })),
+          };
+
+          const result = await api.post<OrderCreateResponse>(
+            "/api/v1/orders",
+            payload
+          );
+          setSuccessMessage(
+            `Order ${result.order_number} created successfully`
+          );
+          setIsDirty(false);
+          setTimeout(() => {
+            setSuccessMessage("");
+            clearForm();
+          }, 2000);
+        }
       } catch (err) {
         if (err instanceof DuplicateError) {
           setDuplicateDialog({ open: true, message: err.message });
@@ -249,6 +450,8 @@ export function OrderForm() {
     },
     [
       customer,
+      orderId,
+      isEditMode,
       orderDate,
       shipVia,
       orderLabel,
@@ -266,6 +469,14 @@ export function OrderForm() {
   );
 
   const hasBoxRefs = lines.some((l) => l.box_reference && l.box_reference.trim() !== "");
+
+  if (loading) {
+    return (
+      <div className="max-w-[1200px] mx-auto py-12 text-center text-sm text-muted-foreground">
+        Loading order...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-4">
@@ -285,20 +496,36 @@ export function OrderForm() {
 
       {/* 1. Header row */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-extrabold text-[#1e3a5f]">New Order</h1>
+        <h1 className="text-xl font-extrabold text-[#1e3a5f]">
+          {isEditMode ? `Edit Order: ${orderNumber}` : "New Order"}
+        </h1>
         <div className="flex items-center gap-2">
+          {isEditMode && (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/orders")}
+            >
+              Back to Orders
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => setProductPickerOpen(true)}
+            disabled={!customer}
+            title={!customer ? "Select a customer first" : undefined}
           >
-            Browse Products
+            Browse Sales Items
           </Button>
           <Button
             className="bg-rose-500 hover:bg-rose-600 text-white"
             onClick={() => submitOrder(false)}
             disabled={submitting}
           >
-            {submitting ? "Submitting..." : "Submit Order"}
+            {submitting
+              ? "Saving..."
+              : isEditMode
+                ? "Save Changes"
+                : "Submit Order"}
           </Button>
         </div>
       </div>
@@ -308,11 +535,13 @@ export function OrderForm() {
         customer={customer}
         onCustomerChange={handleCustomerChange}
         orderLabel={orderLabel}
-        onOrderLabelChange={setOrderLabel}
+        onOrderLabelChange={(v) => { setOrderLabel(v); markDirty(); }}
         orderDate={orderDate}
-        onOrderDateChange={setOrderDate}
+        onOrderDateChange={(v) => { setOrderDate(v); markDirty(); }}
         shipVia={shipVia}
-        onShipViaChange={setShipVia}
+        onShipViaChange={(v) => { setShipVia(v); markDirty(); }}
+        customerDefaultShipVia={customer?.default_ship_via}
+        customerLocked={isEditMode}
       />
       {/* Inline validation errors */}
       {(errors.customer || errors.orderDate) && (
@@ -326,7 +555,7 @@ export function OrderForm() {
       <div className="overflow-x-auto">
         <LineItemTable
           lines={lines}
-          onLinesChange={setLines}
+          onLinesChange={setLinesWrapped}
           customerPricing={customerPricing}
         />
       </div>
@@ -354,6 +583,9 @@ export function OrderForm() {
           onChange={handleDetailChange}
         />
       </div>
+
+      {/* 6. Audit log (edit mode only) */}
+      {isEditMode && orderId && <OrderAuditLog orderId={orderId} />}
 
       {/* Product picker panel */}
       <ProductPickerPanel

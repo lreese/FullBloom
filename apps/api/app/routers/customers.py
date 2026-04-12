@@ -3,6 +3,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
+from tortoise.expressions import Q
 
 from app.models.customer import Customer
 from app.models.pricing import PriceList
@@ -48,11 +49,13 @@ async def _build_customer_list_response(c: Customer) -> CustomerListResponse:
 
 
 @router.get("/customers")
-async def list_customers(active: bool | None = True) -> dict:
-    """List customers filtered by active status."""
+async def list_customers(active: bool | None = True, search: str | None = None) -> dict:
+    """List customers filtered by active status and optional search term."""
     qs = Customer.all()
     if active is not None:
         qs = qs.filter(is_active=active)
+    if search:
+        qs = qs.filter(Q(name__icontains=search) | Q(customer_number__icontains=search))
     customers = await qs.order_by("name")
     return {
         "data": [await _build_customer_list_response(c) for c in customers]

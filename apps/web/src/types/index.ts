@@ -367,8 +367,7 @@ export interface OrderDetailResponse {
   customer: { id: string; customer_number: number; name: string };
   order_date: string;
   ship_via: string | null;
-  price_type: string;
-  store_name: string | null;
+  price_list: string;
   freight_charge_included: boolean;
   box_charge: string | null;
   holiday_charge_pct: string | null;
@@ -377,8 +376,76 @@ export interface OrderDetailResponse {
   order_notes: string | null;
   po_number: string | null;
   salesperson_email: string | null;
+  order_label: string | null;
   created_at: string;
+  updated_at: string;
   lines: OrderLineResponse[];
+}
+
+// ── Order Update ────────────────────────────────────────────
+
+export interface OrderLineUpdateRequest {
+  id: string | null;
+  sales_item_id: string;
+  assorted: boolean;
+  color_variety: string | null;
+  stems: number;
+  price_per_stem: number;
+  item_fee_pct: number | null;
+  item_fee_dollar: number | null;
+  notes: string | null;
+  box_quantity: number | null;
+  bunches_per_box: number | null;
+  stems_per_bunch: number | null;
+  box_reference: string | null;
+  is_special: boolean;
+  sleeve: string | null;
+  upc: string | null;
+}
+
+export interface OrderUpdateRequest {
+  order_date?: string;
+  ship_via?: string;
+  order_label?: string;
+  freight_charge_included?: boolean;
+  box_charge?: number | null;
+  holiday_charge_pct?: number | null;
+  special_charge?: number | null;
+  freight_charge?: number | null;
+  order_notes?: string;
+  po_number?: string;
+  salesperson_email?: string;
+  lines?: OrderLineUpdateRequest[];
+}
+
+// ── Order List ──────────────────────────────────────────────
+
+export interface OrderListItem {
+  id: string;
+  order_number: string;
+  customer_id: string;
+  customer_name: string;
+  order_date: string;
+  ship_via: string | null;
+  lines_count: number;
+  total_stems: number;
+  salesperson_email: string | null;
+  created_at: string;
+}
+
+export interface OrderListResponse {
+  items: OrderListItem[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
+export interface OrderAuditLogEntry {
+  id: string;
+  action: string;
+  changes: Array<{field: string; old_value: unknown; new_value: unknown; line_id?: string}>;
+  entered_by: string | null;
+  created_at: string;
 }
 
 // ── Import ───────────────────────────────────────────────────

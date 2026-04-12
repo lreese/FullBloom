@@ -17,6 +17,7 @@ import type { CustomerPricing } from "@/types";
 // ── OrderLineState ──────────────────────────────────────────
 export interface OrderLineState {
   id: string;
+  isNew?: boolean; // true for locally-added lines, false/undefined for lines from the server
   sales_item_id: string;
   stems: number;
   price_per_stem: number;
@@ -114,9 +115,17 @@ export function LineItemTable({
   const addResults = useMemo(() => {
     if (!addSearch.trim()) return [];
     const lower = addSearch.toLowerCase();
-    return customerPricing.filter((cp) =>
-      cp.sales_item_name.toLowerCase().includes(lower)
-    );
+    return customerPricing
+      .filter((cp) => cp.sales_item_name.toLowerCase().includes(lower))
+      .sort((a, b) => {
+        const aPrice = parseFloat(a.customer_price);
+        const bPrice = parseFloat(b.customer_price);
+        const aHasPrice = !isNaN(aPrice) && aPrice > 0;
+        const bHasPrice = !isNaN(bPrice) && bPrice > 0;
+        if (aHasPrice && !bHasPrice) return -1;
+        if (!aHasPrice && bHasPrice) return 1;
+        return a.sales_item_name.localeCompare(b.sales_item_name);
+      });
   }, [addSearch, customerPricing]);
 
   function handleAddFromPricing(cp: CustomerPricing) {

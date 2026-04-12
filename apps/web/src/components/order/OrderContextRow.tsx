@@ -13,6 +13,8 @@ interface OrderContextRowProps {
   onOrderDateChange: (date: string) => void;
   shipVia: string;
   onShipViaChange: (shipVia: string) => void;
+  customerDefaultShipVia?: string | null;
+  customerLocked?: boolean;
 }
 
 export function OrderContextRow({
@@ -24,6 +26,8 @@ export function OrderContextRow({
   onOrderDateChange,
   shipVia,
   onShipViaChange,
+  customerDefaultShipVia,
+  customerLocked = false,
 }: OrderContextRowProps) {
   return (
     <div className="flex flex-wrap items-start gap-2.5">
@@ -32,7 +36,16 @@ export function OrderContextRow({
         <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
           Customer
         </label>
-        <CustomerSelector value={customer} onSelect={onCustomerChange} />
+        {customerLocked && customer ? (
+          <div className="flex items-center gap-2 rounded-lg border border-input bg-muted/50 px-2.5 py-1 text-sm h-8 w-full cursor-not-allowed">
+            <span className="flex-1 truncate">{customer.name}</span>
+            <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
+              ID: {customer.customer_number}
+            </span>
+          </div>
+        ) : (
+          <CustomerSelector value={customer} onSelect={onCustomerChange} />
+        )}
       </div>
 
       {/* Order Label */}
@@ -69,7 +82,7 @@ export function OrderContextRow({
         <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
           Ship Via
         </label>
-        <ShipViaSelector value={shipVia} onChange={onShipViaChange} />
+        <ShipViaSelector value={shipVia} onChange={onShipViaChange} customerDefault={customerDefaultShipVia} />
       </div>
     </div>
   );

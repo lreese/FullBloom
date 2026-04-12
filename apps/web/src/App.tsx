@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { OrderForm } from "@/components/order/OrderForm";
+import { OrdersPage } from "@/pages/OrdersPage";
 import { CustomersPage } from "@/pages/CustomersPage";
 import { VarietiesPage } from "@/pages/VarietiesPage";
 import { ProductLinesPage } from "@/pages/ProductLinesPage";
@@ -23,7 +24,9 @@ function App() {
       <BrowserRouter>
         <AppShell>
           <Routes>
-            <Route path="/orders" element={<OrderForm />} />
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/orders/new" element={<OrderForm />} />
+            <Route path="/orders/:orderId/edit" element={<OrderForm />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/products" element={<Navigate to="/products/varieties" replace />} />
             <Route path="/products/varieties" element={<VarietiesPage />} />
