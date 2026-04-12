@@ -479,6 +479,16 @@ export function SalesItemsPage() {
             className="rounded-lg border p-3 mb-4 flex items-center gap-3 flex-wrap"
             style={{ backgroundColor: "white", borderColor: "#e0ddd8" }}
           >
+            <div className="flex-1 min-w-[140px] max-w-[280px] relative">
+              <input
+                type="text"
+                placeholder="Search sales items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-9 rounded-lg border border-[#e0ddd8] bg-white pl-3 pr-3 text-sm text-[#334155] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              />
+            </div>
+            <div className="flex-1" />
             <div className="flex gap-px bg-[#e0ddd8] rounded-md overflow-hidden">
               <button
                 className={cn(
@@ -502,15 +512,6 @@ export function SalesItemsPage() {
               >
                 Archived
               </button>
-            </div>
-            <div className="flex-1 min-w-[140px] max-w-[280px] relative">
-              <input
-                type="text"
-                placeholder="Search sales items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-9 rounded-lg border border-[#e0ddd8] bg-white pl-3 pr-3 text-sm text-[#334155] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
-              />
             </div>
           </div>
         )}
