@@ -10,6 +10,11 @@ import { ProductTypesPage } from "@/pages/ProductTypesPage";
 import { SalesItemsPage } from "@/pages/SalesItemsPage";
 import { PriceListsPage } from "@/pages/PriceListsPage";
 import { CustomerPricesPage } from "@/pages/CustomerPricesPage";
+import { CountsPage } from "@/pages/inventory/CountsPage";
+import { EstimatesPage } from "@/pages/inventory/EstimatesPage";
+import { AvailabilityPage } from "@/pages/inventory/AvailabilityPage";
+import { HarvestStatusPage } from "@/pages/inventory/HarvestStatusPage";
+import { ComparisonPage } from "@/pages/inventory/ComparisonPage";
 import "@/index.css";
 
 function App() {
@@ -29,6 +34,12 @@ function App() {
             <Route path="/pricing/sales-items" element={<SalesItemsPage />} />
             <Route path="/pricing/price-lists" element={<PriceListsPage />} />
             <Route path="/pricing/customer-prices" element={<CustomerPricesPage />} />
+            <Route path="/inventory" element={<Navigate to="/inventory/counts" replace />} />
+            <Route path="/inventory/counts" element={<CountsPage />} />
+            <Route path="/inventory/estimates" element={<EstimatesPage />} />
+            <Route path="/inventory/availability" element={<AvailabilityPage />} />
+            <Route path="/inventory/harvest-status" element={<HarvestStatusPage />} />
+            <Route path="/inventory/comparison" element={<ComparisonPage />} />
             <Route path="*" element={<Navigate to="/orders" replace />} />
           </Routes>
         </AppShell>

@@ -24,6 +24,7 @@ TORTOISE_TEST_CONFIG = {
                 "app.models.product",
                 "app.models.pricing",
                 "app.models.order",
+                "app.models.inventory",
             ],
             "default_connection": "default",
         },

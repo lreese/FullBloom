@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI, HTTPException, Request
+
+logger = structlog.get_logger()
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -21,6 +23,18 @@ from app.routers.product_lines import router as product_lines_router
 from app.routers.product_types import router as product_types_router
 from app.routers.products import router as products_router
 from app.routers.sales_items import router as sales_items_router
+
+# Inventory routers
+from app.routers.availability import router as availability_router
+from app.routers.comparison import router as comparison_router
+from app.routers.counts import router as counts_router
+from app.routers.customer_counts import router as customer_counts_router
+from app.routers.estimates import router as estimates_router
+from app.routers.harvest_status import router as harvest_status_router
+from app.routers.print_sheets import router as print_sheets_router
+from app.routers.pull_days import router as pull_days_router
+from app.routers.sheet_completion import router as sheet_completion_router
+from app.routers.sheet_templates import router as sheet_templates_router
 
 # ---------------------------------------------------------------------------
 # Structured logging
@@ -70,8 +84,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -85,6 +99,23 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": exc.detail if isinstance(exc.detail, str) else str(exc.detail)},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch-all for unhandled exceptions — log the full traceback and return a structured error."""
+    import traceback
+    logger.error(
+        "unhandled_exception",
+        path=request.url.path,
+        method=request.method,
+        error=str(exc),
+        traceback=traceback.format_exc(),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"error": "Internal server error"},
     )
 
 
@@ -119,3 +150,15 @@ app.include_router(sales_items_router)
 app.include_router(pricing_router)
 app.include_router(price_lists_router)
 app.include_router(orders_router)
+
+# Inventory routers
+app.include_router(counts_router)
+app.include_router(customer_counts_router)
+app.include_router(estimates_router)
+app.include_router(availability_router)
+app.include_router(harvest_status_router)
+app.include_router(sheet_completion_router)
+app.include_router(sheet_templates_router)
+app.include_router(pull_days_router)
+app.include_router(comparison_router)
+app.include_router(print_sheets_router)

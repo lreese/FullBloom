@@ -1,9 +1,10 @@
 """Pydantic schemas for inventory endpoints."""
 
 from datetime import date, datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -13,14 +14,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class CountItem(BaseModel):
     variety_id: UUID
-    count_value: int | None = None
+    count_value: int | None = Field(None, ge=0, le=999999)
     is_done: bool = False
 
 
 class CountSaveRequest(BaseModel):
     product_type_id: UUID
     count_date: date
-    entered_by: str | None = None
+    entered_by: str | None = Field(None, max_length=100)
     counts: list[CountItem]
 
 
@@ -66,16 +67,16 @@ class RecentCountItem(BaseModel):
 class CustomerCountItem(BaseModel):
     variety_id: UUID
     customer_id: UUID
-    bunch_size: int
-    sleeve_type: str
-    bunch_count: int | None = None
+    bunch_size: int = Field(..., ge=1, le=100)
+    sleeve_type: Literal["Plastic", "Paper"]
+    bunch_count: int | None = Field(None, ge=0, le=999999)
     is_done: bool = False
 
 
 class CustomerCountSaveRequest(BaseModel):
     product_type_id: UUID
     count_date: date
-    entered_by: str | None = None
+    entered_by: str | None = Field(None, max_length=100)
     counts: list[CustomerCountItem]
 
 
@@ -122,14 +123,14 @@ class CustomerCountSaveResponse(BaseModel):
 class EstimateItem(BaseModel):
     variety_id: UUID
     pull_day: date
-    estimate_value: int | None = None
+    estimate_value: int | None = Field(None, ge=0, le=999999)
     is_done: bool = False
 
 
 class EstimateSaveRequest(BaseModel):
     product_type_id: UUID
     week_start: date
-    entered_by: str | None = None
+    entered_by: str | None = Field(None, max_length=100)
     estimates: list[EstimateItem]
 
 
@@ -231,9 +232,9 @@ class AvailabilityResponse(BaseModel):
 
 class SheetCompleteRequest(BaseModel):
     product_type_id: UUID
-    sheet_type: str
+    sheet_type: Literal["daily_count", "customer_count", "estimate"]
     sheet_date: date
-    completed_by: str | None = None
+    completed_by: str | None = Field(None, max_length=100)
 
 
 class SheetCompleteResponse(BaseModel):
@@ -275,8 +276,8 @@ class HarvestStatusUpdateResponse(BaseModel):
 
 class TemplateColumnInput(BaseModel):
     customer_id: UUID
-    bunch_size: int
-    sleeve_type: str
+    bunch_size: int = Field(..., ge=1, le=100)
+    sleeve_type: Literal["Plastic", "Paper"]
 
 
 class TemplateUpdateRequest(BaseModel):
@@ -295,7 +296,15 @@ class TemplateResponse(BaseModel):
 
 class PullDayUpdateRequest(BaseModel):
     week_start: date | None = None
-    pull_days: list[int]
+    pull_days: list[int] = Field(..., min_length=1)
+
+    @field_validator("pull_days")
+    @classmethod
+    def validate_pull_days(cls, v: list[int]) -> list[int]:
+        for day in v:
+            if day < 1 or day > 7:
+                raise ValueError(f"Pull day {day} must be between 1 and 7")
+        return v
 
 
 class PullDayScheduleResponse(BaseModel):

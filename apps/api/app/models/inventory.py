@@ -97,7 +97,7 @@ class CountSheetTemplate(Model):
         on_delete=fields.CASCADE,
         unique=True,
     )
-    columns = fields.JSONField(default=[])
+    columns = fields.JSONField(default=list)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
@@ -113,7 +113,7 @@ class PullDaySchedule(Model):
 
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     week_start = fields.DateField(null=True, unique=True)
-    pull_days = fields.JSONField(default=[1, 3, 5])
+    pull_days = fields.JSONField(default=lambda: [1, 3, 5])
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
@@ -165,3 +165,43 @@ class CountAuditLog(Model):
 
     def __str__(self) -> str:
         return f"CountAuditLog({self.daily_count_id}, {self.action})"
+
+
+class CustomerCountAuditLog(Model):
+    """Audit trail for customer count changes."""
+
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    customer_count = fields.ForeignKeyField(
+        "models.CustomerCount", related_name="audit_logs", on_delete=fields.CASCADE
+    )
+    action = fields.CharField(max_length=10)
+    amount = fields.IntField()
+    resulting_total = fields.IntField()
+    entered_by = fields.CharField(max_length=100, null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "customer_count_audit_logs"
+
+    def __str__(self) -> str:
+        return f"CustomerCountAuditLog({self.customer_count_id}, {self.action})"
+
+
+class EstimateAuditLog(Model):
+    """Audit trail for estimate changes."""
+
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    estimate = fields.ForeignKeyField(
+        "models.Estimate", related_name="audit_logs", on_delete=fields.CASCADE
+    )
+    action = fields.CharField(max_length=10)
+    amount = fields.IntField()
+    resulting_total = fields.IntField()
+    entered_by = fields.CharField(max_length=100, null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "estimate_audit_logs"
+
+    def __str__(self) -> str:
+        return f"EstimateAuditLog({self.estimate_id}, {self.action})"

@@ -18,6 +18,11 @@ import {
   Boxes,
   Tag,
   LayoutGrid,
+  BarChart3,
+  ClipboardCheck,
+  TrendingUp,
+  Eye,
+  Sprout,
 } from "lucide-react";
 import {
   Popover,
@@ -61,6 +66,17 @@ const navItems: NavItem[] = [
       { label: "Sales Items", icon: Tag, href: "/pricing/sales-items" },
       { label: "Price Lists", icon: LayoutGrid, href: "/pricing/price-lists" },
       { label: "Customer Prices", icon: Users, href: "/pricing/customer-prices" },
+    ],
+  },
+  {
+    label: "Inventory",
+    icon: BarChart3,
+    href: "/inventory",
+    children: [
+      { label: "Counts", icon: ClipboardCheck, href: "/inventory/counts" },
+      { label: "Estimates", icon: TrendingUp, href: "/inventory/estimates" },
+      { label: "Availability", icon: Eye, href: "/inventory/availability" },
+      { label: "Harvest Status", icon: Sprout, href: "/inventory/harvest-status" },
     ],
   },
   { label: "Import", icon: Upload, href: "/import" },

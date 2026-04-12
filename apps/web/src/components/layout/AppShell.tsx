@@ -6,7 +6,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   return (
     <div className="flex h-screen">

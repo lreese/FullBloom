@@ -27,6 +27,8 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "can_replace", label: "Can Replace", filterable: true, defaultVisible: false },
   { key: "item_group_id", label: "Item Group ID", filterable: true, defaultVisible: false },
   { key: "item_group_description", label: "Item Group Description", filterable: true, defaultVisible: false },
+  { key: "in_harvest", label: "In Harvest", filterable: true, defaultVisible: false },
+  { key: "stems_per_bunch", label: "Stems/Bunch", filterable: true, defaultVisible: false },
 ];
 
 const SEARCHABLE_FIELDS = [
@@ -39,10 +41,15 @@ const SEARCHABLE_FIELDS = [
 
 const BULK_FIELDS = [
   { key: "show", label: "Show" },
+  { key: "can_replace", label: "Can Replace" },
+  { key: "in_harvest", label: "In Harvest" },
   { key: "weekly_sales_category", label: "Weekly Sales Category" },
   { key: "product_line_id", label: "Product Line" },
   { key: "color_id", label: "Color" },
   { key: "flowering_type", label: "Flowering Type" },
+  { key: "item_group_id", label: "Item Group ID" },
+  { key: "item_group_description", label: "Item Group Description" },
+  { key: "stems_per_bunch", label: "Stems Per Bunch" },
 ] as const;
 
 interface VarietyTableProps {
@@ -110,16 +117,18 @@ export function VarietyTable({
   // Bulk value options based on selected field
   const bulkValueOptions = useMemo((): string[] => {
     if (!bulkField) return [];
-    if (bulkField === "show") return ["true", "false"];
+    if (bulkField === "show" || bulkField === "can_replace" || bulkField === "in_harvest") return ["true", "false"];
     if (bulkField === "weekly_sales_category") return dropdownOptions.weekly_sales_categories;
     if (bulkField === "product_line_id") return dropdownOptions.product_lines.map((pl) => pl.id);
     if (bulkField === "color_id") return dropdownOptions.colors.map((c) => c.id);
     if (bulkField === "flowering_type") return dropdownOptions.flowering_types;
+    if (bulkField === "stems_per_bunch") return ["5", "10", "15", "20"];
+    if (bulkField === "item_group_id" || bulkField === "item_group_description") return [];
     return [];
   }, [bulkField, dropdownOptions]);
 
   const bulkValueLabels = useMemo((): Record<string, string> => {
-    if (bulkField === "show") return { true: "Yes", false: "No" };
+    if (bulkField === "show" || bulkField === "can_replace" || bulkField === "in_harvest") return { true: "Yes", false: "No" };
     if (bulkField === "product_line_id") {
       return Object.fromEntries(
         dropdownOptions.product_lines.map((pl) => [pl.id, `${pl.product_type} > ${pl.name}`])
@@ -135,8 +144,13 @@ export function VarietyTable({
 
   const handleBulkApply = () => {
     if (!bulkField || !bulkValue) return;
-    const value = bulkField === "show" ? bulkValue === "true" : bulkValue;
-    onBulkUpdate(bulkField, value);
+    let value: string | boolean | number = bulkValue;
+    if (bulkField === "show" || bulkField === "can_replace" || bulkField === "in_harvest") {
+      value = bulkValue === "true";
+    } else if (bulkField === "stems_per_bunch" || bulkField === "item_group_id") {
+      value = parseInt(bulkValue, 10);
+    }
+    onBulkUpdate(bulkField, value as string | boolean);
     setBulkField("");
     setBulkValue("");
   };

@@ -6,10 +6,15 @@ from app.models.product import Color, ProductLine, Variety
 
 BULK_UPDATABLE_FIELDS = {
     "show",
+    "can_replace",
+    "in_harvest",
     "weekly_sales_category",
     "product_line_id",
     "color_id",
     "flowering_type",
+    "item_group_id",
+    "item_group_description",
+    "stems_per_bunch",
 }
 
 
@@ -61,8 +66,14 @@ async def bulk_update_varieties(
         raise ValueError(f"Field '{field}' is not bulk-updatable")
 
     # Validate field-specific values
-    if field == "show" and not isinstance(value, bool):
-        raise ValueError("'show' must be true or false")
+    if field in ("show", "can_replace", "in_harvest") and not isinstance(value, bool):
+        raise ValueError(f"'{field}' must be true or false")
+    if field == "stems_per_bunch":
+        if not isinstance(value, int) or value < 1:
+            raise ValueError("'stems_per_bunch' must be a positive integer")
+    if field == "item_group_id" and value is not None:
+        if not isinstance(value, int):
+            raise ValueError("'item_group_id' must be an integer")
     if field == "product_line_id":
         if value is None:
             raise ValueError("'product_line_id' cannot be null")

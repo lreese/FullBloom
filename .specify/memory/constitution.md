@@ -258,6 +258,14 @@ takes precedence and `CLAUDE.md` MUST be updated.
 
 Specs are tracked in `specs/README.md`. When a spec is created, a row MUST be added to that index.
 
+### Test Coverage (NON-NEGOTIABLE)
+
+Every spec MUST include backend test coverage as part of its implementation. Tests MUST be written
+for all new API endpoints, covering: happy path, error cases, authorization/validation, and any
+edge cases identified in the spec or plan. A spec cannot move to `implemented` status if its
+endpoints lack corresponding test files in `apps/<app>/tests/`. Test files follow the naming
+convention `test_<router_name>.py`. Frontend test coverage is recommended but not yet required.
+
 Commit messages MUST follow Conventional Commits format: `type: short description`. Types:
 `feat` (new feature), `fix` (bug fix), `docs` (documentation), `chore` (maintenance),
 `refactor` (code change with no behavior change), `test` (tests). Subject line MUST be lowercase,
@@ -283,4 +291,4 @@ Versioning follows semantic rules:
 As a solo project, no formal review process is required — but amendments MUST be intentional and
 reflected here before taking effect in practice.
 
-**Version**: 1.3.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-11
+**Version**: 1.4.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-12
