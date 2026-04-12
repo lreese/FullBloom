@@ -88,6 +88,7 @@ async def list_orders(
                 total_stems=sum(l.stems for l in lines),
                 salesperson_email=o.salesperson_email,
                 standing_order_id=str(o.standing_order_id) if o.standing_order_id else None,
+                po_number=o.po_number,
                 created_at=o.created_at.isoformat(),
             )
         )

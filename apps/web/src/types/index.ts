@@ -431,6 +431,7 @@ export interface OrderListItem {
   total_stems: number;
   salesperson_email: string | null;
   standing_order_id: string | null;
+  po_number: string | null;
   created_at: string;
 }
 
