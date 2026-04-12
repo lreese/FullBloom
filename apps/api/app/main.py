@@ -84,7 +84,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
 
@@ -142,6 +142,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 app.include_router(health_router)
 app.include_router(import_router)
 app.include_router(customers_router)
+app.include_router(harvest_status_router)  # before products_router to avoid /varieties/{variety_id} catching /varieties/harvest-status
 app.include_router(products_router)
 app.include_router(product_lines_router)
 app.include_router(product_types_router)
@@ -156,7 +157,6 @@ app.include_router(counts_router)
 app.include_router(customer_counts_router)
 app.include_router(estimates_router)
 app.include_router(availability_router)
-app.include_router(harvest_status_router)
 app.include_router(sheet_completion_router)
 app.include_router(sheet_templates_router)
 app.include_router(pull_days_router)

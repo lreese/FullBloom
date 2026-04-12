@@ -45,21 +45,25 @@ export function HarvestStatusPage() {
 
       {/* Product type selector */}
       <div className="mb-6">
-        <Select
-          value={selectedTypeId}
-          onValueChange={(val) => setSelectedTypeId(val)}
-        >
-          <SelectTrigger className="w-64 bg-white border-[#e0ddd8] text-[#334155] min-h-[44px]">
-            <SelectValue placeholder="Select product type" />
-          </SelectTrigger>
-          <SelectContent>
-            {productTypes.map((pt) => (
-              <SelectItem key={pt.id} value={pt.id}>
-                {pt.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {productTypes.length > 0 && (
+          <Select
+            value={selectedTypeId}
+            onValueChange={(val) => setSelectedTypeId(val)}
+          >
+            <SelectTrigger className="w-64 bg-white border-[#e0ddd8] text-[#334155] min-h-[44px]">
+              <SelectValue placeholder="Select product type">
+                {productTypes.find((pt) => pt.id === selectedTypeId)?.name ?? "Select product type"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {productTypes.map((pt) => (
+                <SelectItem key={pt.id} value={pt.id}>
+                  {pt.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Toggle list */}

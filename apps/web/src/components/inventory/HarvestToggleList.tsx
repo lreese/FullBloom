@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import type {
   HarvestStatusEntry,
   HarvestStatusUpdateRequest,
@@ -34,6 +36,8 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
   const [entries, setEntries] = useState<HarvestStatusEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -51,7 +55,33 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
 
   useEffect(() => {
     fetchData();
+    setSearch("");
   }, [fetchData]);
+
+  // Default all product lines to collapsed once data loads
+  useEffect(() => {
+    if (entries.length > 0) {
+      const allLines = new Set(entries.map((e) => e.product_line_name));
+      setCollapsed(allLines);
+    }
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (!search) return entries;
+    const lower = search.toLowerCase();
+    return entries.filter((e) => e.variety_name.toLowerCase().includes(lower));
+  }, [entries, search]);
+
+  const groups = useMemo(() => groupByProductLine(filtered), [filtered]);
+
+  const toggleCollapse = (name: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
 
   const bulkUpdate = async (updates: { variety_id: string; in_harvest: boolean }[]) => {
     const ids = new Set(updates.map((u) => u.variety_id));
@@ -108,85 +138,99 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
     );
   }
 
-  const groups = groupByProductLine(entries);
-
   return (
-    <div className="space-y-6">
-      {groups.map((group) => {
-        const harvestCount = group.varieties.filter((v) => v.in_harvest).length;
-        return (
-          <div key={group.productLineName}>
-            {/* Section header */}
-            <div className="flex items-center justify-between gap-3 border-b border-[#e0ddd8] pb-2 mb-3">
-              <div className="flex items-center gap-3">
-                <h3 className="text-sm font-semibold text-[#1e3a5f]">
-                  {group.productLineName}
-                </h3>
-                <span className="text-xs text-[#94a3b8]">
-                  {harvestCount}/{group.varieties.length} in harvest
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="xs"
-                  onClick={() => handleBulkSetAll(group.varieties, true)}
-                  className="text-[#2d4a2d] border-[#2d4a2d]/30 hover:bg-[#2d4a2d]/10"
-                >
-                  All in harvest
-                </Button>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  onClick={() => handleBulkSetAll(group.varieties, false)}
-                  className="text-[#94a3b8] border-[#e0ddd8] hover:bg-[#f4f1ec]"
-                >
-                  All dormant
-                </Button>
-              </div>
-            </div>
+    <div className="space-y-4">
+      {/* Search */}
+      <Input
+        placeholder="Search varieties..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8]"
+      />
 
-            {/* Variety rows */}
-            <div className="space-y-1">
-              {group.varieties.map((variety) => {
-                const isSaving = saving.has(variety.variety_id);
-                return (
-                  <div
-                    key={variety.variety_id}
-                    className="flex items-center justify-between rounded-lg px-3 py-2 min-h-[44px] hover:bg-[#f4f1ec] transition-colors"
+      {/* Groups */}
+      <div className="space-y-4">
+        {groups.map((group) => {
+          const isCollapsed = collapsed.has(group.productLineName);
+          const harvestCount = group.varieties.filter((v) => v.in_harvest).length;
+          return (
+            <div key={group.productLineName}>
+              {/* Section header — clickable to collapse */}
+              <div className="flex items-center justify-between gap-3 border-b border-[#e0ddd8] pb-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => toggleCollapse(group.productLineName)}
+                  className="flex items-center gap-2 hover:text-[#1e3a5f] transition-colors"
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className="h-4 w-4 text-[#94a3b8]" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-[#94a3b8]" />
+                  )}
+                  <h3 className="text-sm font-semibold text-[#1e3a5f]">
+                    {group.productLineName}
+                  </h3>
+                  <span className="text-xs text-[#94a3b8]">
+                    {harvestCount}/{group.varieties.length} in harvest
+                  </span>
+                </button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => handleBulkSetAll(group.varieties, true)}
+                    className="text-[#2d4a2d] border-[#2d4a2d]/30 hover:bg-[#2d4a2d]/10"
                   >
-                    <span className="text-sm text-[#334155]">
-                      {variety.variety_name}
-                    </span>
+                    All in harvest
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => handleBulkSetAll(group.varieties, false)}
+                    className="text-[#94a3b8] border-[#e0ddd8] hover:bg-[#f4f1ec]"
+                  >
+                    All dormant
+                  </Button>
+                </div>
+              </div>
 
-                    {/* Toggle switch */}
-                    <button
-                      onClick={() => handleToggle(variety.variety_id, variety.in_harvest)}
-                      disabled={isSaving}
-                      className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c27890] focus-visible:ring-offset-2 disabled:opacity-50 min-w-[44px] min-h-[44px] justify-center"
-                      role="switch"
-                      aria-checked={variety.in_harvest}
-                      aria-label={`${variety.variety_name} harvest status`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-6 w-11 rounded-full transition-colors duration-200 ${
-                          variety.in_harvest ? "bg-[#2d4a2d]" : "bg-[#e0ddd8]"
-                        }`}
+              {/* Variety rows — hidden when collapsed */}
+              {!isCollapsed && (
+                <div className="space-y-1">
+                  {group.varieties.map((variety) => {
+                    const isSaving = saving.has(variety.variety_id);
+                    return (
+                      <div
+                        key={variety.variety_id}
+                        className="flex items-center justify-between rounded-lg px-3 py-2 min-h-[44px] hover:bg-[#f4f1ec] transition-colors"
                       >
-                        <span
-                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 mt-0.5 ${
-                            variety.in_harvest ? "translate-x-5 ml-0.5" : "translate-x-0.5"
-                          }`}
-                        />
-                      </span>
-                    </button>
-                  </div>
-                );
-              })}
+                        <span className="flex-1 text-sm text-[#334155]">
+                          {variety.variety_name}
+                        </span>
+                        <div className="flex items-center gap-2 min-w-[36px] min-h-[36px] justify-center">
+                          <Checkbox
+                            checked={variety.in_harvest}
+                            onCheckedChange={() => handleToggle(variety.variety_id, variety.in_harvest)}
+                            disabled={isSaving}
+                            className="h-5 w-5 data-checked:bg-[#2d4a2d] data-checked:border-[#2d4a2d]"
+                            aria-label={`${variety.variety_name} harvest status`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+          );
+        })}
+
+        {groups.length === 0 && search && (
+          <div className="text-center py-8 text-[#94a3b8] text-sm">
+            No varieties matching "{search}"
           </div>
-        );
-      })}
+        )}
+      </div>
     </div>
   );
 }
