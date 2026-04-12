@@ -183,6 +183,7 @@ export interface ComparisonResponse {
 
 export interface AvailabilityVariety {
   variety_name: string;
+  color_hex: string | null;
   remaining_count: number | null;
   estimate: number | null;
 }

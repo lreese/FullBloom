@@ -37,7 +37,7 @@ async def get_availability(
                 in_harvest=True,
                 is_active=True,
             )
-            .prefetch_related("product_line")
+            .prefetch_related("product_line", "color")
             .order_by("product_line__name", "name")
         )
         if not varieties:
@@ -80,6 +80,7 @@ async def get_availability(
             pl_names[pl_id] = v.product_line.name  # type: ignore[attr-defined]
             item = AvailabilityVariety(
                 variety_name=v.name,
+                color_hex=v.color.hex_color if v.color_id else None,
                 remaining_count=dc_map.get(str(v.id)),
                 estimate=est_map.get(str(v.id)),
             )

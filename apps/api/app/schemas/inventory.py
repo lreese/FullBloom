@@ -202,6 +202,7 @@ class ComparisonResponse(BaseModel):
 
 class AvailabilityVariety(BaseModel):
     variety_name: str
+    color_hex: str | None
     remaining_count: int | None
     estimate: int | None
 

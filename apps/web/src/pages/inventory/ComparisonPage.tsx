@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 import { api } from "@/services/api";
 import { ComparisonGrid } from "@/components/inventory/ComparisonGrid";
 import type { ProductType } from "@/types";
@@ -81,6 +82,13 @@ export function ComparisonPage() {
       {/* Top bar */}
       <div className="shrink-0 border-b border-[#e0ddd8] bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/inventory/availability"
+            className="flex items-center gap-1 text-[#94a3b8] hover:text-[#334155] transition-colors"
+            title="Back to Availability"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
           <h1 className="text-xl font-bold text-[#1e3a5f]">Estimate vs. Actual</h1>
           <div className="flex items-center gap-2 ml-auto">
             {/* Week picker */}
