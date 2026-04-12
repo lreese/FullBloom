@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnFilter } from "@/components/common/ColumnFilter";
+import { TableToolbar } from "@/components/common/TableToolbar";
 import { CheckCircle2, Settings2 } from "lucide-react";
 import { useTableState } from "@/hooks/useTableState";
 import type { ColumnDef } from "@/hooks/useTableState";
@@ -414,41 +415,18 @@ export function SalesItemsPage() {
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-lg font-bold text-[#1e3a5f]">Sales Items</h1>
-              {hasActiveFilters && (
-                <button
-                  className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1"
-                  onClick={clearAllFilters}
-                >
-                  Clear Filters
-                </button>
-              )}
-              {columnPrefs && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 flex items-center gap-1">
-                      <Settings2 className="h-3 w-3" /> Columns
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2" align="end">
-                    <div className="space-y-0.5">
-                      {allColumns.map((col) => (
-                        <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer">
-                          <Checkbox
-                            checked={columnPrefs?.visible.includes(col.key) ?? true}
-                            onCheckedChange={() => tableState.toggleColumn(col.key)}
-                          />
-                          <span className="text-[#334155] select-none">{col.label || col.key}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
-            <div className="flex items-center gap-2 ml-4 shrink-0">
+          <>
+            <TableToolbar
+              title="Sales Items"
+              tableState={tableState}
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              addButtonLabel="+ Add Sales Item"
+              onAddClick={handleAddClick}
+              columns={allColumns}
+              searchPlaceholder="Search sales items..."
+            />
+            <div className="flex items-center gap-2 mb-3">
               <button
                 className="text-xs text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 hover:bg-[#f4f1ec]"
                 onClick={() => importFileRef.current?.click()}
@@ -462,58 +440,8 @@ export function SalesItemsPage() {
                 className="hidden"
                 onChange={handleImportFile}
               />
-              <Button
-                size="sm"
-                className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
-                onClick={handleAddClick}
-              >
-                + Add Sales Item
-              </Button>
             </div>
-          </div>
-        )}
-
-        {/* ── Filters bar: view toggle + search ──────────── */}
-        {!someSelected && (
-          <div
-            className="rounded-lg border p-3 mb-4 flex items-center gap-3 flex-wrap"
-            style={{ backgroundColor: "white", borderColor: "#e0ddd8" }}
-          >
-            <div className="flex-1 min-w-[140px] max-w-[280px] relative">
-              <input
-                type="text"
-                placeholder="Search sales items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-9 rounded-lg border border-[#e0ddd8] bg-white pl-3 pr-3 text-sm text-[#334155] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
-              />
-            </div>
-            <div className="flex-1" />
-            <div className="flex gap-px bg-[#e0ddd8] rounded-md overflow-hidden">
-              <button
-                className={cn(
-                  "px-3 py-1.5 text-xs transition-colors",
-                  activeView === "active"
-                    ? "bg-[#c27890] text-white"
-                    : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
-                )}
-                onClick={() => handleViewChange("active")}
-              >
-                Active
-              </button>
-              <button
-                className={cn(
-                  "px-3 py-1.5 text-xs transition-colors",
-                  activeView === "archived"
-                    ? "bg-[#c27890] text-white"
-                    : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
-                )}
-                onClick={() => handleViewChange("archived")}
-              >
-                Archived
-              </button>
-            </div>
-          </div>
+          </>
         )}
 
         {/* ── Table ──────────────────────────────────────── */}
