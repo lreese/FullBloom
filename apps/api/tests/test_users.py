@@ -181,15 +181,16 @@ class TestDeactivateUser:
         data = resp.json()["data"]
         assert data["status"] == "deactivated"
 
-    async def test_cannot_deactivate_last_active_admin(
+    async def test_cannot_deactivate_yourself(
         self, async_client: AsyncClient, admin_user, auth_headers_admin
     ):
+        # Admin cannot deactivate their own account.
         resp = await async_client.post(
             f"/api/v1/users/{admin_user.id}/deactivate",
             headers=auth_headers_admin,
         )
         assert resp.status_code == 409
-        assert "last active admin" in resp.json()["error"]
+        assert "yourself" in resp.json()["error"]
 
     async def test_can_deactivate_admin_when_another_exists(
         self, async_client: AsyncClient, admin_user, auth_headers_admin

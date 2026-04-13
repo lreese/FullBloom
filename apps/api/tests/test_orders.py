@@ -732,3 +732,32 @@ async def test_update_order_effective_price_calculation(
     line = resp.json()["data"]["lines"][0]
     # effective = (10.00 * 1.10) + 0.50 = 11.50
     assert float(line["effective_price_per_stem"]) == 11.50
+
+
+# ---------------------------------------------------------------------------
+# salesperson_email auto-population tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.anyio
+async def test_order_salesperson_defaults_to_auth_user(
+    async_client: AsyncClient, salesperson_user, auth_headers_salesperson: dict, customer, sales_item_pair
+):
+    """When salesperson_email is omitted, it should default to the authenticated user's email."""
+    si_a, _ = sales_item_pair
+    create_resp = await async_client.post(
+        "/api/v1/orders",
+        headers=auth_headers_salesperson,
+        json={
+            "customer_id": str(customer.id),
+            "order_date": "2026-04-12",
+            "ship_via": "FedEx",
+            "lines": [{"sales_item_id": str(si_a.id), "stems": 100, "price_per_stem": 0.50}],
+        },
+    )
+    assert create_resp.status_code == 201
+    order_id = create_resp.json()["data"]["id"]
+    # salesperson_email is not in the create response — fetch the detail to verify
+    detail_resp = await async_client.get(f"/api/v1/orders/{order_id}", headers=auth_headers_salesperson)
+    assert detail_resp.status_code == 200
+    assert detail_resp.json()["data"]["salesperson_email"] == "sales@oregonflowers.com"

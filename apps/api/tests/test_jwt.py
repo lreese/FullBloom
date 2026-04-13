@@ -29,3 +29,13 @@ class TestDecodeSupabaseJWT:
         token = _make_token({"sub": "user-uuid-123", "exp": time.time() + 3600})
         with pytest.raises(Exception):
             decode_supabase_jwt(token, "wrong-secret")
+
+    def test_token_missing_sub_raises(self):
+        token = _make_token({"exp": time.time() + 3600})
+        with pytest.raises(Exception):
+            decode_supabase_jwt(token, TEST_JWT_SECRET)
+
+    def test_token_missing_exp_raises(self):
+        token = jwt.encode({"sub": "user-uuid"}, TEST_JWT_SECRET, algorithm="HS256")
+        with pytest.raises(Exception):
+            decode_supabase_jwt(token, TEST_JWT_SECRET)

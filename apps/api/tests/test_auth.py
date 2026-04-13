@@ -1,9 +1,14 @@
 """Tests for auth and profile endpoints."""
 
+import time
+
+import jwt
 import pytest
 from httpx import AsyncClient
 
 from app.auth.permissions import PERMISSIONS
+
+TEST_JWT_SECRET = "test-secret-key-for-unit-tests-only"
 
 
 class TestGetMe:
@@ -63,10 +68,11 @@ class TestGetPermissions:
         assert resp.status_code == 401
 
     async def test_permissions_areas_have_key_and_label(
-        self, async_client: AsyncClient, salesperson_user, auth_headers_salesperson
+        self, async_client: AsyncClient, admin_user, auth_headers_admin
     ):
+        # Endpoint requires users:read permission — admin only
         resp = await async_client.get(
-            "/api/v1/auth/permissions", headers=auth_headers_salesperson
+            "/api/v1/auth/permissions", headers=auth_headers_admin
         )
         assert resp.status_code == 200
         areas = resp.json()["data"]["areas"]
@@ -151,3 +157,32 @@ class TestUpdateProfile:
         data = resp.json()["data"]
         assert data["display_name"] == "New Display"
         assert data["phone"] == "503-555-9999"
+
+
+# ---------------------------------------------------------------------------
+# Pending user tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.anyio
+async def test_pending_user_returns_401(async_client: AsyncClient):
+    """A pending user should not be able to access the API."""
+    from app.models.user import User
+
+    await User.create(
+        supabase_user_id="pending-uuid",
+        email="pending@oregonflowers.com",
+        display_name="Pending User",
+        role="salesperson",
+        status="pending",
+    )
+    token = jwt.encode(
+        {"sub": "pending-uuid", "exp": time.time() + 3600},
+        TEST_JWT_SECRET,
+        algorithm="HS256",
+    )
+    resp = await async_client.get(
+        "/api/v1/orders",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 401

@@ -121,6 +121,17 @@ async def deactivated_user():
 
 
 @pytest.fixture
+async def data_manager_user():
+    return await User.create(
+        supabase_user_id="data-mgr-uuid",
+        email="data@oregonflowers.com",
+        display_name="Data Manager",
+        role="data_manager",
+        status="active",
+    )
+
+
+@pytest.fixture
 def auth_headers_admin(admin_user):
     return {"Authorization": f"Bearer {_make_test_token(admin_user.supabase_user_id)}"}
 
@@ -138,6 +149,11 @@ def auth_headers_field_worker(field_worker_user):
 @pytest.fixture
 def auth_headers_deactivated(deactivated_user):
     return {"Authorization": f"Bearer {_make_test_token(deactivated_user.supabase_user_id)}"}
+
+
+@pytest.fixture
+def auth_headers_data_manager(data_manager_user):
+    return {"Authorization": f"Bearer {_make_test_token(data_manager_user.supabase_user_id)}"}
 
 
 # ---------------------------------------------------------------------------
