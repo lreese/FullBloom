@@ -9,14 +9,49 @@ async def get_current_user(request: Request) -> User:
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing authentication token")
+
     token = auth_header.split(" ", 1)[1]
     payload = decode_supabase_jwt(token, SUPABASE_JWT_SECRET)
     supabase_user_id = payload.get("sub")
+
+    # Look up by supabase_user_id first
     user = await User.filter(supabase_user_id=supabase_user_id).first()
+
     if user is None:
-        raise HTTPException(status_code=401, detail="User not found")
+        # Check for a pending invite by email
+        # Extract email from JWT claims (Supabase includes it)
+        email = payload.get("email")
+        if email:
+            pending = await User.filter(email=email, status="pending").first()
+            if pending:
+                # Link the pending invite to this Supabase user and activate
+                pending.supabase_user_id = supabase_user_id
+                pending.status = "active"
+                # Try to get avatar from JWT user metadata
+                user_metadata = payload.get("user_metadata", {})
+                if user_metadata.get("avatar_url"):
+                    pending.avatar_url = user_metadata["avatar_url"]
+                if user_metadata.get("full_name") and not pending.display_name:
+                    pending.display_name = user_metadata["full_name"]
+                await pending.save()
+                return pending
+
+        raise HTTPException(status_code=401, detail="User not found. Contact your administrator for an invitation.")
+
     if user.status != "active":
+        # If this is a pending user logging in for the first time, activate them
+        if user.status == "pending":
+            user.status = "active"
+            # Try to get avatar from JWT user metadata
+            user_metadata = payload.get("user_metadata", {})
+            if user_metadata.get("avatar_url"):
+                user.avatar_url = user_metadata["avatar_url"]
+            if user_metadata.get("full_name") and not user.display_name:
+                user.display_name = user_metadata["full_name"]
+            await user.save()
+            return user
         raise HTTPException(status_code=401, detail="Account not active")
+
     return user
 
 

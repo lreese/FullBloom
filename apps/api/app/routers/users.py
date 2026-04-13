@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import get_current_user, require_permission
+from app.auth.supabase import get_supabase_admin
 from app.models.user import User
 from app.schemas.user import ChangeRoleRequest, InviteUserRequest, UserResponse
 
@@ -29,8 +30,18 @@ async def invite_user(
     existing = await User.filter(email=body.email).first()
     if existing:
         raise HTTPException(status_code=422, detail="Email already exists")
+
+    # Call Supabase Admin API to invite the user
+    try:
+        admin = get_supabase_admin()
+        result = admin.auth.admin.invite_user_by_email(body.email)
+        supabase_user_id = result.user.id
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to send invitation: {e}")
+
+    # Create local user record with the real Supabase UUID
     user = await User.create(
-        supabase_user_id=f"pending-{body.email}",
+        supabase_user_id=str(supabase_user_id),
         email=body.email,
         role=body.role,
         status="pending",

@@ -2,8 +2,21 @@
 
 import pytest
 from httpx import AsyncClient
+from unittest.mock import patch, MagicMock
 
 from app.models.user import User
+
+
+@pytest.fixture
+def mock_supabase_admin():
+    mock_client = MagicMock()
+    mock_user = MagicMock()
+    mock_user.id = "new-supabase-uuid-123"
+    mock_result = MagicMock()
+    mock_result.user = mock_user
+    mock_client.auth.admin.invite_user_by_email.return_value = mock_result
+    with patch("app.routers.users.get_supabase_admin", return_value=mock_client):
+        yield mock_client
 
 
 class TestListUsers:
@@ -36,7 +49,7 @@ class TestListUsers:
 
 class TestInviteUser:
     async def test_admin_can_invite(
-        self, async_client: AsyncClient, admin_user, auth_headers_admin
+        self, async_client: AsyncClient, admin_user, auth_headers_admin, mock_supabase_admin
     ):
         resp = await async_client.post(
             "/api/v1/users/invite",
@@ -48,6 +61,10 @@ class TestInviteUser:
         assert data["email"] == "newuser@oregonflowers.com"
         assert data["role"] == "salesperson"
         assert data["status"] == "pending"
+        # Verify Supabase was called
+        mock_supabase_admin.auth.admin.invite_user_by_email.assert_called_once_with(
+            "newuser@oregonflowers.com"
+        )
 
     async def test_duplicate_email_returns_422(
         self, async_client: AsyncClient, admin_user, salesperson_user, auth_headers_admin
@@ -85,6 +102,20 @@ class TestInviteUser:
             json={"email": "x@oregonflowers.com", "role": "salesperson"},
         )
         assert resp.status_code == 401
+
+    async def test_invite_fails_when_supabase_errors(
+        self, async_client: AsyncClient, admin_user, auth_headers_admin
+    ):
+        with patch("app.routers.users.get_supabase_admin") as mock:
+            mock.return_value.auth.admin.invite_user_by_email.side_effect = Exception(
+                "Supabase error"
+            )
+            resp = await async_client.post(
+                "/api/v1/users/invite",
+                headers=auth_headers_admin,
+                json={"email": "fail@oregonflowers.com", "role": "salesperson"},
+            )
+            assert resp.status_code == 502
 
 
 class TestListSalespeople:

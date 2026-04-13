@@ -165,11 +165,11 @@ class TestUpdateProfile:
 
 
 @pytest.mark.anyio
-async def test_pending_user_returns_401(async_client: AsyncClient):
-    """A pending user should not be able to access the API."""
+async def test_pending_user_auto_activated_on_login(async_client: AsyncClient):
+    """A pending user with matching supabase_user_id should be auto-activated on first login."""
     from app.models.user import User
 
-    await User.create(
+    pending = await User.create(
         supabase_user_id="pending-uuid",
         email="pending@oregonflowers.com",
         display_name="Pending User",
@@ -177,7 +177,35 @@ async def test_pending_user_returns_401(async_client: AsyncClient):
         status="pending",
     )
     token = jwt.encode(
-        {"sub": "pending-uuid", "exp": time.time() + 3600},
+        {"sub": "pending-uuid", "exp": time.time() + 3600, "email": "pending@oregonflowers.com"},
+        TEST_JWT_SECRET,
+        algorithm="HS256",
+    )
+    resp = await async_client.get(
+        "/api/v1/orders",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+
+    # Verify user was activated
+    updated = await User.filter(id=pending.id).first()
+    assert updated.status == "active"
+
+
+@pytest.mark.anyio
+async def test_deactivated_user_returns_401(async_client: AsyncClient):
+    """A deactivated user should not be able to access the API."""
+    from app.models.user import User
+
+    await User.create(
+        supabase_user_id="deactivated-uuid",
+        email="deactivated2@oregonflowers.com",
+        display_name="Deactivated User",
+        role="salesperson",
+        status="deactivated",
+    )
+    token = jwt.encode(
+        {"sub": "deactivated-uuid", "exp": time.time() + 3600},
         TEST_JWT_SECRET,
         algorithm="HS256",
     )
@@ -186,3 +214,31 @@ async def test_pending_user_returns_401(async_client: AsyncClient):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert resp.status_code == 401
+
+
+@pytest.mark.anyio
+async def test_pending_user_activated_on_first_login(async_client: AsyncClient):
+    """A pending user with matching supabase_user_id should be auto-activated on first login."""
+    from app.models.user import User
+
+    pending = await User.create(
+        supabase_user_id="activate-me-uuid",
+        email="activate@oregonflowers.com",
+        display_name="To Activate",
+        role="salesperson",
+        status="pending",
+    )
+    token = jwt.encode(
+        {"sub": "activate-me-uuid", "exp": time.time() + 3600, "email": "activate@oregonflowers.com"},
+        TEST_JWT_SECRET,
+        algorithm="HS256",
+    )
+    resp = await async_client.get(
+        "/api/v1/orders",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+
+    # Verify user was activated
+    updated = await User.filter(id=pending.id).first()
+    assert updated.status == "active"
