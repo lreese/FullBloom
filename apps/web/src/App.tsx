@@ -21,6 +21,8 @@ import { HarvestStatusPage } from "@/pages/inventory/HarvestStatusPage";
 import { ComparisonPage } from "@/pages/inventory/ComparisonPage";
 import { StandingOrdersPage } from "@/pages/StandingOrdersPage";
 import { StandingOrderForm } from "@/components/standing-orders/StandingOrderForm";
+import { UsersPage } from "@/components/settings/UsersPage";
+import { ProfilePage } from "@/components/settings/ProfilePage";
 import "@/index.css";
 
 function App() {
@@ -58,8 +60,8 @@ function App() {
                       <Route path="/inventory/availability" element={<AvailabilityPage />} />
                       <Route path="/inventory/harvest-status" element={<HarvestStatusPage />} />
                       <Route path="/inventory/comparison" element={<ComparisonPage />} />
-                      <Route path="/settings/profile" element={<div>Profile</div>} />
-                      <Route path="/settings/users" element={<div>Users</div>} />
+                      <Route path="/settings/profile" element={<ProfilePage />} />
+                      <Route path="/settings/users" element={<UsersPage />} />
                       <Route path="*" element={<Navigate to="/orders" replace />} />
                     </Routes>
                   </AppShell>
