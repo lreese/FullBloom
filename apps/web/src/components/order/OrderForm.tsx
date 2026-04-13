@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "@/services/api";
 import { DuplicateError } from "@/services/api";
+import { useAuth } from "@/auth/useAuth";
+import type { Salesperson } from "@/components/order/OrderDetailsCard";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,6 +39,7 @@ export function OrderForm() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(orderId);
+  const { user, canAccess } = useAuth();
 
   // ── Customer & context ──────────────────────────────────────
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -61,6 +64,9 @@ export function OrderForm() {
   const [salespersonEmail, setSalespersonEmail] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
 
+  // ── Salespeople ─────────────────────────────────────────────
+  const [salespeople, setSalespeople] = useState<Salesperson[]>([]);
+
   // ── UI state ────────────────────────────────────────────────
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -71,6 +77,28 @@ export function OrderForm() {
     open: boolean;
     message: string;
   }>({ open: false, message: "" });
+
+  // ── Fetch salespeople for dropdown ──────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await api.get<{ data: Salesperson[] }>("/api/v1/users/salespeople");
+        setSalespeople(resp.data);
+      } catch {
+        // Silently fall back — dropdown degrades to text input
+        setSalespeople([]);
+      }
+    })();
+  }, []);
+
+  // Default salespersonEmail to current user on create
+  useEffect(() => {
+    if (!isEditMode && user?.email && !salespersonEmail) {
+      setSalespersonEmail(user.email);
+    }
+  // Only run when user is resolved on new order
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email, isEditMode]);
 
   // ── Dirty tracking for unsaved changes warning ──────────────
   const [isDirty, setIsDirty] = useState(false);
@@ -581,6 +609,8 @@ export function OrderForm() {
           salespersonEmail={salespersonEmail}
           orderNotes={orderNotes}
           onChange={handleDetailChange}
+          salespeople={salespeople}
+          canWriteOrders={canAccess("orders", "write")}
         />
       </div>
 
