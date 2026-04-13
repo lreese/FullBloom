@@ -3,6 +3,7 @@
 import asyncio
 import csv
 import io
+import re
 from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
@@ -274,11 +275,12 @@ async def export_customer_pricing_csv(customer_id: UUID, _user: User = Depends(r
         ])
 
     output.seek(0)
-    customer_name = data["customer"]["name"].replace(" ", "_")
+    raw_name = data["customer"]["name"].replace(" ", "_")
+    safe_name = re.sub(r'[^\w\-.]', '_', raw_name)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={customer_name}_pricing.csv"},
+        headers={"Content-Disposition": f"attachment; filename={safe_name}_pricing.csv"},
     )
 
 

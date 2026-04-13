@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_permission
 from app.auth.permissions import PERMISSIONS
 from app.models.user import User
 from app.schemas.user import UserWithPermissionsResponse
@@ -44,7 +44,7 @@ async def get_me(user: User = Depends(get_current_user)) -> dict:
 
 
 @auth_router.get("/permissions")
-async def get_permissions(_user: User = Depends(get_current_user)) -> dict:
+async def get_permissions(_user: User = Depends(require_permission("users", "read"))) -> dict:
     return {
         "data": {
             "roles": list(PERMISSIONS.keys()),

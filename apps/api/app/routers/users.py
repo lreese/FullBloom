@@ -77,6 +77,8 @@ async def deactivate_user(
     target = await User.filter(id=user_id).first()
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if target.id == _user.id:
+        raise HTTPException(status_code=409, detail="Cannot deactivate yourself")
     if target.role == "admin" and target.status == "active":
         active_admin_count = await User.filter(role="admin", status="active").count()
         if active_admin_count <= 1:

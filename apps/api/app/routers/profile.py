@@ -1,11 +1,16 @@
 """Profile router — /api/v1/profile endpoints (self-service)."""
 
+import re
 from fastapi import APIRouter, Depends
 
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import PERMISSIONS
 from app.models.user import User
 from app.schemas.user import UpdateProfileRequest, UserWithPermissionsResponse
+
+def _strip_html(value: str) -> str:
+    return re.sub(r'<[^>]+>', '', value)
+
 
 profile_router = APIRouter(
     prefix="/api/v1/profile",
@@ -37,9 +42,9 @@ async def update_profile(
     user: User = Depends(get_current_user),
 ) -> dict:
     if body.display_name is not None:
-        user.display_name = body.display_name
+        user.display_name = _strip_html(body.display_name.strip())
     if body.phone is not None:
-        user.phone = body.phone
+        user.phone = _strip_html(body.phone.strip())
     await user.save()
     permissions = PERMISSIONS.get(user.role, {})
     return {

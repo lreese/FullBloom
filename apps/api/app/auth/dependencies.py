@@ -15,8 +15,8 @@ async def get_current_user(request: Request) -> User:
     user = await User.filter(supabase_user_id=supabase_user_id).first()
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
-    if user.status == "deactivated":
-        raise HTTPException(status_code=401, detail="Account deactivated")
+    if user.status != "active":
+        raise HTTPException(status_code=401, detail="Account not active")
     return user
 
 
