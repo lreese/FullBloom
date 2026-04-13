@@ -44,6 +44,7 @@ def decode_supabase_jwt(token: str, _jwks_client_override: PyJWKClient | None = 
             token,
             signing_key.key,
             algorithms=["ES256", "RS256"],
+            audience="authenticated",
             options={"require": ["sub", "exp"]},
         )
         return payload

@@ -1,22 +1,29 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function LoginPage() {
+  const { session, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [showReset, setShowReset] = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+  // If already authenticated, redirect to app
+  if (!loading && session) {
+    return <Navigate to="/" replace />;
+  }
+
+  async function handleLogin() {
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    setSubmitting(false);
     if (err) setError(err.message);
   }
 
@@ -29,14 +36,13 @@ export function LoginPage() {
     if (err) setError(err.message);
   }
 
-  async function handlePasswordReset(e: React.FormEvent) {
-    e.preventDefault();
+  async function handlePasswordReset() {
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/login`,
     });
-    setLoading(false);
+    setSubmitting(false);
     if (err) setError(err.message);
     else setResetSent(true);
   }
@@ -55,12 +61,12 @@ export function LoginPage() {
               <Button variant="outline" className="w-full" onClick={() => { setShowReset(false); setResetSent(false); }}>Back to Login</Button>
             </div>
           ) : (
-            <form onSubmit={handlePasswordReset} className="space-y-4">
-              <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <div className="space-y-4">
+              <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>{loading ? "Sending..." : "Send Reset Link"}</Button>
-              <Button type="button" variant="outline" className="w-full" onClick={() => setShowReset(false)}>Back to Login</Button>
-            </form>
+              <Button className="w-full" disabled={submitting} onClick={handlePasswordReset}>{submitting ? "Sending..." : "Send Reset Link"}</Button>
+              <Button variant="outline" className="w-full" onClick={() => setShowReset(false)}>Back to Login</Button>
+            </div>
           )}
         </div>
       </div>
@@ -75,12 +81,12 @@ export function LoginPage() {
           <p className="text-sm mt-1" style={{ color: "#94a3b8" }}>Sign in to continue</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <div className="space-y-4">
+          <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>{loading ? "Signing in..." : "Sign In"}</Button>
-        </form>
+          <Button className="w-full" disabled={submitting} onClick={handleLogin}>{submitting ? "Signing in..." : "Sign In"}</Button>
+        </div>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center"><span className="w-full border-t" style={{ borderColor: "#e0ddd8" }} /></div>
