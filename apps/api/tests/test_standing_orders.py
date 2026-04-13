@@ -681,7 +681,7 @@ async def test_audit_log_list(async_client, customer, sales_items, auth_headers_
     created_entry = entries[-1]
     assert created_entry["action"] == "created"  # oldest entry
     assert isinstance(created_entry["changes"], list)
-    assert created_entry["entered_by"] == "sales@test.com"
+    assert created_entry["entered_by"] == "admin@oregonflowers.com"
 
 
 @pytest.mark.anyio

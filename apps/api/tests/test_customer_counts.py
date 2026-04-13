@@ -104,7 +104,6 @@ async def test_save_customer_counts_create_new(
     payload = {
         "product_type_id": str(cc_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {
                 "variety_id": str(cc_variety.id),
@@ -128,7 +127,7 @@ async def test_save_customer_counts_create_new(
         sleeve_type="Plastic",
     )
     assert cc.bunch_count == 5
-    assert cc.entered_by == "tester"
+    assert cc.entered_by == "admin@oregonflowers.com"
 
     logs = await CustomerCountAuditLog.filter(customer_count=cc).all()
     assert len(logs) == 1
@@ -157,7 +156,6 @@ async def test_save_customer_counts_update_existing(
     payload = {
         "product_type_id": str(cc_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "new_user",
         "counts": [
             {
                 "variety_id": str(cc_variety.id),
@@ -182,7 +180,7 @@ async def test_save_customer_counts_update_existing(
     )
     assert cc.bunch_count == 8
     assert cc.is_done is True
-    assert cc.entered_by == "new_user"
+    assert cc.entered_by == "admin@oregonflowers.com"
 
     logs = await CustomerCountAuditLog.filter(customer_count=cc).all()
     assert len(logs) == 1  # only the update log
@@ -200,7 +198,6 @@ async def test_save_customer_counts_skips_invalid_variety(
     payload = {
         "product_type_id": str(cc_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {
                 "variety_id": str(cc_variety.id),
@@ -243,7 +240,6 @@ async def test_save_customer_counts_rejects_when_sheet_complete(
     payload = {
         "product_type_id": str(cc_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {
                 "variety_id": str(cc_variety.id),
@@ -287,7 +283,6 @@ async def test_customer_count_audit_log_returns_entries(
     payload = {
         "product_type_id": str(cc_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {
                 "variety_id": str(cc_variety.id),
@@ -314,7 +309,7 @@ async def test_customer_count_audit_log_returns_entries(
     assert len(entries) == 1
     assert entries[0]["action"] == "set"
     assert entries[0]["amount"] == 7
-    assert entries[0]["entered_by"] == "tester"
+    assert entries[0]["entered_by"] == "admin@oregonflowers.com"
 
 
 async def test_customer_count_audit_log_validates_sleeve_type(

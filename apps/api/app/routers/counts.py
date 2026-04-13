@@ -135,7 +135,7 @@ async def save_counts(body: CountSaveRequest, user: User = Depends(require_permi
             old_value = existing.count_value
             existing.count_value = item.count_value
             existing.is_done = item.is_done
-            existing.entered_by = body.entered_by
+            existing.entered_by = user.email
             await existing.save()
 
             # Audit log
@@ -146,7 +146,7 @@ async def save_counts(body: CountSaveRequest, user: User = Depends(require_permi
                 action=action,
                 amount=amount,
                 resulting_total=item.count_value or 0,
-                entered_by=body.entered_by,
+                entered_by=user.email,
             )
         else:
             dc = await DailyCount.create(
@@ -155,14 +155,14 @@ async def save_counts(body: CountSaveRequest, user: User = Depends(require_permi
                 count_date=body.count_date,
                 count_value=item.count_value,
                 is_done=item.is_done,
-                entered_by=body.entered_by,
+                entered_by=user.email,
             )
             await CountAuditLog.create(
                 daily_count=dc,
                 action="set",
                 amount=item.count_value or 0,
                 resulting_total=item.count_value or 0,
-                entered_by=body.entered_by,
+                entered_by=user.email,
             )
         saved += 1
 

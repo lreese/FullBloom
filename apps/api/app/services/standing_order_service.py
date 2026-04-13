@@ -54,7 +54,7 @@ def matches_cadence(so: StandingOrder, target_date: date) -> bool:
     return weeks_diff % so.frequency_weeks == 0
 
 
-async def create_standing_order(data: StandingOrderCreateRequest) -> StandingOrder:
+async def create_standing_order(data: StandingOrderCreateRequest, entered_by: str | None = None) -> StandingOrder:
     """Create a new standing order with lines and audit log."""
     customer = await Customer.get_or_none(id=data.customer_id)
     if customer is None:
@@ -93,7 +93,7 @@ async def create_standing_order(data: StandingOrderCreateRequest) -> StandingOrd
             standing_order=so,
             action="created",
             changes=[],
-            entered_by=data.salesperson_email,
+            entered_by=entered_by,
         )
 
     so = await StandingOrder.get(id=so.id).prefetch_related(

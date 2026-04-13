@@ -164,7 +164,7 @@ async def save_estimates(body: EstimateSaveRequest, user: User = Depends(require
         if existing:
             existing.estimate_value = item.estimate_value
             existing.is_done = item.is_done
-            existing.entered_by = body.entered_by
+            existing.entered_by = user.email
             await existing.save()
             if item.estimate_value is not None:
                 await EstimateAuditLog.create(
@@ -172,7 +172,7 @@ async def save_estimates(body: EstimateSaveRequest, user: User = Depends(require
                     action="set",
                     amount=item.estimate_value,
                     resulting_total=item.estimate_value,
-                    entered_by=body.entered_by,
+                    entered_by=user.email,
                 )
         else:
             est = await Estimate.create(
@@ -182,7 +182,7 @@ async def save_estimates(body: EstimateSaveRequest, user: User = Depends(require
                 pull_day=item.pull_day,
                 estimate_value=item.estimate_value,
                 is_done=item.is_done,
-                entered_by=body.entered_by,
+                entered_by=user.email,
             )
             if item.estimate_value is not None:
                 await EstimateAuditLog.create(
@@ -190,7 +190,7 @@ async def save_estimates(body: EstimateSaveRequest, user: User = Depends(require
                     action="set",
                     amount=item.estimate_value,
                     resulting_total=item.estimate_value,
-                    entered_by=body.entered_by,
+                    entered_by=user.email,
                 )
         saved += 1
 

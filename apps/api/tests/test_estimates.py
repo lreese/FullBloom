@@ -90,7 +90,6 @@ async def test_save_estimates_create_new(
     payload = {
         "product_type_id": str(est_product_type.id),
         "week_start": WEEK_START.isoformat(),
-        "entered_by": "tester",
         "estimates": [
             {
                 "variety_id": str(est_variety.id),
@@ -107,7 +106,7 @@ async def test_save_estimates_create_new(
     est = await Estimate.get(variety_id=est_variety.id, pull_day=pull_day)
     assert est.estimate_value == 100
     assert est.week_start == WEEK_START
-    assert est.entered_by == "tester"
+    assert est.entered_by == "admin@oregonflowers.com"
 
     logs = await EstimateAuditLog.filter(estimate=est).all()
     assert len(logs) == 1
@@ -135,7 +134,6 @@ async def test_save_estimates_update_existing(
     payload = {
         "product_type_id": str(est_product_type.id),
         "week_start": WEEK_START.isoformat(),
-        "entered_by": "new_user",
         "estimates": [
             {
                 "variety_id": str(est_variety.id),
@@ -152,7 +150,7 @@ async def test_save_estimates_update_existing(
     est = await Estimate.get(variety_id=est_variety.id, pull_day=pull_day)
     assert est.estimate_value == 200
     assert est.is_done is True
-    assert est.entered_by == "new_user"
+    assert est.entered_by == "admin@oregonflowers.com"
 
     logs = await EstimateAuditLog.filter(estimate=est).all()
     assert len(logs) == 1  # only the update log (original create had none)
@@ -170,7 +168,6 @@ async def test_save_estimates_skips_invalid_variety(
     payload = {
         "product_type_id": str(est_product_type.id),
         "week_start": WEEK_START.isoformat(),
-        "entered_by": "tester",
         "estimates": [
             {
                 "variety_id": str(est_variety.id),
@@ -209,7 +206,6 @@ async def test_save_estimates_rejects_when_sheet_complete(
     payload = {
         "product_type_id": str(est_product_type.id),
         "week_start": WEEK_START.isoformat(),
-        "entered_by": "tester",
         "estimates": [
             {
                 "variety_id": str(est_variety.id),
@@ -239,7 +235,6 @@ async def test_save_estimates_different_weeks_are_separate(
     payload1 = {
         "product_type_id": str(est_product_type.id),
         "week_start": WEEK_START.isoformat(),
-        "entered_by": "tester",
         "estimates": [
             {"variety_id": str(est_variety.id), "pull_day": pull_day.isoformat(), "estimate_value": 100, "is_done": False},
         ],
@@ -275,7 +270,6 @@ async def test_estimate_audit_log_returns_entries(
     payload = {
         "product_type_id": str(est_product_type.id),
         "week_start": WEEK_START.isoformat(),
-        "entered_by": "tester",
         "estimates": [
             {
                 "variety_id": str(est_variety.id),
@@ -295,4 +289,4 @@ async def test_estimate_audit_log_returns_entries(
     assert len(entries) == 1
     assert entries[0]["action"] == "set"
     assert entries[0]["amount"] == 55
-    assert entries[0]["entered_by"] == "tester"
+    assert entries[0]["entered_by"] == "admin@oregonflowers.com"

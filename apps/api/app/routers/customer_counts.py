@@ -199,7 +199,7 @@ async def save_customer_counts(body: CustomerCountSaveRequest, user: User = Depe
         if existing:
             existing.bunch_count = item.bunch_count
             existing.is_done = item.is_done
-            existing.entered_by = body.entered_by
+            existing.entered_by = user.email
             await existing.save()
             cc_record = existing
         else:
@@ -212,7 +212,7 @@ async def save_customer_counts(body: CustomerCountSaveRequest, user: User = Depe
                 sleeve_type=item.sleeve_type,
                 bunch_count=item.bunch_count,
                 is_done=item.is_done,
-                entered_by=body.entered_by,
+                entered_by=user.email,
             )
         # Create audit log entry
         await CustomerCountAuditLog.create(
@@ -220,7 +220,7 @@ async def save_customer_counts(body: CustomerCountSaveRequest, user: User = Depe
             action="set",
             amount=item.bunch_count if item.bunch_count is not None else 0,
             resulting_total=item.bunch_count if item.bunch_count is not None else 0,
-            entered_by=body.entered_by,
+            entered_by=user.email,
         )
         saved += 1
 

@@ -58,7 +58,7 @@ async def check_duplicate(
     return None
 
 
-async def create_order(data: OrderCreateRequest) -> Order:
+async def create_order(data: OrderCreateRequest, entered_by: str | None = None) -> Order:
     """Create a new order with lines.
 
     Validates customer existence, checks for duplicates (unless force_duplicate),
@@ -151,7 +151,7 @@ async def create_order(data: OrderCreateRequest) -> Order:
             order=order,
             action="created",
             changes=[],
-            entered_by=data.salesperson_email,
+            entered_by=entered_by,
         )
 
     # Re-fetch with prefetched relations for response

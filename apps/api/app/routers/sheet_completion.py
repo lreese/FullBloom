@@ -71,13 +71,13 @@ async def complete_sheet(body: SheetCompleteRequest, user: User = Depends(requir
         sheet_date=body.sheet_date,
         defaults={
             "is_complete": True,
-            "completed_by": body.completed_by,
+            "completed_by": user.email,
             "completed_at": now,
         },
     )
     if not created:
         completion.is_complete = True
-        completion.completed_by = body.completed_by
+        completion.completed_by = user.email
         completion.completed_at = now
         await completion.save()
 

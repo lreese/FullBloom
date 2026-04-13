@@ -74,13 +74,12 @@ async def test_complete_daily_count_sheet(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "daily_count",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": "admin",
     }
     resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["is_complete"] is True
-    assert data["completed_by"] == "admin"
+    assert data["completed_by"] == "admin@oregonflowers.com"
 
     # Verify count was marked done
     dc = await DailyCount.get(variety_id=sc_variety.id, count_date=TODAY)
@@ -110,7 +109,6 @@ async def test_complete_daily_count_no_phantom_records(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "daily_count",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": "admin",
     }
     resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
@@ -150,7 +148,6 @@ async def test_complete_customer_count_sheet(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "customer_count",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": "admin",
     }
     resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
@@ -183,7 +180,6 @@ async def test_complete_estimate_sheet(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "estimate",
         "sheet_date": WEEK_START.isoformat(),
-        "completed_by": "admin",
     }
     resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
@@ -205,7 +201,6 @@ async def test_complete_unknown_sheet_type(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "bogus",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": "admin",
     }
     resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 422
@@ -218,7 +213,7 @@ async def test_complete_unknown_sheet_type(
 
 async def test_complete_sheet_idempotent(
     async_client: AsyncClient, sc_product_type, sc_variety, auth_headers_admin):
-    """Completing an already-complete sheet updates completed_by."""
+    """Completing an already-complete sheet updates completed_by to authenticated user."""
     await SheetCompletion.create(
         product_type=sc_product_type,
         sheet_type="daily_count",
@@ -230,11 +225,10 @@ async def test_complete_sheet_idempotent(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "daily_count",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": "second_admin",
     }
     resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
-    assert resp.json()["data"]["completed_by"] == "second_admin"
+    assert resp.json()["data"]["completed_by"] == "admin@oregonflowers.com"
 
     # Only one SheetCompletion record should exist
     count = await SheetCompletion.filter(
@@ -264,7 +258,6 @@ async def test_uncomplete_sheet(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "daily_count",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": None,
     }
     resp = await async_client.post(f"{BASE}/sheets/uncomplete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
@@ -287,7 +280,6 @@ async def test_uncomplete_nonexistent_sheet(
         "product_type_id": str(sc_product_type.id),
         "sheet_type": "daily_count",
         "sheet_date": TODAY.isoformat(),
-        "completed_by": None,
     }
     resp = await async_client.post(f"{BASE}/sheets/uncomplete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200

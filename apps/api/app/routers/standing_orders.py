@@ -102,8 +102,10 @@ async def create_standing_order_endpoint(
     user: User = Depends(require_permission("standing_orders", "write")),
 ) -> dict:
     """Create a new standing order."""
+    if not data.salesperson_email:
+        data = data.model_copy(update={"salesperson_email": user.email})
     try:
-        so = await create_standing_order(data)
+        so = await create_standing_order(data, entered_by=user.email)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -191,7 +193,7 @@ async def update_standing_order_endpoint(
 ) -> dict:
     """Update a standing order. Requires active status."""
     try:
-        so = await update_standing_order(str(so_id), data)
+        so = await update_standing_order(str(so_id), data, entered_by=user.email)
     except ValueError as e:
         msg = str(e)
         if "not found" in msg.lower():
@@ -210,7 +212,7 @@ async def pause_standing_order_endpoint(
 ) -> dict:
     """Pause an active standing order."""
     try:
-        so = await pause_standing_order(str(so_id), reason=data.reason)
+        so = await pause_standing_order(str(so_id), reason=data.reason, entered_by=user.email)
     except ValueError as e:
         msg = str(e)
         if "not found" in msg.lower():
@@ -227,7 +229,7 @@ async def resume_standing_order_endpoint(
 ) -> dict:
     """Resume a paused standing order."""
     try:
-        so = await resume_standing_order(str(so_id))
+        so = await resume_standing_order(str(so_id), entered_by=user.email)
     except ValueError as e:
         msg = str(e)
         if "not found" in msg.lower():
@@ -244,7 +246,7 @@ async def cancel_standing_order_endpoint(
 ) -> dict:
     """Cancel a standing order."""
     try:
-        so = await cancel_standing_order(str(so_id), reason=data.reason)
+        so = await cancel_standing_order(str(so_id), reason=data.reason, entered_by=user.email)
     except ValueError as e:
         msg = str(e)
         if "not found" in msg.lower():

@@ -95,7 +95,6 @@ async def test_save_counts_create_new(async_client: AsyncClient, inv_product_typ
     payload = {
         "product_type_id": str(inv_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {
                 "variety_id": str(inv_variety.id),
@@ -111,7 +110,7 @@ async def test_save_counts_create_new(async_client: AsyncClient, inv_product_typ
     # Verify DB record
     dc = await DailyCount.get(variety_id=inv_variety.id, count_date=TODAY)
     assert dc.count_value == 50
-    assert dc.entered_by == "tester"
+    assert dc.entered_by == "admin@oregonflowers.com"
 
     # Verify audit log
     logs = await CountAuditLog.filter(daily_count=dc).all()
@@ -137,7 +136,6 @@ async def test_save_counts_update_existing(async_client: AsyncClient, inv_produc
     payload = {
         "product_type_id": str(inv_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "new_user",
         "counts": [
             {
                 "variety_id": str(inv_variety.id),
@@ -153,7 +151,7 @@ async def test_save_counts_update_existing(async_client: AsyncClient, inv_produc
     dc = await DailyCount.get(variety_id=inv_variety.id, count_date=TODAY)
     assert dc.count_value == 75
     assert dc.is_done is True
-    assert dc.entered_by == "new_user"
+    assert dc.entered_by == "admin@oregonflowers.com"
 
     logs = await CountAuditLog.filter(daily_count=dc).all()
     assert len(logs) == 1
@@ -171,7 +169,6 @@ async def test_save_counts_skips_invalid_variety(async_client: AsyncClient, inv_
     payload = {
         "product_type_id": str(inv_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {"variety_id": str(inv_variety.id), "count_value": 10, "is_done": False},
             {"variety_id": str(fake_id), "count_value": 99, "is_done": False},
@@ -201,7 +198,6 @@ async def test_save_counts_rejects_when_sheet_complete(
     payload = {
         "product_type_id": str(inv_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {"variety_id": str(inv_variety.id), "count_value": 10, "is_done": False},
         ],
@@ -231,7 +227,6 @@ async def test_audit_log_returns_entries(async_client: AsyncClient, inv_product_
     payload = {
         "product_type_id": str(inv_product_type.id),
         "count_date": TODAY.isoformat(),
-        "entered_by": "tester",
         "counts": [
             {"variety_id": str(inv_variety.id), "count_value": 30, "is_done": False},
         ],
@@ -246,7 +241,7 @@ async def test_audit_log_returns_entries(async_client: AsyncClient, inv_product_
     assert len(entries) == 1
     assert entries[0]["action"] == "set"
     assert entries[0]["amount"] == 30
-    assert entries[0]["entered_by"] == "tester"
+    assert entries[0]["entered_by"] == "admin@oregonflowers.com"
 
 
 # ---------------------------------------------------------------------------

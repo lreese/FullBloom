@@ -109,8 +109,10 @@ async def list_orders(
 @router.post("/orders", status_code=201)
 async def create_order_endpoint(data: OrderCreateRequest, user: User = Depends(require_permission("orders", "write"))) -> dict:
     """Create a new order. Returns 409 if duplicate detected."""
+    if not data.salesperson_email:
+        data = data.model_copy(update={"salesperson_email": user.email})
     try:
-        order = await create_order(data)
+        order = await create_order(data, entered_by=user.email)
     except DuplicateOrderError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except ValueError as e:
@@ -132,7 +134,7 @@ async def create_order_endpoint(data: OrderCreateRequest, user: User = Depends(r
 async def update_order_endpoint(order_id: UUID, data: OrderUpdateRequest, user: User = Depends(require_permission("orders", "write"))) -> dict:
     """Update an existing order."""
     try:
-        order = await update_order(order_id, data)
+        order = await update_order(order_id, data, entered_by=user.email)
     except ValueError as e:
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=str(e))
@@ -199,7 +201,7 @@ async def update_order_endpoint(order_id: UUID, data: OrderUpdateRequest, user: 
 async def delete_order_endpoint(order_id: UUID, user: User = Depends(require_permission("orders", "write"))) -> dict:
     """Delete an order."""
     try:
-        order_number = await delete_order(order_id)
+        order_number = await delete_order(order_id, entered_by=user.email)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

@@ -21,7 +21,6 @@ class CountItem(BaseModel):
 class CountSaveRequest(BaseModel):
     product_type_id: UUID
     count_date: date
-    entered_by: str | None = Field(None, max_length=100)
     counts: list[CountItem]
 
 
@@ -76,7 +75,6 @@ class CustomerCountItem(BaseModel):
 class CustomerCountSaveRequest(BaseModel):
     product_type_id: UUID
     count_date: date
-    entered_by: str | None = Field(None, max_length=100)
     counts: list[CustomerCountItem]
 
 
@@ -130,7 +128,6 @@ class EstimateItem(BaseModel):
 class EstimateSaveRequest(BaseModel):
     product_type_id: UUID
     week_start: date
-    entered_by: str | None = Field(None, max_length=100)
     estimates: list[EstimateItem]
 
 
@@ -235,7 +232,6 @@ class SheetCompleteRequest(BaseModel):
     product_type_id: UUID
     sheet_type: Literal["daily_count", "customer_count", "estimate"]
     sheet_date: date
-    completed_by: str | None = Field(None, max_length=100)
 
 
 class SheetCompleteResponse(BaseModel):
