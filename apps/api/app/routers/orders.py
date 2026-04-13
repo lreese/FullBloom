@@ -3,7 +3,7 @@
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 from tortoise.expressions import Q
 
 from app.schemas.order import (
@@ -26,7 +26,10 @@ from app.services.order_service import (
     update_order,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["orders"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["orders"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/orders")
@@ -104,7 +107,7 @@ async def list_orders(
 
 
 @router.post("/orders", status_code=201)
-async def create_order_endpoint(data: OrderCreateRequest) -> dict:
+async def create_order_endpoint(data: OrderCreateRequest, user: User = Depends(require_permission("orders", "write"))) -> dict:
     """Create a new order. Returns 409 if duplicate detected."""
     try:
         order = await create_order(data)
@@ -126,7 +129,7 @@ async def create_order_endpoint(data: OrderCreateRequest) -> dict:
 
 
 @router.put("/orders/{order_id}")
-async def update_order_endpoint(order_id: UUID, data: OrderUpdateRequest) -> dict:
+async def update_order_endpoint(order_id: UUID, data: OrderUpdateRequest, user: User = Depends(require_permission("orders", "write"))) -> dict:
     """Update an existing order."""
     try:
         order = await update_order(order_id, data)
@@ -193,7 +196,7 @@ async def update_order_endpoint(order_id: UUID, data: OrderUpdateRequest) -> dic
 
 
 @router.delete("/orders/{order_id}")
-async def delete_order_endpoint(order_id: UUID) -> dict:
+async def delete_order_endpoint(order_id: UUID, user: User = Depends(require_permission("orders", "write"))) -> dict:
     """Delete an order."""
     try:
         order_number = await delete_order(order_id)

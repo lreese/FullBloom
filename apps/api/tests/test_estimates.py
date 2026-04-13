@@ -50,16 +50,14 @@ async def pull_day_schedule():
 
 
 async def test_list_estimates_empty(
-    async_client: AsyncClient, est_product_type, est_variety, pull_day_schedule
-):
+    async_client: AsyncClient, est_product_type, est_variety, pull_day_schedule, auth_headers_admin):
     """GET /estimates returns varieties with null estimates when nothing saved yet."""
     resp = await async_client.get(
         f"{BASE}/estimates",
         params={
             "product_type_id": str(est_product_type.id),
             "week_start": WEEK_START.isoformat(),
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["week_start"] == WEEK_START.isoformat()
@@ -72,12 +70,11 @@ async def test_list_estimates_empty(
         assert val is None
 
 
-async def test_list_estimates_invalid_product_type(async_client: AsyncClient):
+async def test_list_estimates_invalid_product_type(async_client: AsyncClient, auth_headers_admin):
     """GET /estimates returns 404 for nonexistent product type."""
     resp = await async_client.get(
         f"{BASE}/estimates",
-        params={"product_type_id": str(uuid.uuid4()), "week_start": WEEK_START.isoformat()},
-    )
+        params={"product_type_id": str(uuid.uuid4()), "week_start": WEEK_START.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
@@ -87,8 +84,7 @@ async def test_list_estimates_invalid_product_type(async_client: AsyncClient):
 
 
 async def test_save_estimates_create_new(
-    async_client: AsyncClient, est_product_type, est_variety, pull_day_schedule
-):
+    async_client: AsyncClient, est_product_type, est_variety, pull_day_schedule, auth_headers_admin):
     """PUT /estimates creates new Estimate records and audit logs."""
     pull_day = date(2026, 4, 6)  # Monday of the week
     payload = {
@@ -104,7 +100,7 @@ async def test_save_estimates_create_new(
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/estimates", json=payload)
+    resp = await async_client.put(f"{BASE}/estimates", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -125,8 +121,7 @@ async def test_save_estimates_create_new(
 
 
 async def test_save_estimates_update_existing(
-    async_client: AsyncClient, est_product_type, est_variety
-):
+    async_client: AsyncClient, est_product_type, est_variety, auth_headers_admin):
     """PUT /estimates updates an existing Estimate and creates a new audit log."""
     pull_day = date(2026, 4, 8)  # Wednesday
     await Estimate.create(
@@ -150,7 +145,7 @@ async def test_save_estimates_update_existing(
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/estimates", json=payload)
+    resp = await async_client.put(f"{BASE}/estimates", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -169,8 +164,7 @@ async def test_save_estimates_update_existing(
 
 
 async def test_save_estimates_skips_invalid_variety(
-    async_client: AsyncClient, est_product_type, est_variety
-):
+    async_client: AsyncClient, est_product_type, est_variety, auth_headers_admin):
     """PUT /estimates skips entries with invalid variety IDs."""
     fake_id = uuid.uuid4()
     payload = {
@@ -192,7 +186,7 @@ async def test_save_estimates_skips_invalid_variety(
             },
         ],
     }
-    resp = await async_client.put(f"{BASE}/estimates", json=payload)
+    resp = await async_client.put(f"{BASE}/estimates", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -203,8 +197,7 @@ async def test_save_estimates_skips_invalid_variety(
 
 
 async def test_save_estimates_rejects_when_sheet_complete(
-    async_client: AsyncClient, est_product_type, est_variety
-):
+    async_client: AsyncClient, est_product_type, est_variety, auth_headers_admin):
     """PUT /estimates returns 409 when the estimate sheet is already complete."""
     await SheetCompletion.create(
         product_type=est_product_type,
@@ -226,7 +219,7 @@ async def test_save_estimates_rejects_when_sheet_complete(
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/estimates", json=payload)
+    resp = await async_client.put(f"{BASE}/estimates", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 409
     assert "complete" in resp.json()["error"].lower()
 
@@ -237,8 +230,7 @@ async def test_save_estimates_rejects_when_sheet_complete(
 
 
 async def test_save_estimates_different_weeks_are_separate(
-    async_client: AsyncClient, est_product_type, est_variety
-):
+    async_client: AsyncClient, est_product_type, est_variety, auth_headers_admin):
     """Estimates saved with different week_start values are independent records."""
     other_week = date(2026, 3, 30)  # previous Monday
     pull_day = date(2026, 4, 6)
@@ -252,7 +244,7 @@ async def test_save_estimates_different_weeks_are_separate(
             {"variety_id": str(est_variety.id), "pull_day": pull_day.isoformat(), "estimate_value": 100, "is_done": False},
         ],
     }
-    resp1 = await async_client.put(f"{BASE}/estimates", json=payload1)
+    resp1 = await async_client.put(f"{BASE}/estimates", json=payload1, headers=auth_headers_admin)
     assert resp1.status_code == 200
 
     # The estimate table uses unique_together on (variety, pull_day), so a second
@@ -268,19 +260,17 @@ async def test_save_estimates_different_weeks_are_separate(
 # ---------------------------------------------------------------------------
 
 
-async def test_estimate_audit_log_empty(async_client: AsyncClient, est_variety):
+async def test_estimate_audit_log_empty(async_client: AsyncClient, est_variety, auth_headers_admin):
     """GET /estimates/{variety_id}/audit-log returns empty when no estimates exist."""
     resp = await async_client.get(
         f"{BASE}/estimates/{est_variety.id}/audit-log",
-        params={"week_start": WEEK_START.isoformat()},
-    )
+        params={"week_start": WEEK_START.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"] == []
 
 
 async def test_estimate_audit_log_returns_entries(
-    async_client: AsyncClient, est_product_type, est_variety
-):
+    async_client: AsyncClient, est_product_type, est_variety, auth_headers_admin):
     """GET /estimates/{variety_id}/audit-log returns entries after saving."""
     payload = {
         "product_type_id": str(est_product_type.id),
@@ -295,12 +285,11 @@ async def test_estimate_audit_log_returns_entries(
             }
         ],
     }
-    await async_client.put(f"{BASE}/estimates", json=payload)
+    await async_client.put(f"{BASE}/estimates", json=payload, headers=auth_headers_admin)
 
     resp = await async_client.get(
         f"{BASE}/estimates/{est_variety.id}/audit-log",
-        params={"week_start": WEEK_START.isoformat()},
-    )
+        params={"week_start": WEEK_START.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     entries = resp.json()["data"]
     assert len(entries) == 1

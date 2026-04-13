@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 from tortoise.expressions import Q
 
 from app.models.standing_order import StandingOrder, StandingOrderAuditLog
@@ -33,7 +33,10 @@ from app.services.standing_order_service import (
     update_standing_order,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["standing-orders"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["standing-orders"], dependencies=[Depends(get_current_user)])
 
 
 def _build_detail_response(so: StandingOrder) -> StandingOrderDetailResponse:
@@ -96,6 +99,7 @@ def _build_detail_response(so: StandingOrder) -> StandingOrderDetailResponse:
 @router.post("/standing-orders", status_code=201)
 async def create_standing_order_endpoint(
     data: StandingOrderCreateRequest,
+    user: User = Depends(require_permission("standing_orders", "write")),
 ) -> dict:
     """Create a new standing order."""
     try:
@@ -182,7 +186,8 @@ async def get_standing_order(so_id: UUID) -> dict:
 
 @router.put("/standing-orders/{so_id}")
 async def update_standing_order_endpoint(
-    so_id: UUID, data: StandingOrderUpdateRequest
+    so_id: UUID, data: StandingOrderUpdateRequest,
+    user: User = Depends(require_permission("standing_orders", "write")),
 ) -> dict:
     """Update a standing order. Requires active status."""
     try:
@@ -200,7 +205,8 @@ async def update_standing_order_endpoint(
 
 @router.post("/standing-orders/{so_id}/pause")
 async def pause_standing_order_endpoint(
-    so_id: UUID, data: StatusChangeWithReasonRequest
+    so_id: UUID, data: StatusChangeWithReasonRequest,
+    user: User = Depends(require_permission("standing_orders", "write")),
 ) -> dict:
     """Pause an active standing order."""
     try:
@@ -216,7 +222,8 @@ async def pause_standing_order_endpoint(
 
 @router.post("/standing-orders/{so_id}/resume")
 async def resume_standing_order_endpoint(
-    so_id: UUID, data: StatusChangeRequest
+    so_id: UUID, data: StatusChangeRequest,
+    user: User = Depends(require_permission("standing_orders", "write")),
 ) -> dict:
     """Resume a paused standing order."""
     try:
@@ -232,7 +239,8 @@ async def resume_standing_order_endpoint(
 
 @router.post("/standing-orders/{so_id}/cancel")
 async def cancel_standing_order_endpoint(
-    so_id: UUID, data: StatusChangeWithReasonRequest
+    so_id: UUID, data: StatusChangeWithReasonRequest,
+    user: User = Depends(require_permission("standing_orders", "write")),
 ) -> dict:
     """Cancel a standing order."""
     try:
@@ -247,7 +255,7 @@ async def cancel_standing_order_endpoint(
 
 
 @router.post("/standing-orders/generate-preview")
-async def generate_preview_endpoint(data: GeneratePreviewRequest) -> dict:
+async def generate_preview_endpoint(data: GeneratePreviewRequest, user: User = Depends(require_permission("standing_orders", "write"))) -> dict:
     """Preview order generation for a date range."""
     matches = await generate_preview(data.date_from, data.date_to)
     return {
@@ -260,7 +268,7 @@ async def generate_preview_endpoint(data: GeneratePreviewRequest) -> dict:
 
 
 @router.post("/standing-orders/generate", status_code=201)
-async def generate_orders_endpoint(data: GenerateRequest) -> dict:
+async def generate_orders_endpoint(data: GenerateRequest, user: User = Depends(require_permission("standing_orders", "write"))) -> dict:
     """Generate orders from standing orders for a date range."""
     result = await generate_orders(
         data.date_from, data.date_to, data.skip_already_generated,

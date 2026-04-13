@@ -3,7 +3,7 @@
 from datetime import date, timedelta
 
 import structlog
-from fastapi import APIRouter, Query
+from fastapi import Depends, APIRouter, Query
 
 logger = structlog.get_logger()
 
@@ -14,7 +14,10 @@ from app.schemas.inventory import (
 )
 from app.services.inventory_service import get_pull_dates
 
-router = APIRouter(prefix="/api/v1", tags=["pull_days"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["pull_days"], dependencies=[Depends(get_current_user)])
 
 
 def _current_week_monday() -> date:
@@ -54,7 +57,7 @@ async def get_pull_day_schedule(
 
 
 @router.put("/pull-day-schedules")
-async def save_pull_day_schedule(body: PullDayUpdateRequest) -> dict:
+async def save_pull_day_schedule(body: PullDayUpdateRequest, user: User = Depends(require_permission("inventory_counts", "write"))) -> dict:
     """Save or update a pull day schedule."""
     logger.info("save_pull_day_schedule", week_start=str(body.week_start), pull_days=body.pull_days)
     schedule = await PullDaySchedule.get_or_none(week_start=body.week_start)

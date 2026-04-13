@@ -3,7 +3,7 @@
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 
 logger = structlog.get_logger()
 
@@ -14,7 +14,10 @@ from app.schemas.inventory import (
     HarvestStatusUpdateResponse,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["harvest_status"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["harvest_status"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/varieties/harvest-status")
@@ -50,7 +53,7 @@ async def list_harvest_status(
 
 
 @router.patch("/varieties/harvest-status/bulk")
-async def bulk_update_harvest_status(body: HarvestStatusUpdateRequest) -> dict:
+async def bulk_update_harvest_status(body: HarvestStatusUpdateRequest, user: User = Depends(require_permission("inventory_harvest", "write"))) -> dict:
     """Bulk toggle in_harvest for varieties."""
     logger.info("bulk_update_harvest_status", count=len(body.updates))
     updated = 0

@@ -43,12 +43,11 @@ async def inv_variety(inv_product_line):
 # ---------------------------------------------------------------------------
 
 
-async def test_list_counts_empty(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_list_counts_empty(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """GET /counts returns an empty sheet when no counts exist."""
     resp = await async_client.get(
         f"{BASE}/counts",
-        params={"product_type_id": str(inv_product_type.id), "count_date": TODAY.isoformat()},
-    )
+        params={"product_type_id": str(inv_product_type.id), "count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["sheet_complete"] is False
@@ -59,7 +58,7 @@ async def test_list_counts_empty(async_client: AsyncClient, inv_product_type, in
     assert varieties[0]["is_done"] is False
 
 
-async def test_list_counts_with_existing_data(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_list_counts_with_existing_data(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """GET /counts returns existing count data."""
     await DailyCount.create(
         variety=inv_variety,
@@ -71,20 +70,18 @@ async def test_list_counts_with_existing_data(async_client: AsyncClient, inv_pro
     )
     resp = await async_client.get(
         f"{BASE}/counts",
-        params={"product_type_id": str(inv_product_type.id), "count_date": TODAY.isoformat()},
-    )
+        params={"product_type_id": str(inv_product_type.id), "count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     varieties = resp.json()["data"]["product_lines"][0]["varieties"]
     assert varieties[0]["count_value"] == 42
     assert varieties[0]["is_done"] is True
 
 
-async def test_list_counts_invalid_product_type(async_client: AsyncClient):
+async def test_list_counts_invalid_product_type(async_client: AsyncClient, auth_headers_admin):
     """GET /counts returns 404 for nonexistent product type."""
     resp = await async_client.get(
         f"{BASE}/counts",
-        params={"product_type_id": str(uuid.uuid4()), "count_date": TODAY.isoformat()},
-    )
+        params={"product_type_id": str(uuid.uuid4()), "count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
@@ -93,7 +90,7 @@ async def test_list_counts_invalid_product_type(async_client: AsyncClient):
 # ---------------------------------------------------------------------------
 
 
-async def test_save_counts_create_new(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_save_counts_create_new(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """PUT /counts creates new DailyCount records and audit logs."""
     payload = {
         "product_type_id": str(inv_product_type.id),
@@ -107,7 +104,7 @@ async def test_save_counts_create_new(async_client: AsyncClient, inv_product_typ
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/counts", json=payload)
+    resp = await async_client.put(f"{BASE}/counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -128,7 +125,7 @@ async def test_save_counts_create_new(async_client: AsyncClient, inv_product_typ
 # ---------------------------------------------------------------------------
 
 
-async def test_save_counts_update_existing(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_save_counts_update_existing(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """PUT /counts updates an existing DailyCount and creates a new audit log entry."""
     await DailyCount.create(
         variety=inv_variety,
@@ -149,7 +146,7 @@ async def test_save_counts_update_existing(async_client: AsyncClient, inv_produc
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/counts", json=payload)
+    resp = await async_client.put(f"{BASE}/counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -168,7 +165,7 @@ async def test_save_counts_update_existing(async_client: AsyncClient, inv_produc
 # ---------------------------------------------------------------------------
 
 
-async def test_save_counts_skips_invalid_variety(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_save_counts_skips_invalid_variety(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """PUT /counts skips entries with invalid variety IDs."""
     fake_id = uuid.uuid4()
     payload = {
@@ -180,7 +177,7 @@ async def test_save_counts_skips_invalid_variety(async_client: AsyncClient, inv_
             {"variety_id": str(fake_id), "count_value": 99, "is_done": False},
         ],
     }
-    resp = await async_client.put(f"{BASE}/counts", json=payload)
+    resp = await async_client.put(f"{BASE}/counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     # Only the valid variety should be saved
     assert resp.json()["data"]["saved_count"] == 1
@@ -192,8 +189,7 @@ async def test_save_counts_skips_invalid_variety(async_client: AsyncClient, inv_
 
 
 async def test_save_counts_rejects_when_sheet_complete(
-    async_client: AsyncClient, inv_product_type, inv_variety
-):
+    async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """PUT /counts returns 409 when the daily_count sheet is already complete."""
     await SheetCompletion.create(
         product_type=inv_product_type,
@@ -210,7 +206,7 @@ async def test_save_counts_rejects_when_sheet_complete(
             {"variety_id": str(inv_variety.id), "count_value": 10, "is_done": False},
         ],
     }
-    resp = await async_client.put(f"{BASE}/counts", json=payload)
+    resp = await async_client.put(f"{BASE}/counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 409
     assert "complete" in resp.json()["error"].lower()
 
@@ -220,17 +216,16 @@ async def test_save_counts_rejects_when_sheet_complete(
 # ---------------------------------------------------------------------------
 
 
-async def test_audit_log_empty(async_client: AsyncClient, inv_variety):
+async def test_audit_log_empty(async_client: AsyncClient, inv_variety, auth_headers_admin):
     """GET /counts/{variety_id}/audit-log returns empty when no counts exist."""
     resp = await async_client.get(
         f"{BASE}/counts/{inv_variety.id}/audit-log",
-        params={"count_date": TODAY.isoformat()},
-    )
+        params={"count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"] == []
 
 
-async def test_audit_log_returns_entries(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_audit_log_returns_entries(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """GET /counts/{variety_id}/audit-log returns audit entries after saving."""
     # Save a count to generate an audit log entry
     payload = {
@@ -241,12 +236,11 @@ async def test_audit_log_returns_entries(async_client: AsyncClient, inv_product_
             {"variety_id": str(inv_variety.id), "count_value": 30, "is_done": False},
         ],
     }
-    await async_client.put(f"{BASE}/counts", json=payload)
+    await async_client.put(f"{BASE}/counts", json=payload, headers=auth_headers_admin)
 
     resp = await async_client.get(
         f"{BASE}/counts/{inv_variety.id}/audit-log",
-        params={"count_date": TODAY.isoformat()},
-    )
+        params={"count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     entries = resp.json()["data"]
     assert len(entries) == 1
@@ -260,14 +254,14 @@ async def test_audit_log_returns_entries(async_client: AsyncClient, inv_product_
 # ---------------------------------------------------------------------------
 
 
-async def test_recent_counts_empty(async_client: AsyncClient, inv_variety):
+async def test_recent_counts_empty(async_client: AsyncClient, inv_variety, auth_headers_admin):
     """GET /counts/recent/{variety_id} returns empty list when no counts exist."""
-    resp = await async_client.get(f"{BASE}/counts/recent/{inv_variety.id}")
+    resp = await async_client.get(f"{BASE}/counts/recent/{inv_variety.id}", headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"] == []
 
 
-async def test_recent_counts_returns_data(async_client: AsyncClient, inv_product_type, inv_variety):
+async def test_recent_counts_returns_data(async_client: AsyncClient, inv_product_type, inv_variety, auth_headers_admin):
     """GET /counts/recent/{variety_id} returns last 5 counts ordered by date desc."""
     for i in range(7):
         await DailyCount.create(
@@ -276,7 +270,7 @@ async def test_recent_counts_returns_data(async_client: AsyncClient, inv_product
             count_date=date(2026, 4, 1 + i),
             count_value=10 + i,
         )
-    resp = await async_client.get(f"{BASE}/counts/recent/{inv_variety.id}")
+    resp = await async_client.get(f"{BASE}/counts/recent/{inv_variety.id}", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert len(data) == 5
@@ -284,7 +278,7 @@ async def test_recent_counts_returns_data(async_client: AsyncClient, inv_product
     assert data[0]["count_date"] == "2026-04-07"
 
 
-async def test_recent_counts_not_found(async_client: AsyncClient):
+async def test_recent_counts_not_found(async_client: AsyncClient, auth_headers_admin):
     """GET /counts/recent/{variety_id} returns 404 for nonexistent variety."""
-    resp = await async_client.get(f"{BASE}/counts/recent/{uuid.uuid4()}")
+    resp = await async_client.get(f"{BASE}/counts/recent/{uuid.uuid4()}", headers=auth_headers_admin)
     assert resp.status_code == 404

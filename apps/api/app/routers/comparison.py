@@ -4,7 +4,7 @@ from datetime import date
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 
 logger = structlog.get_logger()
 
@@ -19,7 +19,9 @@ from app.schemas.inventory import (
 )
 from app.services.inventory_service import get_pull_dates
 
-router = APIRouter(prefix="/api/v1", tags=["comparison"])
+from app.auth.dependencies import get_current_user, require_permission
+
+router = APIRouter(prefix="/api/v1", tags=["comparison"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/counts/comparison")

@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 logger = structlog.get_logger()
@@ -20,7 +20,9 @@ from app.models.inventory import CountSheetTemplate
 from app.models.product import ProductType, Variety
 from app.services.inventory_service import get_pull_dates
 
-router = APIRouter(prefix="/api/v1", tags=["print"])
+from app.auth.dependencies import get_current_user, require_permission
+
+router = APIRouter(prefix="/api/v1", tags=["print"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/print/count-sheet", response_class=HTMLResponse)

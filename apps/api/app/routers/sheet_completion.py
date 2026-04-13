@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 
 import structlog
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
 logger = structlog.get_logger()
 
@@ -19,11 +19,14 @@ from app.schemas.inventory import (
     SheetCompleteResponse,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["sheet_completion"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["sheet_completion"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/sheets/complete")
-async def complete_sheet(body: SheetCompleteRequest) -> dict:
+async def complete_sheet(body: SheetCompleteRequest, user: User = Depends(require_permission("inventory_counts", "write"))) -> dict:
     """Auto-mark all varieties as done and mark the sheet as complete."""
     logger.info("complete_sheet", product_type_id=str(body.product_type_id), sheet_type=body.sheet_type, sheet_date=str(body.sheet_date))
     # Get in-harvest varieties for this product type
@@ -88,7 +91,7 @@ async def complete_sheet(body: SheetCompleteRequest) -> dict:
 
 
 @router.post("/sheets/uncomplete")
-async def uncomplete_sheet(body: SheetCompleteRequest) -> dict:
+async def uncomplete_sheet(body: SheetCompleteRequest, user: User = Depends(require_permission("inventory_counts", "write"))) -> dict:
     """Reopen a completed sheet."""
     logger.info("uncomplete_sheet", product_type_id=str(body.product_type_id), sheet_type=body.sheet_type, sheet_date=str(body.sheet_date))
     completion = await SheetCompletion.get_or_none(

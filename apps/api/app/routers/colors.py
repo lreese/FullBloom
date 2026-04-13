@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
 from app.models.product import Color
 from app.schemas.color import (
@@ -11,7 +11,10 @@ from app.schemas.color import (
     ColorUpdateRequest,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["colors"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["colors"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/colors")
@@ -34,7 +37,7 @@ async def list_colors(active: bool = True) -> dict:
 
 
 @router.post("/colors", status_code=201)
-async def create_color(data: ColorCreateRequest) -> dict:
+async def create_color(data: ColorCreateRequest, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Create a new color entry."""
     existing = await Color.filter(name=data.name).first()
     if existing:
@@ -55,7 +58,7 @@ async def create_color(data: ColorCreateRequest) -> dict:
 
 
 @router.patch("/colors/{color_id}")
-async def update_color(color_id: UUID, data: ColorUpdateRequest) -> dict:
+async def update_color(color_id: UUID, data: ColorUpdateRequest, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Update a color entry."""
     color = await Color.get_or_none(id=color_id)
     if color is None:
@@ -87,7 +90,7 @@ async def update_color(color_id: UUID, data: ColorUpdateRequest) -> dict:
 
 
 @router.post("/colors/{color_id}/archive")
-async def archive_color(color_id: UUID) -> dict:
+async def archive_color(color_id: UUID, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Soft-delete a color."""
     color = await Color.get_or_none(id=color_id)
     if color is None:
@@ -98,7 +101,7 @@ async def archive_color(color_id: UUID) -> dict:
 
 
 @router.post("/colors/{color_id}/restore")
-async def restore_color(color_id: UUID) -> dict:
+async def restore_color(color_id: UUID, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Restore a soft-deleted color."""
     color = await Color.get_or_none(id=color_id)
     if color is None:

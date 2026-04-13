@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 from tortoise.expressions import Q
 
 from app.models.customer import Customer
@@ -17,7 +17,10 @@ from app.schemas.customer import (
 )
 from app.services.customer_service import get_dropdown_options, get_next_customer_number
 
-router = APIRouter(prefix="/api/v1", tags=["customers"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["customers"], dependencies=[Depends(get_current_user)])
 
 
 async def _get_price_list_name(price_list_id) -> str | None:
@@ -107,7 +110,7 @@ async def get_customer(customer_id: UUID) -> dict:
 
 
 @router.post("/customers", status_code=201)
-async def create_customer(data: CustomerCreateRequest) -> dict:
+async def create_customer(data: CustomerCreateRequest, user: User = Depends(require_permission("customers", "write"))) -> dict:
     """Create a new customer."""
     existing = await Customer.filter(customer_number=data.customer_number).first()
     if existing:
@@ -127,7 +130,7 @@ async def create_customer(data: CustomerCreateRequest) -> dict:
 
 
 @router.patch("/customers/{customer_id}")
-async def update_customer(customer_id: UUID, data: CustomerUpdateRequest) -> dict:
+async def update_customer(customer_id: UUID, data: CustomerUpdateRequest, user: User = Depends(require_permission("customers", "write"))) -> dict:
     """Update a customer's fields. Only include fields to change.
 
     NOTE: CustomerUpdateRequest intentionally excludes is_active, customer_number,
@@ -153,7 +156,7 @@ async def update_customer(customer_id: UUID, data: CustomerUpdateRequest) -> dic
 
 
 @router.post("/customers/{customer_id}/archive")
-async def archive_customer(customer_id: UUID) -> dict:
+async def archive_customer(customer_id: UUID, user: User = Depends(require_permission("customers", "write"))) -> dict:
     """Soft-delete (archive) a customer."""
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:
@@ -164,7 +167,7 @@ async def archive_customer(customer_id: UUID) -> dict:
 
 
 @router.post("/customers/{customer_id}/restore")
-async def restore_customer(customer_id: UUID) -> dict:
+async def restore_customer(customer_id: UUID, user: User = Depends(require_permission("customers", "write"))) -> dict:
     """Restore an archived customer."""
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:

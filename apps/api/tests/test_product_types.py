@@ -6,9 +6,9 @@ from app.models.product import ProductLine, ProductType
 
 
 @pytest.mark.anyio
-async def test_list_product_types_with_product_line_count(async_client, product_type, product_line):
+async def test_list_product_types_with_product_line_count(async_client, product_type, product_line, auth_headers_admin):
     """GET /product-types returns product_line_count for each type."""
-    resp = await async_client.get("/api/v1/product-types")
+    resp = await async_client.get("/api/v1/product-types", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert len(data) == 1
@@ -18,11 +18,10 @@ async def test_list_product_types_with_product_line_count(async_client, product_
 
 
 @pytest.mark.anyio
-async def test_create_product_type_success(async_client):
+async def test_create_product_type_success(async_client, auth_headers_admin):
     """POST /product-types creates a new product type."""
     resp = await async_client.post(
-        "/api/v1/product-types", json={"name": "Potted Plant"}
-    )
+        "/api/v1/product-types", json={"name": "Potted Plant"}, headers=auth_headers_admin)
     assert resp.status_code == 201
     data = resp.json()["data"]
     assert data["name"] == "Potted Plant"
@@ -31,21 +30,19 @@ async def test_create_product_type_success(async_client):
 
 
 @pytest.mark.anyio
-async def test_create_product_type_duplicate(async_client, product_type):
+async def test_create_product_type_duplicate(async_client, product_type, auth_headers_admin):
     """POST /product-types rejects duplicate names."""
     resp = await async_client.post(
-        "/api/v1/product-types", json={"name": "Cut Flower"}
-    )
+        "/api/v1/product-types", json={"name": "Cut Flower"}, headers=auth_headers_admin)
     assert resp.status_code == 422
     assert "already exists" in resp.json()["error"]
 
 
 @pytest.mark.anyio
-async def test_update_product_type_success(async_client, product_type):
+async def test_update_product_type_success(async_client, product_type, auth_headers_admin):
     """PATCH /product-types/{id} updates the name."""
     resp = await async_client.patch(
-        f"/api/v1/product-types/{product_type.id}", json={"name": "Dried Flower"}
-    )
+        f"/api/v1/product-types/{product_type.id}", json={"name": "Dried Flower"}, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["name"] == "Dried Flower"
@@ -53,12 +50,10 @@ async def test_update_product_type_success(async_client, product_type):
 
 @pytest.mark.anyio
 async def test_archive_product_type_returns_product_line_count(
-    async_client, product_type, product_line
-):
+    async_client, product_type, product_line, auth_headers_admin):
     """POST /product-types/{id}/archive sets is_active=false and returns product_line_count."""
     resp = await async_client.post(
-        f"/api/v1/product-types/{product_type.id}/archive"
-    )
+        f"/api/v1/product-types/{product_type.id}/archive", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["is_active"] is False
@@ -66,15 +61,14 @@ async def test_archive_product_type_returns_product_line_count(
 
 
 @pytest.mark.anyio
-async def test_restore_product_type(async_client, product_type):
+async def test_restore_product_type(async_client, product_type, auth_headers_admin):
     """POST /product-types/{id}/restore sets is_active=true."""
     # Archive first
     product_type.is_active = False
     await product_type.save()
 
     resp = await async_client.post(
-        f"/api/v1/product-types/{product_type.id}/restore"
-    )
+        f"/api/v1/product-types/{product_type.id}/restore", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["is_active"] is True

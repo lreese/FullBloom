@@ -60,8 +60,7 @@ async def sc_variety2(sc_product_line):
 
 
 async def test_complete_daily_count_sheet(
-    async_client: AsyncClient, sc_product_type, sc_variety
-):
+    async_client: AsyncClient, sc_product_type, sc_variety, auth_headers_admin):
     """Complete daily_count marks existing counts as done and creates SheetCompletion."""
     # Create an existing daily count
     await DailyCount.create(
@@ -77,7 +76,7 @@ async def test_complete_daily_count_sheet(
         "sheet_date": TODAY.isoformat(),
         "completed_by": "admin",
     }
-    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["is_complete"] is True
@@ -97,8 +96,7 @@ async def test_complete_daily_count_sheet(
 
 
 async def test_complete_daily_count_no_phantom_records(
-    async_client: AsyncClient, sc_product_type, sc_variety, sc_variety2
-):
+    async_client: AsyncClient, sc_product_type, sc_variety, sc_variety2, auth_headers_admin):
     """Complete daily_count marks existing records done but does not create phantom records."""
     # Only create a count for variety1, not variety2
     await DailyCount.create(
@@ -114,7 +112,7 @@ async def test_complete_daily_count_no_phantom_records(
         "sheet_date": TODAY.isoformat(),
         "completed_by": "admin",
     }
-    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
 
     # variety1 should be marked done
@@ -133,8 +131,7 @@ async def test_complete_daily_count_no_phantom_records(
 
 
 async def test_complete_customer_count_sheet(
-    async_client: AsyncClient, sc_product_type, sc_variety
-):
+    async_client: AsyncClient, sc_product_type, sc_variety, auth_headers_admin):
     """Complete customer_count marks existing customer counts as done."""
     from app.models.customer import Customer
 
@@ -155,7 +152,7 @@ async def test_complete_customer_count_sheet(
         "sheet_date": TODAY.isoformat(),
         "completed_by": "admin",
     }
-    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["is_complete"] is True
 
@@ -172,8 +169,7 @@ async def test_complete_customer_count_sheet(
 
 
 async def test_complete_estimate_sheet(
-    async_client: AsyncClient, sc_product_type, sc_variety
-):
+    async_client: AsyncClient, sc_product_type, sc_variety, auth_headers_admin):
     """Complete estimate marks existing estimates as done."""
     await Estimate.create(
         variety=sc_variety,
@@ -189,7 +185,7 @@ async def test_complete_estimate_sheet(
         "sheet_date": WEEK_START.isoformat(),
         "completed_by": "admin",
     }
-    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["is_complete"] is True
 
@@ -203,8 +199,7 @@ async def test_complete_estimate_sheet(
 
 
 async def test_complete_unknown_sheet_type(
-    async_client: AsyncClient, sc_product_type
-):
+    async_client: AsyncClient, sc_product_type, auth_headers_admin):
     """Complete with unknown sheet_type returns 422."""
     payload = {
         "product_type_id": str(sc_product_type.id),
@@ -212,7 +207,7 @@ async def test_complete_unknown_sheet_type(
         "sheet_date": TODAY.isoformat(),
         "completed_by": "admin",
     }
-    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 422
 
 
@@ -222,8 +217,7 @@ async def test_complete_unknown_sheet_type(
 
 
 async def test_complete_sheet_idempotent(
-    async_client: AsyncClient, sc_product_type, sc_variety
-):
+    async_client: AsyncClient, sc_product_type, sc_variety, auth_headers_admin):
     """Completing an already-complete sheet updates completed_by."""
     await SheetCompletion.create(
         product_type=sc_product_type,
@@ -238,7 +232,7 @@ async def test_complete_sheet_idempotent(
         "sheet_date": TODAY.isoformat(),
         "completed_by": "second_admin",
     }
-    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/complete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["completed_by"] == "second_admin"
 
@@ -257,8 +251,7 @@ async def test_complete_sheet_idempotent(
 
 
 async def test_uncomplete_sheet(
-    async_client: AsyncClient, sc_product_type
-):
+    async_client: AsyncClient, sc_product_type, auth_headers_admin):
     """Uncomplete reopens a completed sheet."""
     await SheetCompletion.create(
         product_type=sc_product_type,
@@ -273,7 +266,7 @@ async def test_uncomplete_sheet(
         "sheet_date": TODAY.isoformat(),
         "completed_by": None,
     }
-    resp = await async_client.post(f"{BASE}/sheets/uncomplete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/uncomplete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["is_complete"] is False
@@ -288,8 +281,7 @@ async def test_uncomplete_sheet(
 
 
 async def test_uncomplete_nonexistent_sheet(
-    async_client: AsyncClient, sc_product_type
-):
+    async_client: AsyncClient, sc_product_type, auth_headers_admin):
     """Uncomplete on a sheet that was never completed returns success (no-op)."""
     payload = {
         "product_type_id": str(sc_product_type.id),
@@ -297,6 +289,6 @@ async def test_uncomplete_nonexistent_sheet(
         "sheet_date": TODAY.isoformat(),
         "completed_by": None,
     }
-    resp = await async_client.post(f"{BASE}/sheets/uncomplete", json=payload)
+    resp = await async_client.post(f"{BASE}/sheets/uncomplete", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["is_complete"] is False

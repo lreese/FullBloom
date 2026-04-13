@@ -5,7 +5,7 @@ from typing import Literal
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 
 logger = structlog.get_logger()
 
@@ -22,7 +22,10 @@ from app.schemas.inventory import (
     TemplateColumn,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["customer_counts"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["customer_counts"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/customer-counts")
@@ -159,7 +162,7 @@ async def list_customer_counts(
 
 
 @router.put("/customer-counts")
-async def save_customer_counts(body: CustomerCountSaveRequest) -> dict:
+async def save_customer_counts(body: CustomerCountSaveRequest, user: User = Depends(require_permission("inventory_counts", "write"))) -> dict:
     """Batch save/update customer counts."""
     logger.info("save_customer_counts", product_type_id=str(body.product_type_id), count_date=str(body.count_date), count=len(body.counts))
 

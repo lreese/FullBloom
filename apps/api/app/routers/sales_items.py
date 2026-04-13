@@ -6,7 +6,7 @@ Create and list are nested under varieties. Update, archive, and restore are fla
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
 from app.models.pricing import PriceList, PriceListItem
 from app.models.product import SalesItem, Variety
@@ -17,7 +17,10 @@ from app.schemas.sales_item import (
     SalesItemUpdateRequest,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["sales-items"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["sales-items"], dependencies=[Depends(get_current_user)])
 
 
 def _build_sales_item_response(
@@ -93,7 +96,8 @@ async def _batch_price_list_prices(
 
 @router.get("/varieties/{variety_id}/sales-items")
 async def list_sales_items(
-    variety_id: UUID, active: bool | None = True
+    variety_id: UUID, active: bool | None = True,
+    _user: User = Depends(require_permission("pricing", "read")),
 ) -> dict:
     """List sales items for a variety."""
     variety = await Variety.get_or_none(id=variety_id)
@@ -121,7 +125,7 @@ async def list_sales_items(
 
 
 @router.get("/sales-items")
-async def list_all_sales_items(active: bool | None = True) -> dict:
+async def list_all_sales_items(active: bool | None = True, _user: User = Depends(require_permission("pricing", "read"))) -> dict:
     """List all sales items across all varieties."""
     qs = SalesItem.all()
     if active is not None:
@@ -144,7 +148,7 @@ async def list_all_sales_items(active: bool | None = True) -> dict:
 
 
 @router.post("/sales-items", status_code=201)
-async def create_sales_item_flat(data: SalesItemFlatCreateRequest) -> dict:
+async def create_sales_item_flat(data: SalesItemFlatCreateRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Create a new sales item (flat endpoint, variety_id in body)."""
     variety = await Variety.get_or_none(id=data.variety_id)
     if variety is None:
@@ -177,7 +181,8 @@ async def create_sales_item_flat(data: SalesItemFlatCreateRequest) -> dict:
 
 @router.post("/varieties/{variety_id}/sales-items", status_code=201)
 async def create_sales_item(
-    variety_id: UUID, data: SalesItemCreateRequest
+    variety_id: UUID, data: SalesItemCreateRequest,
+    user: User = Depends(require_permission("pricing", "write")),
 ) -> dict:
     """Create a new sales item for a variety."""
     variety = await Variety.get_or_none(id=variety_id)
@@ -210,7 +215,8 @@ async def create_sales_item(
 
 @router.patch("/sales-items/{sales_item_id}")
 async def update_sales_item(
-    sales_item_id: UUID, data: SalesItemUpdateRequest
+    sales_item_id: UUID, data: SalesItemUpdateRequest,
+    user: User = Depends(require_permission("pricing", "write")),
 ) -> dict:
     """Update a sales item."""
     si = await SalesItem.get_or_none(id=sales_item_id)
@@ -246,7 +252,7 @@ async def update_sales_item(
 
 
 @router.post("/sales-items/{sales_item_id}/archive")
-async def archive_sales_item(sales_item_id: UUID) -> dict:
+async def archive_sales_item(sales_item_id: UUID, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Soft-delete a sales item. Returns customer price count as a warning."""
     si = await SalesItem.get_or_none(id=sales_item_id)
     if si is None:
@@ -267,7 +273,7 @@ async def archive_sales_item(sales_item_id: UUID) -> dict:
 
 
 @router.post("/sales-items/{sales_item_id}/restore")
-async def restore_sales_item(sales_item_id: UUID) -> dict:
+async def restore_sales_item(sales_item_id: UUID, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Restore a soft-deleted sales item."""
     si = await SalesItem.get_or_none(id=sales_item_id)
     if si is None:

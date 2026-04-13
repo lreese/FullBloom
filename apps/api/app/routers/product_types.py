@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
 from app.models.product import ProductLine, ProductType
 from app.schemas.product_type import (
@@ -11,7 +11,10 @@ from app.schemas.product_type import (
     ProductTypeUpdateRequest,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["product-types"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["product-types"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/product-types")
@@ -36,7 +39,7 @@ async def list_product_types(active: bool = True) -> dict:
 
 
 @router.post("/product-types", status_code=201)
-async def create_product_type(data: ProductTypeCreateRequest) -> dict:
+async def create_product_type(data: ProductTypeCreateRequest, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Create a new product type."""
     existing = await ProductType.filter(name=data.name).first()
     if existing:
@@ -58,7 +61,8 @@ async def create_product_type(data: ProductTypeCreateRequest) -> dict:
 
 @router.patch("/product-types/{product_type_id}")
 async def update_product_type(
-    product_type_id: UUID, data: ProductTypeUpdateRequest
+    product_type_id: UUID, data: ProductTypeUpdateRequest,
+    user: User = Depends(require_permission("products", "write")),
 ) -> dict:
     """Update a product type's fields."""
     pt = await ProductType.get_or_none(id=product_type_id)
@@ -85,7 +89,7 @@ async def update_product_type(
 
 
 @router.post("/product-types/{product_type_id}/archive")
-async def archive_product_type(product_type_id: UUID) -> dict:
+async def archive_product_type(product_type_id: UUID, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Archive a product type. Returns product line count as a warning."""
     pt = await ProductType.get_or_none(id=product_type_id)
     if pt is None:
@@ -106,7 +110,7 @@ async def archive_product_type(product_type_id: UUID) -> dict:
 
 
 @router.post("/product-types/{product_type_id}/restore")
-async def restore_product_type(product_type_id: UUID) -> dict:
+async def restore_product_type(product_type_id: UUID, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Restore an archived product type."""
     pt = await ProductType.get_or_none(id=product_type_id)
     if pt is None:

@@ -2,7 +2,7 @@
 
 import asyncio
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import Depends, APIRouter, File, HTTPException, UploadFile
 
 from app.schemas.import_data import (
     ImportColorsResult,
@@ -20,7 +20,10 @@ from app.services.import_service import (
 )
 from app.utils.csv_parser import parse_csv
 
-router = APIRouter(prefix="/api/v1/import", tags=["import"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1/import", tags=["import"], dependencies=[Depends(get_current_user)])
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 MAX_CSV_ROWS = 50_000
@@ -53,7 +56,7 @@ async def _read_csv(file: UploadFile) -> list[dict]:
 
 
 @router.post("/varieties", response_model=dict)
-async def upload_varieties(file: UploadFile = File(...)):
+async def upload_varieties(file: UploadFile = File(...), user: User = Depends(require_permission("import", "write"))):
     """Import varieties from a CSV file."""
     if _import_lock.locked():
         raise HTTPException(status_code=409, detail="Another import is in progress")
@@ -64,7 +67,7 @@ async def upload_varieties(file: UploadFile = File(...)):
 
 
 @router.post("/pricing", response_model=dict)
-async def upload_pricing(file: UploadFile = File(...)):
+async def upload_pricing(file: UploadFile = File(...), user: User = Depends(require_permission("import", "write"))):
     """Import pricing data from a CSV file."""
     if _import_lock.locked():
         raise HTTPException(status_code=409, detail="Another import is in progress")
@@ -75,7 +78,7 @@ async def upload_pricing(file: UploadFile = File(...)):
 
 
 @router.post("/colors", response_model=dict)
-async def upload_colors(file: UploadFile = File(...)):
+async def upload_colors(file: UploadFile = File(...), user: User = Depends(require_permission("import", "write"))):
     """Import hex color data for varieties from a CSV file."""
     if _import_lock.locked():
         raise HTTPException(status_code=409, detail="Another import is in progress")
@@ -86,7 +89,7 @@ async def upload_colors(file: UploadFile = File(...)):
 
 
 @router.post("/customer-info", response_model=dict)
-async def upload_customer_info(file: UploadFile = File(...)):
+async def upload_customer_info(file: UploadFile = File(...), user: User = Depends(require_permission("import", "write"))):
     """Import customer info from the Customer Info CSV."""
     if _import_lock.locked():
         raise HTTPException(status_code=409, detail="Another import is in progress")
@@ -97,7 +100,7 @@ async def upload_customer_info(file: UploadFile = File(...)):
 
 
 @router.post("/price-categories", response_model=dict)
-async def upload_price_categories(file: UploadFile = File(...)):
+async def upload_price_categories(file: UploadFile = File(...), user: User = Depends(require_permission("import", "write"))):
     """Import price categories from the Customer Price Category CSV."""
     if _import_lock.locked():
         raise HTTPException(status_code=409, detail="Another import is in progress")

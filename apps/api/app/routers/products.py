@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
 from app.models.product import Color, ProductLine, Variety
 from app.schemas.product import (
@@ -16,7 +16,10 @@ from app.schemas.product import (
 )
 from app.services.product_service import bulk_update_varieties, get_variety_dropdown_options
 
-router = APIRouter(prefix="/api/v1", tags=["varieties"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["varieties"], dependencies=[Depends(get_current_user)])
 
 
 def _variety_color_id(v) -> str | None:
@@ -127,7 +130,7 @@ async def get_variety(variety_id: UUID) -> dict:
 
 
 @router.post("/varieties", status_code=201)
-async def create_variety(data: VarietyCreateRequest) -> dict:
+async def create_variety(data: VarietyCreateRequest, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Create a new variety with uniqueness check per product line."""
     product_line = await ProductLine.get_or_none(id=data.product_line_id)
     if product_line is None:
@@ -175,7 +178,7 @@ async def create_variety(data: VarietyCreateRequest) -> dict:
 
 
 @router.patch("/varieties/bulk")
-async def bulk_update(data: BulkUpdateRequest) -> dict:
+async def bulk_update(data: BulkUpdateRequest, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Bulk update a field across multiple varieties."""
     try:
         updated_count = await bulk_update_varieties(data.ids, data.field, data.value)
@@ -185,7 +188,7 @@ async def bulk_update(data: BulkUpdateRequest) -> dict:
 
 
 @router.patch("/varieties/{variety_id}")
-async def update_variety(variety_id: UUID, data: VarietyUpdateRequest) -> dict:
+async def update_variety(variety_id: UUID, data: VarietyUpdateRequest, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Update a variety's fields. Only include fields to change."""
     variety = await Variety.get_or_none(id=variety_id)
     if variety is None:
@@ -246,7 +249,7 @@ async def update_variety(variety_id: UUID, data: VarietyUpdateRequest) -> dict:
 
 
 @router.post("/varieties/{variety_id}/archive")
-async def archive_variety(variety_id: UUID) -> dict:
+async def archive_variety(variety_id: UUID, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Archive a variety (set is_active = false)."""
     variety = await Variety.get_or_none(id=variety_id)
     if variety is None:
@@ -257,7 +260,7 @@ async def archive_variety(variety_id: UUID) -> dict:
 
 
 @router.post("/varieties/{variety_id}/restore")
-async def restore_variety(variety_id: UUID) -> dict:
+async def restore_variety(variety_id: UUID, user: User = Depends(require_permission("products", "write"))) -> dict:
     """Restore an archived variety."""
     variety = await Variety.get_or_none(id=variety_id)
     if variety is None:

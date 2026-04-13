@@ -6,7 +6,7 @@ import io
 from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import Depends, APIRouter, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from tortoise.functions import Count
 from tortoise.transactions import in_transaction
@@ -33,7 +33,10 @@ from app.services.pricing_service import (
     log_price_change,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["price-lists"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["price-lists"], dependencies=[Depends(get_current_user)])
 
 
 # ---------------------------------------------------------------------------
@@ -42,7 +45,7 @@ router = APIRouter(prefix="/api/v1", tags=["price-lists"])
 
 
 @router.get("/price-lists")
-async def list_price_lists(active: bool | None = True) -> dict:
+async def list_price_lists(active: bool | None = True, _user: User = Depends(require_permission("pricing", "read"))) -> dict:
     """List price lists with customer counts."""
     qs = PriceList.all()
     if active is not None:
@@ -70,7 +73,7 @@ async def list_price_lists(active: bool | None = True) -> dict:
 
 
 @router.post("/price-lists", status_code=201)
-async def create_price_list_endpoint(body: PriceListCreateRequest) -> dict:
+async def create_price_list_endpoint(body: PriceListCreateRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Create a new price list, pre-populating items from a source."""
     existing = await PriceList.filter(name=body.name).first()
     if existing:
@@ -97,7 +100,7 @@ async def create_price_list_endpoint(body: PriceListCreateRequest) -> dict:
 
 
 @router.patch("/price-lists/{price_list_id}")
-async def rename_price_list(price_list_id: UUID, body: PriceListUpdateRequest) -> dict:
+async def rename_price_list(price_list_id: UUID, body: PriceListUpdateRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Rename a price list."""
     pl = await PriceList.get_or_none(id=price_list_id)
     if pl is None:
@@ -126,7 +129,7 @@ async def rename_price_list(price_list_id: UUID, body: PriceListUpdateRequest) -
 
 
 @router.post("/price-lists/{price_list_id}/archive")
-async def archive_price_list_endpoint(price_list_id: UUID) -> dict:
+async def archive_price_list_endpoint(price_list_id: UUID, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Archive a price list, converting customer assignments to overrides."""
     result = await archive_price_list(price_list_id)
     if result is None:
@@ -135,7 +138,7 @@ async def archive_price_list_endpoint(price_list_id: UUID) -> dict:
 
 
 @router.post("/price-lists/{price_list_id}/restore")
-async def restore_price_list(price_list_id: UUID) -> dict:
+async def restore_price_list(price_list_id: UUID, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Restore an archived price list."""
     pl = await PriceList.get_or_none(id=price_list_id)
     if pl is None:
@@ -151,7 +154,7 @@ async def restore_price_list(price_list_id: UUID) -> dict:
 
 
 @router.get("/price-lists/matrix")
-async def price_list_matrix() -> dict:
+async def price_list_matrix(_user: User = Depends(require_permission("pricing", "read"))) -> dict:
     """Get the full price matrix: all active sales items x all active price lists."""
     data = await get_price_list_matrix()
     return {"data": data}
@@ -164,7 +167,8 @@ async def price_list_matrix() -> dict:
 
 @router.patch("/price-list-items/{price_list_id}/{sales_item_id}")
 async def update_price_list_item(
-    price_list_id: UUID, sales_item_id: UUID, body: PriceListItemUpdateRequest
+    price_list_id: UUID, sales_item_id: UUID, body: PriceListItemUpdateRequest,
+    user: User = Depends(require_permission("pricing", "write")),
 ) -> dict:
     """Update a single cell in the price list matrix."""
     new_price = Decimal(body.price)
@@ -215,7 +219,7 @@ async def update_price_list_item(
 
 
 @router.patch("/price-list-items/bulk")
-async def bulk_update_price_list_items(body: BulkPriceListItemRequest) -> dict:
+async def bulk_update_price_list_items(body: BulkPriceListItemRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Bulk set a price for multiple sales items on a price list."""
     pl = await PriceList.get_or_none(id=body.price_list_id)
     if pl is None:
@@ -272,7 +276,7 @@ async def bulk_update_price_list_items(body: BulkPriceListItemRequest) -> dict:
 
 
 @router.patch("/price-lists/matrix/retail")
-async def update_retail_price(body: RetailPriceUpdateRequest) -> dict:
+async def update_retail_price(body: RetailPriceUpdateRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Update the retail price for a sales item (edits SalesItem.retail_price)."""
     new_price = Decimal(body.price)
 
@@ -307,7 +311,8 @@ async def update_retail_price(body: RetailPriceUpdateRequest) -> dict:
 
 @router.get("/price-list-items/{price_list_id}/{sales_item_id}/impact")
 async def impact_preview(
-    price_list_id: UUID, sales_item_id: UUID, new_price: str = ""
+    price_list_id: UUID, sales_item_id: UUID, new_price: str = "",
+    _user: User = Depends(require_permission("pricing", "read")),
 ) -> dict:
     """Preview the impact of changing a price list item price."""
     if not new_price:
@@ -333,7 +338,7 @@ async def impact_preview(
 
 
 @router.get("/price-lists/matrix/export")
-async def export_matrix_csv() -> StreamingResponse:
+async def export_matrix_csv(_user: User = Depends(require_permission("pricing", "read"))) -> StreamingResponse:
     """Export the price list matrix as CSV."""
     matrix = await get_price_list_matrix()
 
@@ -367,7 +372,7 @@ async def export_matrix_csv() -> StreamingResponse:
 
 
 @router.post("/price-lists/{price_list_id}/import")
-async def import_price_list_csv(price_list_id: UUID, file: UploadFile) -> dict:
+async def import_price_list_csv(price_list_id: UUID, file: UploadFile, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Import prices for a price list from CSV. Matches by sales item name."""
     # M6: Rate limiting via import lock
     if _import_lock.locked():

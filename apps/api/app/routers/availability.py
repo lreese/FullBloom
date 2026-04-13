@@ -4,7 +4,7 @@ from datetime import date
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, Query
+from fastapi import Depends, APIRouter, Query
 
 logger = structlog.get_logger()
 
@@ -17,7 +17,9 @@ from app.schemas.inventory import (
     AvailabilityVariety,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["availability"])
+from app.auth.dependencies import get_current_user, require_permission
+
+router = APIRouter(prefix="/api/v1", tags=["availability"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/availability")

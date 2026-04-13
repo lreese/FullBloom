@@ -6,7 +6,7 @@ import io
 from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import Depends, APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from tortoise.transactions import in_transaction
 
@@ -27,7 +27,10 @@ from app.services.pricing_service import (
     log_price_change,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["pricing"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["pricing"], dependencies=[Depends(get_current_user)])
 
 
 # ---------------------------------------------------------------------------
@@ -36,7 +39,7 @@ router = APIRouter(prefix="/api/v1", tags=["pricing"])
 
 
 @router.get("/customers/{customer_id}/pricing")
-async def customer_pricing(customer_id: UUID) -> dict:
+async def customer_pricing(customer_id: UUID, _user: User = Depends(require_permission("pricing", "read"))) -> dict:
     """Return the full pricing grid for a customer with effective prices."""
     data = await get_customer_pricing(customer_id)
     if data is None:
@@ -50,7 +53,7 @@ async def customer_pricing(customer_id: UUID) -> dict:
 
 
 @router.get("/sales-items/{sales_item_id}/customer-pricing")
-async def item_pricing(sales_item_id: UUID) -> dict:
+async def item_pricing(sales_item_id: UUID, _user: User = Depends(require_permission("pricing", "read"))) -> dict:
     """Return all customers' pricing for a single sales item."""
     data = await get_item_pricing(sales_item_id)
     if data is None:
@@ -64,7 +67,7 @@ async def item_pricing(sales_item_id: UUID) -> dict:
 
 
 @router.post("/customers/{customer_id}/prices")
-async def set_customer_price(customer_id: UUID, body: CustomerPriceCreateRequest) -> dict:
+async def set_customer_price(customer_id: UUID, body: CustomerPriceCreateRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Set a customer price override (create or update)."""
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:
@@ -122,7 +125,7 @@ async def set_customer_price(customer_id: UUID, body: CustomerPriceCreateRequest
 
 
 @router.delete("/customers/{customer_id}/prices/{sales_item_id}", status_code=204)
-async def remove_customer_price(customer_id: UUID, sales_item_id: UUID) -> None:
+async def remove_customer_price(customer_id: UUID, sales_item_id: UUID, user: User = Depends(require_permission("pricing", "write"))) -> None:
     """Remove a customer price override."""
     cp = await CustomerPrice.filter(
         customer_id=customer_id, sales_item_id=sales_item_id
@@ -149,7 +152,7 @@ async def remove_customer_price(customer_id: UUID, sales_item_id: UUID) -> None:
 
 
 @router.post("/customers/{customer_id}/prices/bulk")
-async def bulk_customer_prices(customer_id: UUID, body: BulkCustomerPriceRequest) -> dict:
+async def bulk_customer_prices(customer_id: UUID, body: BulkCustomerPriceRequest, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Bulk customer price operations: set_price, remove_overrides, reset_to_list."""
     customer = await Customer.get_or_none(id=customer_id)
     if customer is None:
@@ -250,7 +253,7 @@ async def bulk_customer_prices(customer_id: UUID, body: BulkCustomerPriceRequest
 
 
 @router.get("/customers/{customer_id}/pricing/export")
-async def export_customer_pricing_csv(customer_id: UUID) -> StreamingResponse:
+async def export_customer_pricing_csv(customer_id: UUID, _user: User = Depends(require_permission("pricing", "read"))) -> StreamingResponse:
     """Export a customer's pricing grid as CSV."""
     data = await get_customer_pricing(customer_id)
     if data is None:
@@ -280,7 +283,7 @@ async def export_customer_pricing_csv(customer_id: UUID) -> StreamingResponse:
 
 
 @router.post("/customers/{customer_id}/prices/import")
-async def import_customer_prices_csv(customer_id: UUID, file: UploadFile) -> dict:
+async def import_customer_prices_csv(customer_id: UUID, file: UploadFile, user: User = Depends(require_permission("pricing", "write"))) -> dict:
     """Import customer price overrides from CSV."""
     # M6: Rate limiting via import lock
     if _import_lock.locked():

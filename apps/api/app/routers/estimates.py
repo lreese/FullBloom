@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 
 logger = structlog.get_logger()
 
@@ -19,7 +19,10 @@ from app.schemas.inventory import (
 )
 from app.services.inventory_service import get_pull_dates
 
-router = APIRouter(prefix="/api/v1", tags=["estimates"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["estimates"], dependencies=[Depends(get_current_user)])
 
 
 def _current_week_monday() -> date:
@@ -128,7 +131,7 @@ async def list_estimates(
 
 
 @router.put("/estimates")
-async def save_estimates(body: EstimateSaveRequest) -> dict:
+async def save_estimates(body: EstimateSaveRequest, user: User = Depends(require_permission("inventory_estimates", "write"))) -> dict:
     """Batch save/update estimates."""
     logger.info("save_estimates", product_type_id=str(body.product_type_id), week_start=str(body.week_start), count=len(body.estimates))
 

@@ -14,8 +14,7 @@ pytestmark = pytest.mark.anyio
 
 
 async def test_list_product_lines_with_variety_count(
-    async_client, product_type, product_line
-):
+    async_client, product_type, product_line, auth_headers_admin):
     """GET /product-lines returns lines with correct variety_count."""
     # Create two active varieties and one inactive
     await Variety.create(product_line=product_line, name="Freedom")
@@ -24,7 +23,7 @@ async def test_list_product_lines_with_variety_count(
         product_line=product_line, name="Archived Var", is_active=False
     )
 
-    resp = await async_client.get("/api/v1/product-lines")
+    resp = await async_client.get("/api/v1/product-lines", headers=auth_headers_admin)
     assert resp.status_code == 200
 
     data = resp.json()["data"]
@@ -51,10 +50,10 @@ async def test_list_product_lines_with_variety_count(
 # ---------------------------------------------------------------------------
 
 
-async def test_create_product_line_success(async_client, product_type):
+async def test_create_product_line_success(async_client, product_type, auth_headers_admin):
     """POST creates a product line and returns 201."""
     payload = {"name": "Tulip", "product_type_id": str(product_type.id)}
-    resp = await async_client.post("/api/v1/product-lines", json=payload)
+    resp = await async_client.post("/api/v1/product-lines", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 201
 
     pl = resp.json()["data"]
@@ -66,19 +65,19 @@ async def test_create_product_line_success(async_client, product_type):
     uuid.UUID(pl["id"])
 
 
-async def test_create_product_line_duplicate(async_client, product_type, product_line):
+async def test_create_product_line_duplicate(async_client, product_type, product_line, auth_headers_admin):
     """422 when name + product_type combo already exists."""
     payload = {"name": "Rose", "product_type_id": str(product_type.id)}
-    resp = await async_client.post("/api/v1/product-lines", json=payload)
+    resp = await async_client.post("/api/v1/product-lines", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 422
     assert "already exists" in resp.json()["error"]
 
 
-async def test_create_product_line_invalid_product_type(async_client):
+async def test_create_product_line_invalid_product_type(async_client, auth_headers_admin):
     """422 when product_type_id does not exist."""
     fake_id = uuid.uuid4()
     payload = {"name": "Orchid", "product_type_id": str(fake_id)}
-    resp = await async_client.post("/api/v1/product-lines", json=payload)
+    resp = await async_client.post("/api/v1/product-lines", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 422
     assert "Product type not found" in resp.json()["error"]
 
@@ -89,8 +88,7 @@ async def test_create_product_line_invalid_product_type(async_client):
 
 
 async def test_archive_product_line_returns_variety_count(
-    async_client, product_line
-):
+    async_client, product_line, auth_headers_admin):
     """Archive sets is_active=False and reports active variety count."""
     await Variety.create(product_line=product_line, name="Freedom")
     await Variety.create(
@@ -98,8 +96,7 @@ async def test_archive_product_line_returns_variety_count(
     )
 
     resp = await async_client.post(
-        f"/api/v1/product-lines/{product_line.id}/archive"
-    )
+        f"/api/v1/product-lines/{product_line.id}/archive", headers=auth_headers_admin)
     assert resp.status_code == 200
 
     body = resp.json()["data"]
@@ -116,11 +113,10 @@ async def test_archive_product_line_returns_variety_count(
 
 
 async def test_product_line_name_uniqueness_scoped_to_product_type(
-    async_client, product_type, product_line
-):
+    async_client, product_type, product_line, auth_headers_admin):
     """Same name is allowed under a different product type."""
     other_type = await ProductType.create(name="Potted Plant")
     payload = {"name": "Rose", "product_type_id": str(other_type.id)}
-    resp = await async_client.post("/api/v1/product-lines", json=payload)
+    resp = await async_client.post("/api/v1/product-lines", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 201
     assert resp.json()["data"]["name"] == "Rose"

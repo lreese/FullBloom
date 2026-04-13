@@ -87,8 +87,8 @@ async def _create_order_directly(
 
 
 @pytest.mark.anyio
-async def test_list_orders_empty(async_client: AsyncClient):
-    resp = await async_client.get("/api/v1/orders")
+async def test_list_orders_empty(async_client: AsyncClient, auth_headers_admin):
+    resp = await async_client.get("/api/v1/orders", headers=auth_headers_admin)
     assert resp.status_code == 200
     body = resp.json()["data"]
     assert body["total"] == 0
@@ -98,14 +98,14 @@ async def test_list_orders_empty(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_list_orders_with_data(async_client: AsyncClient, customer, sales_item_pair):
+async def test_list_orders_with_data(async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, si_b = sales_item_pair
     await _create_order_directly(customer, [si_a, si_b])
     await _create_order_directly(
         customer, [si_a], order_number="ORD-20260412-002", order_date="2026-04-11"
     )
 
-    resp = await async_client.get("/api/v1/orders")
+    resp = await async_client.get("/api/v1/orders", headers=auth_headers_admin)
     assert resp.status_code == 200
     body = resp.json()["data"]
     assert body["total"] == 2
@@ -118,28 +118,28 @@ async def test_list_orders_with_data(async_client: AsyncClient, customer, sales_
 
 
 @pytest.mark.anyio
-async def test_list_orders_pagination(async_client: AsyncClient, customer, sales_item_pair):
+async def test_list_orders_pagination(async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     for i in range(5):
         await _create_order_directly(
             customer, [si_a], order_number=f"ORD-20260412-{i+1:03d}"
         )
 
-    resp = await async_client.get("/api/v1/orders?offset=0&limit=2")
+    resp = await async_client.get("/api/v1/orders?offset=0&limit=2", headers=auth_headers_admin)
     assert resp.status_code == 200
     body = resp.json()["data"]
     assert body["total"] == 5
     assert len(body["items"]) == 2
     assert body["limit"] == 2
 
-    resp2 = await async_client.get("/api/v1/orders?offset=2&limit=2")
+    resp2 = await async_client.get("/api/v1/orders?offset=2&limit=2", headers=auth_headers_admin)
     body2 = resp2.json()["data"]
     assert len(body2["items"]) == 2
     assert body2["offset"] == 2
 
 
 @pytest.mark.anyio
-async def test_list_orders_date_range_filter(async_client: AsyncClient, customer, sales_item_pair):
+async def test_list_orders_date_range_filter(async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     await _create_order_directly(
         customer, [si_a], order_number="ORD-EARLY-001", order_date="2026-04-01"
@@ -151,7 +151,7 @@ async def test_list_orders_date_range_filter(async_client: AsyncClient, customer
         customer, [si_a], order_number="ORD-LATE-001", order_date="2026-04-20"
     )
 
-    resp = await async_client.get("/api/v1/orders?date_from=2026-04-05&date_to=2026-04-15")
+    resp = await async_client.get("/api/v1/orders?date_from=2026-04-05&date_to=2026-04-15", headers=auth_headers_admin)
     body = resp.json()["data"]
     assert body["total"] == 1
     assert body["items"][0]["order_number"] == "ORD-MID-001"
@@ -159,13 +159,12 @@ async def test_list_orders_date_range_filter(async_client: AsyncClient, customer
 
 @pytest.mark.anyio
 async def test_list_orders_customer_filter(
-    async_client: AsyncClient, customer, customer_b, sales_item_pair
-):
+    async_client: AsyncClient, customer, customer_b, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     await _create_order_directly(customer, [si_a], order_number="ORD-A-001")
     await _create_order_directly(customer_b, [si_a], order_number="ORD-B-001")
 
-    resp = await async_client.get(f"/api/v1/orders?customer_id={customer.id}")
+    resp = await async_client.get(f"/api/v1/orders?customer_id={customer.id}", headers=auth_headers_admin)
     body = resp.json()["data"]
     assert body["total"] == 1
     assert body["items"][0]["order_number"] == "ORD-A-001"
@@ -173,13 +172,12 @@ async def test_list_orders_customer_filter(
 
 @pytest.mark.anyio
 async def test_list_orders_search_by_order_number(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     await _create_order_directly(customer, [si_a], order_number="ORD-20260412-001")
     await _create_order_directly(customer, [si_a], order_number="ORD-20260413-999")
 
-    resp = await async_client.get("/api/v1/orders?search=999")
+    resp = await async_client.get("/api/v1/orders?search=999", headers=auth_headers_admin)
     body = resp.json()["data"]
     assert body["total"] == 1
     assert body["items"][0]["order_number"] == "ORD-20260413-999"
@@ -187,13 +185,12 @@ async def test_list_orders_search_by_order_number(
 
 @pytest.mark.anyio
 async def test_list_orders_search_by_customer_name(
-    async_client: AsyncClient, customer, customer_b, sales_item_pair
-):
+    async_client: AsyncClient, customer, customer_b, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     await _create_order_directly(customer, [si_a], order_number="ORD-A-001")
     await _create_order_directly(customer_b, [si_a], order_number="ORD-B-001")
 
-    resp = await async_client.get("/api/v1/orders?search=Bloom")
+    resp = await async_client.get("/api/v1/orders?search=Bloom", headers=auth_headers_admin)
     body = resp.json()["data"]
     assert body["total"] == 1
     assert body["items"][0]["customer_name"] == "Bloom Boutique"
@@ -206,15 +203,13 @@ async def test_list_orders_search_by_customer_name(
 
 @pytest.mark.anyio
 async def test_update_order_header_fields(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
 
     resp = await async_client.put(
         f"/api/v1/orders/{order.id}",
-        json={"ship_via": "UPS", "order_notes": "Updated notes"},
-    )
+        json={"ship_via": "UPS", "order_notes": "Updated notes"}, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["ship_via"] == "UPS"
@@ -223,8 +218,7 @@ async def test_update_order_header_fields(
 
 @pytest.mark.anyio
 async def test_update_order_add_line(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, si_b = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
     await order.fetch_related("lines")
@@ -246,8 +240,7 @@ async def test_update_order_add_line(
                     "price_per_stem": 8.00,
                 },
             ]
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert len(data["lines"]) == 2
@@ -255,8 +248,7 @@ async def test_update_order_add_line(
 
 @pytest.mark.anyio
 async def test_update_order_remove_line(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, si_b = sales_item_pair
     order = await _create_order_directly(customer, [si_a, si_b])
     await order.fetch_related("lines")
@@ -274,8 +266,7 @@ async def test_update_order_remove_line(
                     "price_per_stem": 12.50,
                 },
             ]
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert len(data["lines"]) == 1
@@ -283,8 +274,7 @@ async def test_update_order_remove_line(
 
 @pytest.mark.anyio
 async def test_update_order_modify_line(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
     await order.fetch_related("lines")
@@ -301,8 +291,7 @@ async def test_update_order_modify_line(
                     "price_per_stem": 10.00,
                 },
             ]
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["lines"][0]["stems"] == 50
@@ -311,15 +300,13 @@ async def test_update_order_modify_line(
 
 @pytest.mark.anyio
 async def test_update_order_creates_audit_log(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
 
     await async_client.put(
         f"/api/v1/orders/{order.id}",
-        json={"ship_via": "DHL"},
-    )
+        json={"ship_via": "DHL"}, headers=auth_headers_admin)
 
     logs = await OrderAuditLog.filter(order_id=order.id).all()
     assert len(logs) == 1
@@ -330,12 +317,11 @@ async def test_update_order_creates_audit_log(
 
 
 @pytest.mark.anyio
-async def test_update_order_not_found(async_client: AsyncClient):
+async def test_update_order_not_found(async_client: AsyncClient, auth_headers_admin):
     fake_id = str(uuid.uuid4())
     resp = await async_client.put(
         f"/api/v1/orders/{fake_id}",
-        json={"ship_via": "UPS"},
-    )
+        json={"ship_via": "UPS"}, headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
@@ -346,12 +332,11 @@ async def test_update_order_not_found(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_delete_order_success(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
 
-    resp = await async_client.delete(f"/api/v1/orders/{order.id}")
+    resp = await async_client.delete(f"/api/v1/orders/{order.id}", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["deleted"] is True
@@ -363,29 +348,28 @@ async def test_delete_order_success(
     assert order_after.is_deleted is True
 
     # Verify soft-deleted order is hidden from list and get endpoints
-    list_resp = await async_client.get("/api/v1/orders")
+    list_resp = await async_client.get("/api/v1/orders", headers=auth_headers_admin)
     assert len(list_resp.json()["data"]["items"]) == 0
 
-    get_resp = await async_client.get(f"/api/v1/orders/{order.id}")
+    get_resp = await async_client.get(f"/api/v1/orders/{order.id}", headers=auth_headers_admin)
     assert get_resp.status_code == 404
 
 
 @pytest.mark.anyio
-async def test_delete_order_not_found(async_client: AsyncClient):
+async def test_delete_order_not_found(async_client: AsyncClient, auth_headers_admin):
     fake_id = str(uuid.uuid4())
-    resp = await async_client.delete(f"/api/v1/orders/{fake_id}")
+    resp = await async_client.delete(f"/api/v1/orders/{fake_id}", headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
 @pytest.mark.anyio
 async def test_delete_order_creates_audit_log(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
     order_id = str(order.id)
 
-    await async_client.delete(f"/api/v1/orders/{order_id}")
+    await async_client.delete(f"/api/v1/orders/{order_id}", headers=auth_headers_admin)
 
     # Soft delete preserves audit log — verify the "deleted" entry exists
     from app.models.order import OrderAuditLog
@@ -402,8 +386,7 @@ async def test_delete_order_creates_audit_log(
 
 @pytest.mark.anyio
 async def test_audit_log_retrieval(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
 
@@ -418,7 +401,7 @@ async def test_audit_log_retrieval(
         entered_by="admin@test.com",
     )
 
-    resp = await async_client.get(f"/api/v1/orders/{order.id}/audit-log")
+    resp = await async_client.get(f"/api/v1/orders/{order.id}/audit-log", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert len(data) == 2
@@ -429,9 +412,9 @@ async def test_audit_log_retrieval(
 
 
 @pytest.mark.anyio
-async def test_audit_log_not_found(async_client: AsyncClient):
+async def test_audit_log_not_found(async_client: AsyncClient, auth_headers_admin):
     fake_id = str(uuid.uuid4())
-    resp = await async_client.get(f"/api/v1/orders/{fake_id}/audit-log")
+    resp = await async_client.get(f"/api/v1/orders/{fake_id}/audit-log", headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
@@ -442,8 +425,7 @@ async def test_audit_log_not_found(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_create_order_audit_log_written(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Verify the create_order service writes an audit log entry."""
     si_a, _ = sales_item_pair
 
@@ -460,8 +442,7 @@ async def test_create_order_audit_log_written(
                     "price_per_stem": 12.50,
                 }
             ],
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 201
     order_id = resp.json()["data"]["id"]
     logs = await OrderAuditLog.filter(order_id=order_id).all()
@@ -476,13 +457,12 @@ async def test_create_order_audit_log_written(
 
 @pytest.mark.anyio
 async def test_get_order_detail(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """GET /api/v1/orders/{order_id} returns full order detail with customer and lines."""
     si_a, si_b = sales_item_pair
     order = await _create_order_directly(customer, [si_a, si_b])
 
-    resp = await async_client.get(f"/api/v1/orders/{order.id}")
+    resp = await async_client.get(f"/api/v1/orders/{order.id}", headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["id"] == str(order.id)
@@ -497,10 +477,10 @@ async def test_get_order_detail(
 
 
 @pytest.mark.anyio
-async def test_get_order_not_found(async_client: AsyncClient):
+async def test_get_order_not_found(async_client: AsyncClient, auth_headers_admin):
     """GET /api/v1/orders/{order_id} returns 404 for unknown ID."""
     fake_id = str(uuid.uuid4())
-    resp = await async_client.get(f"/api/v1/orders/{fake_id}")
+    resp = await async_client.get(f"/api/v1/orders/{fake_id}", headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
@@ -511,8 +491,7 @@ async def test_get_order_not_found(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_create_order_duplicate_detection_409(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Submitting the same order twice returns 409 with existing order number."""
     si_a, _ = sales_item_pair
     payload = {
@@ -528,18 +507,17 @@ async def test_create_order_duplicate_detection_409(
         ],
     }
 
-    resp1 = await async_client.post("/api/v1/orders", json=payload)
+    resp1 = await async_client.post("/api/v1/orders", json=payload, headers=auth_headers_admin)
     assert resp1.status_code == 201
 
-    resp2 = await async_client.post("/api/v1/orders", json=payload)
+    resp2 = await async_client.post("/api/v1/orders", json=payload, headers=auth_headers_admin)
     assert resp2.status_code == 409
     assert "Duplicate order detected" in resp2.json()["error"]
 
 
 @pytest.mark.anyio
 async def test_create_order_force_duplicate_bypass(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """force_duplicate=true allows creating a duplicate order (201)."""
     si_a, _ = sales_item_pair
     payload = {
@@ -555,11 +533,11 @@ async def test_create_order_force_duplicate_bypass(
         ],
     }
 
-    resp1 = await async_client.post("/api/v1/orders", json=payload)
+    resp1 = await async_client.post("/api/v1/orders", json=payload, headers=auth_headers_admin)
     assert resp1.status_code == 201
 
     payload["force_duplicate"] = True
-    resp2 = await async_client.post("/api/v1/orders", json=payload)
+    resp2 = await async_client.post("/api/v1/orders", json=payload, headers=auth_headers_admin)
     assert resp2.status_code == 201
     assert resp2.json()["data"]["order_number"] != resp1.json()["data"]["order_number"]
 
@@ -571,8 +549,7 @@ async def test_create_order_force_duplicate_bypass(
 
 @pytest.mark.anyio
 async def test_create_order_invalid_customer_id(
-    async_client: AsyncClient, sales_item_pair
-):
+    async_client: AsyncClient, sales_item_pair, auth_headers_admin):
     """Non-existent customer_id returns 422."""
     si_a, _ = sales_item_pair
     fake_customer_id = str(uuid.uuid4())
@@ -588,16 +565,14 @@ async def test_create_order_invalid_customer_id(
                     "price_per_stem": 12.50,
                 }
             ],
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 422
     assert "not found" in resp.json()["error"].lower()
 
 
 @pytest.mark.anyio
 async def test_create_order_invalid_sales_item_id(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Non-existent sales_item_id in a line returns 422."""
     fake_si_id = str(uuid.uuid4())
     payload = {
@@ -612,13 +587,13 @@ async def test_create_order_invalid_sales_item_id(
         ],
     }
 
-    resp = await async_client.post("/api/v1/orders", json=payload)
+    resp = await async_client.post("/api/v1/orders", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 422
     assert "not found" in resp.json()["error"].lower()
 
 
 @pytest.mark.anyio
-async def test_create_order_stems_zero_rejected(async_client: AsyncClient, customer, sales_item_pair):
+async def test_create_order_stems_zero_rejected(async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Schema validator rejects stems=0 with 422."""
     si_a, _ = sales_item_pair
     resp = await async_client.post(
@@ -633,13 +608,12 @@ async def test_create_order_stems_zero_rejected(async_client: AsyncClient, custo
                     "price_per_stem": 12.50,
                 }
             ],
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_create_order_stems_negative_rejected(async_client: AsyncClient, customer, sales_item_pair):
+async def test_create_order_stems_negative_rejected(async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Schema validator rejects stems=-1 with 422."""
     si_a, _ = sales_item_pair
     resp = await async_client.post(
@@ -654,13 +628,12 @@ async def test_create_order_stems_negative_rejected(async_client: AsyncClient, c
                     "price_per_stem": 12.50,
                 }
             ],
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_create_order_empty_lines_rejected(async_client: AsyncClient, customer):
+async def test_create_order_empty_lines_rejected(async_client: AsyncClient, customer, auth_headers_admin):
     """Schema validator rejects empty lines list with 422."""
     resp = await async_client.post(
         "/api/v1/orders",
@@ -668,8 +641,7 @@ async def test_create_order_empty_lines_rejected(async_client: AsyncClient, cust
             "customer_id": str(customer.id),
             "order_date": "2026-04-12",
             "lines": [],
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 422
 
 
@@ -680,8 +652,7 @@ async def test_create_order_empty_lines_rejected(async_client: AsyncClient, cust
 
 @pytest.mark.anyio
 async def test_list_orders_salesperson_email_filter(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """salesperson_email filter returns only matching orders."""
     si_a, _ = sales_item_pair
     await _create_order_directly(
@@ -693,7 +664,7 @@ async def test_list_orders_salesperson_email_filter(
         salesperson_email="bob@flowers.com",
     )
 
-    resp = await async_client.get("/api/v1/orders?salesperson_email=alice")
+    resp = await async_client.get("/api/v1/orders?salesperson_email=alice", headers=auth_headers_admin)
     body = resp.json()["data"]
     assert body["total"] == 1
     assert body["items"][0]["order_number"] == "ORD-SP-001"
@@ -701,16 +672,16 @@ async def test_list_orders_salesperson_email_filter(
 
 
 @pytest.mark.anyio
-async def test_list_orders_limit_zero_rejected(async_client: AsyncClient):
+async def test_list_orders_limit_zero_rejected(async_client: AsyncClient, auth_headers_admin):
     """limit=0 should return 422 (minimum is 1)."""
-    resp = await async_client.get("/api/v1/orders?limit=0")
+    resp = await async_client.get("/api/v1/orders?limit=0", headers=auth_headers_admin)
     assert resp.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_list_orders_limit_over_max_rejected(async_client: AsyncClient):
+async def test_list_orders_limit_over_max_rejected(async_client: AsyncClient, auth_headers_admin):
     """limit=101 should return 422 (maximum is 100)."""
-    resp = await async_client.get("/api/v1/orders?limit=101")
+    resp = await async_client.get("/api/v1/orders?limit=101", headers=auth_headers_admin)
     assert resp.status_code == 422
 
 
@@ -721,16 +692,14 @@ async def test_list_orders_limit_over_max_rejected(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_update_order_audit_log_captures_values(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Audit log changes include correct old_value and new_value, not just field name."""
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
 
     await async_client.put(
         f"/api/v1/orders/{order.id}",
-        json={"ship_via": "DHL"},
-    )
+        json={"ship_via": "DHL"}, headers=auth_headers_admin)
 
     logs = await OrderAuditLog.filter(order_id=order.id).all()
     assert len(logs) == 1
@@ -741,8 +710,7 @@ async def test_update_order_audit_log_captures_values(
 
 @pytest.mark.anyio
 async def test_update_order_effective_price_calculation(
-    async_client: AsyncClient, customer, sales_item_pair
-):
+    async_client: AsyncClient, customer, sales_item_pair, auth_headers_admin):
     """Verify effective_price is recalculated with fees on update."""
     si_a, _ = sales_item_pair
     order = await _create_order_directly(customer, [si_a])
@@ -759,8 +727,7 @@ async def test_update_order_effective_price_calculation(
                     "item_fee_dollar": 0.50,
                 },
             ]
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     line = resp.json()["data"]["lines"][0]
     # effective = (10.00 * 1.10) + 0.50 = 11.50

@@ -72,13 +72,11 @@ async def cc_template(cc_product_type, cc_customer):
 
 
 async def test_list_customer_counts_empty(
-    async_client: AsyncClient, cc_product_type, cc_variety, cc_template, cc_customer
-):
+    async_client: AsyncClient, cc_product_type, cc_variety, cc_template, cc_customer, auth_headers_admin):
     """GET /customer-counts returns varieties with null counts when nothing saved."""
     resp = await async_client.get(
         f"{BASE}/customer-counts",
-        params={"product_type_id": str(cc_product_type.id), "count_date": TODAY.isoformat()},
-    )
+        params={"product_type_id": str(cc_product_type.id), "count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["sheet_complete"] is False
@@ -87,12 +85,11 @@ async def test_list_customer_counts_empty(
     assert len(data["product_lines"]) == 1
 
 
-async def test_list_customer_counts_invalid_product_type(async_client: AsyncClient):
+async def test_list_customer_counts_invalid_product_type(async_client: AsyncClient, auth_headers_admin):
     """GET /customer-counts returns 404 for nonexistent product type."""
     resp = await async_client.get(
         f"{BASE}/customer-counts",
-        params={"product_type_id": str(uuid.uuid4()), "count_date": TODAY.isoformat()},
-    )
+        params={"product_type_id": str(uuid.uuid4()), "count_date": TODAY.isoformat()}, headers=auth_headers_admin)
     assert resp.status_code == 404
 
 
@@ -102,8 +99,7 @@ async def test_list_customer_counts_invalid_product_type(async_client: AsyncClie
 
 
 async def test_save_customer_counts_create_new(
-    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer, auth_headers_admin):
     """PUT /customer-counts creates new CustomerCount records and audit logs."""
     payload = {
         "product_type_id": str(cc_product_type.id),
@@ -120,7 +116,7 @@ async def test_save_customer_counts_create_new(
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/customer-counts", json=payload)
+    resp = await async_client.put(f"{BASE}/customer-counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -146,8 +142,7 @@ async def test_save_customer_counts_create_new(
 
 
 async def test_save_customer_counts_update_existing(
-    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer, auth_headers_admin):
     """PUT /customer-counts updates existing record and creates audit log."""
     await CustomerCount.create(
         variety=cc_variety,
@@ -174,7 +169,7 @@ async def test_save_customer_counts_update_existing(
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/customer-counts", json=payload)
+    resp = await async_client.put(f"{BASE}/customer-counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -199,8 +194,7 @@ async def test_save_customer_counts_update_existing(
 
 
 async def test_save_customer_counts_skips_invalid_variety(
-    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer, auth_headers_admin):
     """PUT /customer-counts skips entries with invalid variety IDs."""
     fake_id = uuid.uuid4()
     payload = {
@@ -226,7 +220,7 @@ async def test_save_customer_counts_skips_invalid_variety(
             },
         ],
     }
-    resp = await async_client.put(f"{BASE}/customer-counts", json=payload)
+    resp = await async_client.put(f"{BASE}/customer-counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"]["saved_count"] == 1
 
@@ -237,8 +231,7 @@ async def test_save_customer_counts_skips_invalid_variety(
 
 
 async def test_save_customer_counts_rejects_when_sheet_complete(
-    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer, auth_headers_admin):
     """PUT /customer-counts returns 409 when the customer_count sheet is complete."""
     await SheetCompletion.create(
         product_type=cc_product_type,
@@ -262,7 +255,7 @@ async def test_save_customer_counts_rejects_when_sheet_complete(
             }
         ],
     }
-    resp = await async_client.put(f"{BASE}/customer-counts", json=payload)
+    resp = await async_client.put(f"{BASE}/customer-counts", json=payload, headers=auth_headers_admin)
     assert resp.status_code == 409
     assert "complete" in resp.json()["error"].lower()
 
@@ -273,8 +266,7 @@ async def test_save_customer_counts_rejects_when_sheet_complete(
 
 
 async def test_customer_count_audit_log_empty(
-    async_client: AsyncClient, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_variety, cc_customer, auth_headers_admin):
     """GET /customer-counts/{variety_id}/audit-log returns empty when no records exist."""
     resp = await async_client.get(
         f"{BASE}/customer-counts/{cc_variety.id}/audit-log",
@@ -283,15 +275,13 @@ async def test_customer_count_audit_log_empty(
             "bunch_size": 10,
             "sleeve_type": "Plastic",
             "count_date": TODAY.isoformat(),
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     assert resp.json()["data"] == []
 
 
 async def test_customer_count_audit_log_returns_entries(
-    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_product_type, cc_variety, cc_customer, auth_headers_admin):
     """GET /customer-counts/{variety_id}/audit-log returns audit entries after saving."""
     # Save a customer count
     payload = {
@@ -309,7 +299,7 @@ async def test_customer_count_audit_log_returns_entries(
             }
         ],
     }
-    await async_client.put(f"{BASE}/customer-counts", json=payload)
+    await async_client.put(f"{BASE}/customer-counts", json=payload, headers=auth_headers_admin)
 
     resp = await async_client.get(
         f"{BASE}/customer-counts/{cc_variety.id}/audit-log",
@@ -318,8 +308,7 @@ async def test_customer_count_audit_log_returns_entries(
             "bunch_size": 10,
             "sleeve_type": "Plastic",
             "count_date": TODAY.isoformat(),
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 200
     entries = resp.json()["data"]
     assert len(entries) == 1
@@ -329,8 +318,7 @@ async def test_customer_count_audit_log_returns_entries(
 
 
 async def test_customer_count_audit_log_validates_sleeve_type(
-    async_client: AsyncClient, cc_variety, cc_customer
-):
+    async_client: AsyncClient, cc_variety, cc_customer, auth_headers_admin):
     """GET /customer-counts/{variety_id}/audit-log validates sleeve_type as Literal."""
     resp = await async_client.get(
         f"{BASE}/customer-counts/{cc_variety.id}/audit-log",
@@ -339,6 +327,5 @@ async def test_customer_count_audit_log_validates_sleeve_type(
             "bunch_size": 10,
             "sleeve_type": "InvalidType",
             "count_date": TODAY.isoformat(),
-        },
-    )
+        }, headers=auth_headers_admin)
     assert resp.status_code == 422

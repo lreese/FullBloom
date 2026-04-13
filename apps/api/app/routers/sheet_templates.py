@@ -3,7 +3,7 @@
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
 logger = structlog.get_logger()
 
@@ -16,7 +16,10 @@ from app.schemas.inventory import (
     TemplateUpdateRequest,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["sheet_templates"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["sheet_templates"], dependencies=[Depends(get_current_user)])
 
 
 async def _resolve_columns(columns_raw: list[dict]) -> list[TemplateColumn]:
@@ -58,7 +61,7 @@ async def get_template(product_type_id: UUID) -> dict:
 
 
 @router.put("/count-sheet-templates/{product_type_id}")
-async def save_template(product_type_id: UUID, body: TemplateUpdateRequest) -> dict:
+async def save_template(product_type_id: UUID, body: TemplateUpdateRequest, user: User = Depends(require_permission("inventory_counts", "write"))) -> dict:
     """Save or update the count sheet template columns."""
     logger.info("save_template", product_type_id=str(product_type_id), column_count=len(body.columns))
     product_type = await ProductType.get_or_none(id=product_type_id)

@@ -4,7 +4,7 @@ from datetime import date
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 
 logger = structlog.get_logger()
 
@@ -20,7 +20,10 @@ from app.schemas.inventory import (
     RecentCountItem,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["counts"])
+from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1", tags=["counts"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/counts")
@@ -98,7 +101,7 @@ async def list_counts(
 
 
 @router.put("/counts")
-async def save_counts(body: CountSaveRequest) -> dict:
+async def save_counts(body: CountSaveRequest, user: User = Depends(require_permission("inventory_counts", "write"))) -> dict:
     """Batch save/update daily counts."""
     logger.info("save_counts", product_type_id=str(body.product_type_id), count_date=str(body.count_date), count=len(body.counts))
 
