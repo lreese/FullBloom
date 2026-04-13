@@ -1,4 +1,5 @@
 import type { ApiResponse, ApiError } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 const BASE_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
@@ -16,10 +17,18 @@ async function request<T>(
 ): Promise<T> {
   const url = `${BASE_URL}${path}`;
 
+  // Get current session token
+  const { data: { session } } = await supabase.auth.getSession();
+  const authHeaders: Record<string, string> = {};
+  if (session?.access_token) {
+    authHeaders["Authorization"] = `Bearer ${session.access_token}`;
+  }
+
   const res = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...options.headers,
     },
   });
@@ -75,9 +84,16 @@ export async function postFile<T>(path: string, file: File): Promise<T> {
   const formData = new FormData();
   formData.append("file", file);
 
+  const { data: { session } } = await supabase.auth.getSession();
+  const authHeaders: Record<string, string> = {};
+  if (session?.access_token) {
+    authHeaders["Authorization"] = `Bearer ${session.access_token}`;
+  }
+
   const res = await fetch(url, {
     method: "POST",
     body: formData,
+    headers: { ...authHeaders },
   });
 
   const body = await res.json();
