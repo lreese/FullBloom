@@ -52,7 +52,7 @@ async def _build_customer_list_response(c: Customer) -> CustomerListResponse:
 
 
 @router.get("/customers")
-async def list_customers(active: bool | None = True, search: str | None = None) -> dict:
+async def list_customers(active: bool | None = True, search: str | None = None, _user: User = Depends(require_permission("customers", "read"))) -> dict:
     """List customers filtered by active status and optional search term."""
     qs = Customer.all()
     if active is not None:
@@ -66,21 +66,21 @@ async def list_customers(active: bool | None = True, search: str | None = None) 
 
 
 @router.get("/customers/next-number")
-async def next_customer_number() -> dict:
+async def next_customer_number(_user: User = Depends(require_permission("customers", "read"))) -> dict:
     """Get the next suggested customer number."""
     next_num = await get_next_customer_number()
     return {"data": NextNumberResponse(next_number=next_num)}
 
 
 @router.get("/customers/dropdown-options")
-async def dropdown_options() -> dict:
+async def dropdown_options(_user: User = Depends(require_permission("customers", "read"))) -> dict:
     """Get distinct values for dropdown fields."""
     options = await get_dropdown_options()
     return {"data": DropdownOptionsResponse(**options)}
 
 
 @router.get("/customers/{customer_id}")
-async def get_customer(customer_id: UUID) -> dict:
+async def get_customer(customer_id: UUID, _user: User = Depends(require_permission("customers", "read"))) -> dict:
     """Get a single customer with nested stores."""
     customer = await Customer.get_or_none(id=customer_id).prefetch_related("stores")
     if customer is None:

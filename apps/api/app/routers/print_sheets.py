@@ -21,6 +21,7 @@ from app.models.product import ProductType, Variety
 from app.services.inventory_service import get_pull_dates
 
 from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
 
 router = APIRouter(prefix="/api/v1", tags=["print"], dependencies=[Depends(get_current_user)])
 
@@ -30,6 +31,7 @@ async def print_count_sheet(
     product_type_id: UUID = Query(...),
     sheet_type: str = Query(...),
     query_date: date = Query(default_factory=date.today, alias="date"),
+    _user: User = Depends(require_permission("inventory_counts", "read")),
 ) -> HTMLResponse:
     """Generate a print-optimized blank count sheet as HTML."""
     logger.info("print_count_sheet", product_type_id=str(product_type_id), sheet_type=sheet_type, date=str(query_date))

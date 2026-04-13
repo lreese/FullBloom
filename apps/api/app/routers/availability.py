@@ -18,6 +18,7 @@ from app.schemas.inventory import (
 )
 
 from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
 
 router = APIRouter(prefix="/api/v1", tags=["availability"], dependencies=[Depends(get_current_user)])
 
@@ -25,6 +26,7 @@ router = APIRouter(prefix="/api/v1", tags=["availability"], dependencies=[Depend
 @router.get("/availability")
 async def get_availability(
     query_date: date = Query(default_factory=date.today, alias="date"),
+    _user: User = Depends(require_permission("inventory_availability", "read")),
 ) -> dict:
     """Return availability across all product types for a given date."""
     logger.info("get_availability", date=str(query_date))

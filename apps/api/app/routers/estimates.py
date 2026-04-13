@@ -35,6 +35,7 @@ def _current_week_monday() -> date:
 async def list_estimates(
     product_type_id: UUID = Query(...),
     week_start: date = Query(default_factory=_current_week_monday),
+    _user: User = Depends(require_permission("inventory_estimates", "read")),
 ) -> dict:
     """List estimates for a product type for a week."""
     logger.info("list_estimates", product_type_id=str(product_type_id), week_start=str(week_start))
@@ -201,6 +202,7 @@ async def save_estimates(body: EstimateSaveRequest, user: User = Depends(require
 async def get_estimate_audit_log(
     variety_id: UUID,
     week_start: date = Query(default_factory=_current_week_monday),
+    _user: User = Depends(require_permission("inventory_estimates", "read")),
 ) -> dict:
     """Return audit log entries for a variety's estimates in a specific week."""
     estimates = await Estimate.filter(variety_id=variety_id, week_start=week_start)

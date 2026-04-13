@@ -41,7 +41,7 @@ async def _resolve_columns(columns_raw: list[dict]) -> list[TemplateColumn]:
 
 
 @router.get("/count-sheet-templates/{product_type_id}")
-async def get_template(product_type_id: UUID) -> dict:
+async def get_template(product_type_id: UUID, _user: User = Depends(require_permission("inventory_counts", "read"))) -> dict:
     """Return the count sheet template with customer names resolved."""
     logger.info("get_template", product_type_id=str(product_type_id))
     product_type = await ProductType.get_or_none(id=product_type_id)

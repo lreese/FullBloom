@@ -20,6 +20,7 @@ from app.schemas.inventory import (
 from app.services.inventory_service import get_pull_dates
 
 from app.auth.dependencies import get_current_user, require_permission
+from app.models.user import User
 
 router = APIRouter(prefix="/api/v1", tags=["comparison"], dependencies=[Depends(get_current_user)])
 
@@ -28,6 +29,7 @@ router = APIRouter(prefix="/api/v1", tags=["comparison"], dependencies=[Depends(
 async def get_comparison(
     product_type_id: UUID = Query(...),
     week_start: date = Query(...),
+    _user: User = Depends(require_permission("inventory_availability", "read")),
 ) -> dict:
     """Get estimate vs actual comparison for a week."""
     logger.info("get_comparison", product_type_id=str(product_type_id), week_start=str(week_start))

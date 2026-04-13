@@ -23,6 +23,7 @@ router = APIRouter(prefix="/api/v1", tags=["harvest_status"], dependencies=[Depe
 @router.get("/varieties/harvest-status")
 async def list_harvest_status(
     product_type_id: UUID = Query(...),
+    _user: User = Depends(require_permission("inventory_harvest", "read")),
 ) -> dict:
     """Return harvest status for all active varieties of a product type."""
     logger.info("list_harvest_status", product_type_id=str(product_type_id))

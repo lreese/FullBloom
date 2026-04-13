@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/v1", tags=["product-lines"], dependencies=[Depen
 
 
 @router.get("/product-lines")
-async def list_product_lines(active: bool = True) -> dict:
+async def list_product_lines(active: bool = True, _user: User = Depends(require_permission("products", "read"))) -> dict:
     """List product lines with variety counts."""
     product_lines = await ProductLine.filter(is_active=active).prefetch_related(
         "product_type"
@@ -43,7 +43,7 @@ async def list_product_lines(active: bool = True) -> dict:
 
 
 @router.get("/product-lines/dropdown-options")
-async def product_line_dropdown_options() -> dict:
+async def product_line_dropdown_options(_user: User = Depends(require_permission("products", "read"))) -> dict:
     """Get product types for the dropdown."""
     product_types = await ProductType.all().order_by("name")
     return {

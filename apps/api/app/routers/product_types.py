@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/v1", tags=["product-types"], dependencies=[Depen
 
 
 @router.get("/product-types")
-async def list_product_types(active: bool = True) -> dict:
+async def list_product_types(active: bool = True, _user: User = Depends(require_permission("products", "read"))) -> dict:
     """List product types with product line counts."""
     product_types = await ProductType.filter(is_active=active).order_by("name")
 

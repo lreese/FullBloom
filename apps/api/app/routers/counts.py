@@ -30,6 +30,7 @@ router = APIRouter(prefix="/api/v1", tags=["counts"], dependencies=[Depends(get_
 async def list_counts(
     product_type_id: UUID = Query(...),
     count_date: date = Query(default_factory=date.today),
+    _user: User = Depends(require_permission("inventory_counts", "read")),
 ) -> dict:
     """List daily counts for a product type on a date."""
     logger.info("list_counts", product_type_id=str(product_type_id), count_date=str(count_date))
@@ -170,7 +171,7 @@ async def save_counts(body: CountSaveRequest, user: User = Depends(require_permi
 
 
 @router.get("/counts/latest")
-async def get_latest_count_date(product_type_id: UUID = Query(...)) -> dict:
+async def get_latest_count_date(product_type_id: UUID = Query(...), _user: User = Depends(require_permission("inventory_counts", "read"))) -> dict:
     """Return the most recent count date for a product type."""
     logger.info("get_latest_count_date", product_type_id=str(product_type_id))
     latest = await DailyCount.filter(product_type_id=product_type_id).order_by("-count_date").first()
@@ -180,7 +181,7 @@ async def get_latest_count_date(product_type_id: UUID = Query(...)) -> dict:
 
 
 @router.get("/counts/recent-batch")
-async def get_recent_counts_batch(product_type_id: UUID = Query(...)) -> dict:
+async def get_recent_counts_batch(product_type_id: UUID = Query(...), _user: User = Depends(require_permission("inventory_counts", "read"))) -> dict:
     """Return recent counts for all in-harvest varieties of a product type."""
     logger.info("get_recent_counts_batch", product_type_id=str(product_type_id))
     varieties = await Variety.filter(
@@ -200,7 +201,7 @@ async def get_recent_counts_batch(product_type_id: UUID = Query(...)) -> dict:
 
 
 @router.get("/counts/{variety_id}/audit-log")
-async def get_audit_log(variety_id: UUID, count_date: date = Query(default_factory=date.today)) -> dict:
+async def get_audit_log(variety_id: UUID, count_date: date = Query(default_factory=date.today), _user: User = Depends(require_permission("inventory_counts", "read"))) -> dict:
     """Return audit log entries for a variety on a specific date."""
     logger.info("get_audit_log", variety_id=str(variety_id), count_date=str(count_date))
     daily_count = await DailyCount.filter(variety_id=variety_id, count_date=count_date).first()
@@ -223,7 +224,7 @@ async def get_audit_log(variety_id: UUID, count_date: date = Query(default_facto
 
 
 @router.get("/counts/recent/{variety_id}")
-async def recent_counts(variety_id: UUID) -> dict:
+async def recent_counts(variety_id: UUID, _user: User = Depends(require_permission("inventory_counts", "read"))) -> dict:
     """Return last 5 daily counts for a variety."""
     logger.info("recent_counts", variety_id=str(variety_id))
     variety = await Variety.get_or_none(id=variety_id)

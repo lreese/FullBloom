@@ -42,6 +42,7 @@ async def list_orders(
     salesperson_email: str | None = Query(None),
     search: str | None = Query(None),
     from_standing_order: bool | None = Query(None),
+    _user: User = Depends(require_permission("orders", "read")),
 ) -> dict:
     """List orders with pagination and filtering."""
     qs = Order.filter(is_deleted=False)
@@ -209,7 +210,7 @@ async def delete_order_endpoint(order_id: UUID, user: User = Depends(require_per
 
 
 @router.get("/orders/{order_id}/audit-log")
-async def get_order_audit_log(order_id: UUID) -> dict:
+async def get_order_audit_log(order_id: UUID, _user: User = Depends(require_permission("orders", "read"))) -> dict:
     """Return the last 50 audit log entries for an order."""
     # Verify the order exists
     order = await Order.get_or_none(id=order_id)
@@ -237,7 +238,7 @@ async def get_order_audit_log(order_id: UUID) -> dict:
 
 
 @router.get("/orders/{order_id}")
-async def get_order(order_id: UUID) -> dict:
+async def get_order(order_id: UUID, _user: User = Depends(require_permission("orders", "read"))) -> dict:
     """Get a single order with all lines and customer info."""
     order = await Order.get_or_none(id=order_id, is_deleted=False).prefetch_related(
         "lines", "lines__sales_item", "customer"

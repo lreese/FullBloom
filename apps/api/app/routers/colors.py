@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/v1", tags=["colors"], dependencies=[Depends(get_
 
 
 @router.get("/colors")
-async def list_colors(active: bool = True) -> dict:
+async def list_colors(active: bool = True, _user: User = Depends(require_permission("products", "read"))) -> dict:
     """List all colors, filtered by active status."""
     colors = await Color.filter(is_active=active).prefetch_related("varieties").order_by("name")
 

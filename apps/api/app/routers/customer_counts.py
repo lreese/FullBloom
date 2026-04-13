@@ -32,6 +32,7 @@ router = APIRouter(prefix="/api/v1", tags=["customer_counts"], dependencies=[Dep
 async def list_customer_counts(
     product_type_id: UUID = Query(...),
     count_date: date = Query(default_factory=date.today),
+    _user: User = Depends(require_permission("inventory_counts", "read")),
 ) -> dict:
     """List customer counts for a product type on a date."""
     logger.info("list_customer_counts", product_type_id=str(product_type_id), count_date=str(count_date))
@@ -234,6 +235,7 @@ async def get_customer_count_audit_log(
     bunch_size: int = Query(...),
     sleeve_type: Literal["Plastic", "Paper"] = Query(...),
     count_date: date = Query(...),
+    _user: User = Depends(require_permission("inventory_counts", "read")),
 ) -> dict:
     """Return last 20 audit log entries for a specific customer count."""
     logger.info(

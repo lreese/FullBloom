@@ -42,7 +42,7 @@ def _variety_hex_color(v) -> str | None:
 
 
 @router.get("/varieties")
-async def list_varieties(active: bool = True) -> dict:
+async def list_varieties(active: bool = True, _user: User = Depends(require_permission("products", "read"))) -> dict:
     """List varieties filtered by active status."""
     qs = Variety.filter(is_active=active)
     varieties = await qs.prefetch_related(
@@ -79,14 +79,14 @@ async def list_varieties(active: bool = True) -> dict:
 
 
 @router.get("/varieties/dropdown-options")
-async def variety_dropdown_options() -> dict:
+async def variety_dropdown_options(_user: User = Depends(require_permission("products", "read"))) -> dict:
     """Get distinct values for dropdown and bulk-update fields."""
     options = await get_variety_dropdown_options()
     return {"data": VarietyDropdownOptionsResponse(**options)}
 
 
 @router.get("/varieties/{variety_id}")
-async def get_variety(variety_id: UUID) -> dict:
+async def get_variety(variety_id: UUID, _user: User = Depends(require_permission("products", "read"))) -> dict:
     """Get a single variety with its sales items."""
     variety = await Variety.get_or_none(id=variety_id).prefetch_related(
         "sales_items__customer_prices", "product_line", "product_line__product_type",

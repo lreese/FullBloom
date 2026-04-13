@@ -28,6 +28,7 @@ def _current_week_monday() -> date:
 @router.get("/pull-day-schedules")
 async def get_pull_day_schedule(
     week_start: date = Query(default_factory=_current_week_monday),
+    _user: User = Depends(require_permission("inventory_counts", "read")),
 ) -> dict:
     """Get the pull day schedule for a week (falls back to default)."""
     logger.info("get_pull_day_schedule", week_start=str(week_start))

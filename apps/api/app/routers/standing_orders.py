@@ -131,6 +131,7 @@ async def list_standing_orders(
     customer_id: str | None = Query(None),
     salesperson_email: str | None = Query(None),
     search: str | None = Query(None),
+    _user: User = Depends(require_permission("standing_orders", "read")),
 ) -> dict:
     """List standing orders with filters."""
     qs = StandingOrder.all()
@@ -175,7 +176,7 @@ async def list_standing_orders(
 
 
 @router.get("/standing-orders/{so_id}")
-async def get_standing_order(so_id: UUID) -> dict:
+async def get_standing_order(so_id: UUID, _user: User = Depends(require_permission("standing_orders", "read"))) -> dict:
     """Get a single standing order with all lines."""
     so = await StandingOrder.get_or_none(id=so_id).prefetch_related(
         "lines", "lines__sales_item", "customer"
@@ -286,7 +287,7 @@ async def generate_orders_endpoint(data: GenerateRequest, user: User = Depends(r
 
 
 @router.get("/standing-orders/{so_id}/audit-log")
-async def get_standing_order_audit_log(so_id: UUID) -> dict:
+async def get_standing_order_audit_log(so_id: UUID, _user: User = Depends(require_permission("standing_orders", "read"))) -> dict:
     """Return the audit log entries for a standing order."""
     so = await StandingOrder.get_or_none(id=so_id)
     if so is None:
