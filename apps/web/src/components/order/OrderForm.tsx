@@ -82,8 +82,8 @@ export function OrderForm() {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await api.get<{ data: Salesperson[] }>("/api/v1/users/salespeople");
-        setSalespeople(resp.data);
+        const resp = await api.get<Salesperson[]>("/api/v1/users/salespeople");
+        setSalespeople(resp);
       } catch {
         // Silently fall back — dropdown degrades to text input
         setSalespeople([]);

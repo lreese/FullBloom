@@ -34,6 +34,7 @@ export function UsersPage() {
   const [inviteRole, setInviteRole] = useState<Role>("salesperson");
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadUsers() {
     setLoading(true);
@@ -66,23 +67,35 @@ export function UsersPage() {
     }
   }
 
-  async function handleRoleChange(userId: string, role: Role) {
-    await api.put(`/api/v1/users/${userId}/role`, { role });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
+  async function handleRoleChange(userId: string, newRole: Role) {
+    try {
+      await api.put(`/api/v1/users/${userId}/role`, { role: newRole });
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to change role");
+    }
   }
 
   async function handleDeactivate(userId: string) {
-    await api.post(`/api/v1/users/${userId}/deactivate`, {});
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, status: "deactivated" } : u))
-    );
+    try {
+      await api.post(`/api/v1/users/${userId}/deactivate`, {});
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: "deactivated" } : u))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Action failed");
+    }
   }
 
   async function handleReactivate(userId: string) {
-    await api.post(`/api/v1/users/${userId}/reactivate`, {});
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, status: "active" } : u))
-    );
+    try {
+      await api.post(`/api/v1/users/${userId}/reactivate`, {});
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: "active" } : u))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Action failed");
+    }
   }
 
   return (
@@ -182,6 +195,11 @@ export function UsersPage() {
             )}
           </form>
         </div>
+      )}
+
+      {/* Action error */}
+      {error && (
+        <p className="text-sm text-red-600">{error}</p>
       )}
 
       {/* Users Table */}

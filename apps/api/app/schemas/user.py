@@ -1,9 +1,9 @@
+import re
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr
-
-from app.auth.permissions import VALID_ROLES
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserResponse(BaseModel):
@@ -32,23 +32,28 @@ class UserWithPermissionsResponse(BaseModel):
     permissions: dict[str, str]
 
 
+RoleType = Literal["admin", "salesperson", "data_manager", "field_worker"]
+
+
 class InviteUserRequest(BaseModel):
     email: EmailStr
-    role: str
-
-    def model_post_init(self, __context: object) -> None:
-        if self.role not in VALID_ROLES:
-            raise ValueError(f"Invalid role. Must be one of: {', '.join(VALID_ROLES)}")
+    role: RoleType
 
 
 class ChangeRoleRequest(BaseModel):
-    role: str
-
-    def model_post_init(self, __context: object) -> None:
-        if self.role not in VALID_ROLES:
-            raise ValueError(f"Invalid role. Must be one of: {', '.join(VALID_ROLES)}")
+    role: RoleType
 
 
 class UpdateProfileRequest(BaseModel):
-    display_name: str | None = None
-    phone: str | None = None
+    display_name: str | None = Field(None, max_length=255)
+    phone: str | None = Field(None, max_length=15)
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        digits = re.sub(r'\D', '', v)
+        if len(digits) != 10:
+            raise ValueError("Phone number must contain exactly 10 digits")
+        return v
