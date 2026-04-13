@@ -1,7 +1,10 @@
 """Shared test fixtures — Tortoise ORM + httpx AsyncClient + factory helpers."""
 
+import time
 import uuid
+from unittest.mock import patch
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
@@ -14,6 +17,7 @@ from app.models.product import (
     SalesItem,
     Variety,
 )
+from app.models.user import User
 
 TORTOISE_TEST_CONFIG = {
     "connections": {"default": "sqlite://:memory:"},
@@ -26,11 +30,22 @@ TORTOISE_TEST_CONFIG = {
                 "app.models.order",
                 "app.models.inventory",
                 "app.models.standing_order",
+                "app.models.user",
             ],
             "default_connection": "default",
         },
     },
 }
+
+TEST_JWT_SECRET = "test-secret-key-for-unit-tests-only"
+
+
+def _make_test_token(supabase_user_id: str) -> str:
+    return jwt.encode(
+        {"sub": supabase_user_id, "exp": time.time() + 3600},
+        TEST_JWT_SECRET,
+        algorithm="HS256",
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -42,12 +57,87 @@ async def initialize_db():
     await Tortoise._drop_databases()
 
 
+@pytest.fixture(autouse=True)
+def mock_jwt_secret():
+    with patch("app.auth.dependencies.SUPABASE_JWT_SECRET", TEST_JWT_SECRET):
+        yield
+
+
 @pytest.fixture
 async def async_client():
     """httpx AsyncClient wired to the FastAPI app (no real server needed)."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
+
+
+# ---------------------------------------------------------------------------
+# Auth user fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+async def admin_user():
+    return await User.create(
+        supabase_user_id="admin-uuid",
+        email="admin@oregonflowers.com",
+        display_name="Admin User",
+        role="admin",
+        status="active",
+    )
+
+
+@pytest.fixture
+async def salesperson_user():
+    return await User.create(
+        supabase_user_id="sales-uuid",
+        email="sales@oregonflowers.com",
+        display_name="Sales User",
+        role="salesperson",
+        status="active",
+    )
+
+
+@pytest.fixture
+async def field_worker_user():
+    return await User.create(
+        supabase_user_id="field-uuid",
+        email="field@oregonflowers.com",
+        display_name="Field Worker",
+        role="field_worker",
+        status="active",
+    )
+
+
+@pytest.fixture
+async def deactivated_user():
+    return await User.create(
+        supabase_user_id="deactivated-uuid",
+        email="deactivated@oregonflowers.com",
+        display_name="Deactivated User",
+        role="salesperson",
+        status="deactivated",
+    )
+
+
+@pytest.fixture
+def auth_headers_admin(admin_user):
+    return {"Authorization": f"Bearer {_make_test_token(admin_user.supabase_user_id)}"}
+
+
+@pytest.fixture
+def auth_headers_salesperson(salesperson_user):
+    return {"Authorization": f"Bearer {_make_test_token(salesperson_user.supabase_user_id)}"}
+
+
+@pytest.fixture
+def auth_headers_field_worker(field_worker_user):
+    return {"Authorization": f"Bearer {_make_test_token(field_worker_user.supabase_user_id)}"}
+
+
+@pytest.fixture
+def auth_headers_deactivated(deactivated_user):
+    return {"Authorization": f"Bearer {_make_test_token(deactivated_user.supabase_user_id)}"}
 
 
 # ---------------------------------------------------------------------------
