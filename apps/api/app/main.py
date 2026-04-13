@@ -12,6 +12,9 @@ from fastapi.responses import JSONResponse
 from tortoise import Tortoise
 
 from app.config import CORS_ORIGINS, LOG_LEVEL, TORTOISE_ORM
+from app.routers.auth import auth_router
+from app.routers.users import users_router
+from app.routers.profile import profile_router
 from app.routers.colors import router as colors_router
 from app.routers.customers import router as customers_router
 from app.routers.health import router as health_router
@@ -140,6 +143,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(profile_router)
 app.include_router(health_router)
 app.include_router(import_router)
 app.include_router(customers_router)
