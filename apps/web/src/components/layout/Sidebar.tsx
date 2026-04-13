@@ -26,6 +26,7 @@ import {
   List,
   PlusCircle,
   RefreshCw,
+  UserCircle,
 } from "lucide-react";
 import {
   Popover,
@@ -33,6 +34,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/auth/useAuth";
+import { UserBadge } from "@/components/layout/UserBadge";
 
 interface NavChild {
   label: string;
@@ -47,7 +50,17 @@ interface NavItem {
   children?: NavChild[];
 }
 
-const navItems: NavItem[] = [
+// Map nav labels to permission area keys
+const NAV_AREA_MAP: Record<string, string> = {
+  Orders: "orders",
+  Customers: "customers",
+  Products: "products",
+  Pricing: "pricing",
+  Inventory: "inventory_counts",
+  Import: "import",
+};
+
+const baseNavItems: NavItem[] = [
   {
     label: "Orders",
     icon: ClipboardList,
@@ -92,7 +105,6 @@ const navItems: NavItem[] = [
     ],
   },
   { label: "Import", icon: Upload, href: "/import" },
-  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 interface SidebarProps {
@@ -106,8 +118,32 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const activePath = location.pathname;
+  const { canAccess, role } = useAuth();
 
   const isExpanded = expanded || mobileOpen;
+
+  // Build settings children based on role
+  const settingsChildren: NavChild[] = [
+    { label: "Profile", icon: UserCircle, href: "/settings/profile" },
+    ...(role === "admin" ? [{ label: "Users", icon: Users, href: "/settings/users" }] : []),
+  ];
+
+  const settingsItem: NavItem = {
+    label: "Settings",
+    icon: Settings,
+    href: "/settings",
+    children: settingsChildren,
+  };
+
+  // Filter nav items based on permissions
+  const navItems: NavItem[] = [
+    ...baseNavItems.filter((item) => {
+      const area = NAV_AREA_MAP[item.label];
+      if (!area) return true; // items not in the map are always shown
+      return canAccess(area, "read");
+    }),
+    settingsItem,
+  ];
 
   const isChildActive = (children: NavChild[]) =>
     children.some((c) => activePath.startsWith(c.href));
@@ -288,7 +324,10 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
           {navItems.map(renderNavItem)}
         </nav>
 
-        <div className="hidden md:flex px-2 py-3">
+        <div className="hidden md:flex flex-col px-2 py-3 gap-2">
+          <div style={{ borderTop: "1px solid #2d4a2d" }} className="pt-2">
+            <UserBadge expanded={expanded} />
+          </div>
           <button
             onClick={() => onExpandedChange(!expanded)}
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors px-2 py-1 rounded-md w-full"
