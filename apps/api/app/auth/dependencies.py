@@ -1,8 +1,10 @@
 from fastapi import Depends, HTTPException, Request
 from app.auth.permissions import has_permission
 from app.auth.supabase import decode_supabase_jwt
-from app.config import SUPABASE_JWT_SECRET
 from app.models.user import User
+
+# Test hook: set to a PyJWKClient override for testing
+_jwks_client_override = None
 
 
 async def get_current_user(request: Request) -> User:
@@ -11,7 +13,7 @@ async def get_current_user(request: Request) -> User:
         raise HTTPException(status_code=401, detail="Missing authentication token")
 
     token = auth_header.split(" ", 1)[1]
-    payload = decode_supabase_jwt(token, SUPABASE_JWT_SECRET)
+    payload = decode_supabase_jwt(token, _jwks_client_override=_jwks_client_override)
     supabase_user_id = payload.get("sub")
 
     # Look up by supabase_user_id first

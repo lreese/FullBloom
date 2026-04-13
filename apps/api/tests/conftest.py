@@ -1,11 +1,15 @@
 """Shared test fixtures — Tortoise ORM + httpx AsyncClient + factory helpers."""
 
+import json
 import time
 import uuid
 from unittest.mock import patch
 
 import jwt
 import pytest
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from jwt import PyJWK, PyJWKClient
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 
@@ -37,15 +41,52 @@ TORTOISE_TEST_CONFIG = {
     },
 }
 
-TEST_JWT_SECRET = "test-secret-key-for-unit-tests-only"
+# Generate an RSA keypair for test JWT signing (RS256)
+_test_private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+_test_public_key = _test_private_key.public_key()
+
+TEST_PRIVATE_KEY_PEM = _test_private_key.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+)
+
+TEST_PUBLIC_KEY_PEM = _test_public_key.public_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PublicFormat.SubjectPublicKeyInfo,
+)
 
 
-def _make_test_token(supabase_user_id: str) -> str:
-    return jwt.encode(
-        {"sub": supabase_user_id, "exp": time.time() + 3600},
-        TEST_JWT_SECRET,
-        algorithm="HS256",
-    )
+class _TestJWKClient:
+    """A fake PyJWKClient that returns our test public key."""
+
+    def get_signing_key_from_jwt(self, token: str):
+        return PyJWK.from_json(
+            json.dumps({
+                "kty": "RSA",
+                "n": _b64url_uint(_test_public_key.public_numbers().n),
+                "e": _b64url_uint(_test_public_key.public_numbers().e),
+                "alg": "RS256",
+                "use": "sig",
+            })
+        )
+
+
+def _b64url_uint(val: int) -> str:
+    """Encode an integer as a Base64url-encoded unsigned big-endian value."""
+    import base64
+    byte_length = (val.bit_length() + 7) // 8
+    return base64.urlsafe_b64encode(val.to_bytes(byte_length, "big")).rstrip(b"=").decode()
+
+
+_test_jwk_client = _TestJWKClient()
+
+
+def _make_test_token(supabase_user_id: str, extra_claims: dict | None = None) -> str:
+    claims = {"sub": supabase_user_id, "exp": time.time() + 3600}
+    if extra_claims:
+        claims.update(extra_claims)
+    return jwt.encode(claims, TEST_PRIVATE_KEY_PEM, algorithm="RS256")
 
 
 @pytest.fixture(autouse=True)
@@ -58,9 +99,13 @@ async def initialize_db():
 
 
 @pytest.fixture(autouse=True)
-def mock_jwt_secret():
-    with patch("app.auth.dependencies.SUPABASE_JWT_SECRET", TEST_JWT_SECRET):
-        yield
+def mock_jwks_client():
+    """Inject our test JWKS client so JWT verification uses the test RSA keys."""
+    import app.auth.dependencies as deps
+    original = deps._jwks_client_override
+    deps._jwks_client_override = _test_jwk_client
+    yield
+    deps._jwks_client_override = original
 
 
 @pytest.fixture

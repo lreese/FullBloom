@@ -7,8 +7,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.auth.permissions import PERMISSIONS
-
-TEST_JWT_SECRET = "test-secret-key-for-unit-tests-only"
+from tests.conftest import TEST_PRIVATE_KEY_PEM
 
 
 class TestGetMe:
@@ -178,8 +177,8 @@ async def test_pending_user_auto_activated_on_login(async_client: AsyncClient):
     )
     token = jwt.encode(
         {"sub": "pending-uuid", "exp": time.time() + 3600, "email": "pending@oregonflowers.com"},
-        TEST_JWT_SECRET,
-        algorithm="HS256",
+        TEST_PRIVATE_KEY_PEM,
+        algorithm="RS256",
     )
     resp = await async_client.get(
         "/api/v1/orders",
@@ -206,8 +205,8 @@ async def test_deactivated_user_returns_401(async_client: AsyncClient):
     )
     token = jwt.encode(
         {"sub": "deactivated-uuid", "exp": time.time() + 3600},
-        TEST_JWT_SECRET,
-        algorithm="HS256",
+        TEST_PRIVATE_KEY_PEM,
+        algorithm="RS256",
     )
     resp = await async_client.get(
         "/api/v1/orders",
@@ -230,8 +229,8 @@ async def test_pending_user_activated_on_first_login(async_client: AsyncClient):
     )
     token = jwt.encode(
         {"sub": "activate-me-uuid", "exp": time.time() + 3600, "email": "activate@oregonflowers.com"},
-        TEST_JWT_SECRET,
-        algorithm="HS256",
+        TEST_PRIVATE_KEY_PEM,
+        algorithm="RS256",
     )
     resp = await async_client.get(
         "/api/v1/orders",

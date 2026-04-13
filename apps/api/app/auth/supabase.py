@@ -1,9 +1,11 @@
 import jwt
+from jwt import PyJWKClient
 from fastapi import HTTPException
 from supabase import create_client, Client
 from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
 _admin_client: Client | None = None
+_jwks_client: PyJWKClient | None = None
 
 
 def get_supabase_admin() -> Client:
@@ -16,12 +18,32 @@ def get_supabase_admin() -> Client:
     return _admin_client
 
 
-def decode_supabase_jwt(token: str, secret: str) -> dict:
+def _get_jwks_client() -> PyJWKClient:
+    """Get a cached JWKS client that fetches public keys from Supabase."""
+    global _jwks_client
+    if _jwks_client is None:
+        if not SUPABASE_URL:
+            raise RuntimeError("SUPABASE_URL must be set for JWKS verification")
+        jwks_url = f"{SUPABASE_URL.rstrip('/')}/.well-known/jwks.json"
+        _jwks_client = PyJWKClient(jwks_url, cache_keys=True)
+    return _jwks_client
+
+
+def decode_supabase_jwt(token: str, _jwks_client_override: PyJWKClient | None = None) -> dict:
+    """Decode and validate a Supabase JWT using JWKS (RS256).
+
+    Args:
+        token: The JWT to decode.
+        _jwks_client_override: Optional override for testing. If not provided,
+            uses the production JWKS client that fetches keys from Supabase.
+    """
     try:
+        client = _jwks_client_override or _get_jwks_client()
+        signing_key = client.get_signing_key_from_jwt(token)
         payload = jwt.decode(
             token,
-            secret,
-            algorithms=["HS256"],
+            signing_key.key,
+            algorithms=["RS256"],
             options={"require": ["sub", "exp"]},
         )
         return payload
@@ -29,3 +51,5 @@ def decode_supabase_jwt(token: str, secret: str) -> dict:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Token verification failed: {e}")
