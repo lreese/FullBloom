@@ -9,6 +9,8 @@ from httpx import AsyncClient
 from app.auth.permissions import PERMISSIONS
 from tests.conftest import TEST_PRIVATE_KEY_PEM
 
+_TEST_ALGORITHM = "ES256"
+
 
 class TestGetMe:
     async def test_me_returns_user_with_permissions(
@@ -178,7 +180,7 @@ async def test_pending_user_auto_activated_on_login(async_client: AsyncClient):
     token = jwt.encode(
         {"sub": "pending-uuid", "exp": time.time() + 3600, "email": "pending@oregonflowers.com"},
         TEST_PRIVATE_KEY_PEM,
-        algorithm="RS256",
+        algorithm=_TEST_ALGORITHM,
     )
     resp = await async_client.get(
         "/api/v1/orders",
@@ -206,7 +208,7 @@ async def test_deactivated_user_returns_401(async_client: AsyncClient):
     token = jwt.encode(
         {"sub": "deactivated-uuid", "exp": time.time() + 3600},
         TEST_PRIVATE_KEY_PEM,
-        algorithm="RS256",
+        algorithm=_TEST_ALGORITHM,
     )
     resp = await async_client.get(
         "/api/v1/orders",
@@ -230,7 +232,7 @@ async def test_pending_user_activated_on_first_login(async_client: AsyncClient):
     token = jwt.encode(
         {"sub": "activate-me-uuid", "exp": time.time() + 3600, "email": "activate@oregonflowers.com"},
         TEST_PRIVATE_KEY_PEM,
-        algorithm="RS256",
+        algorithm=_TEST_ALGORITHM,
     )
     resp = await async_client.get(
         "/api/v1/orders",

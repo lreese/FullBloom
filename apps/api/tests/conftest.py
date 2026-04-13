@@ -7,9 +7,9 @@ from unittest.mock import patch
 
 import jwt
 import pytest
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
-from jwt import PyJWK, PyJWKClient
+from jwt import PyJWK
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 
@@ -41,8 +41,8 @@ TORTOISE_TEST_CONFIG = {
     },
 }
 
-# Generate an RSA keypair for test JWT signing (RS256)
-_test_private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+# Generate an EC keypair for test JWT signing (ES256, matching Supabase)
+_test_private_key = ec.generate_private_key(ec.SECP256R1())
 _test_public_key = _test_private_key.public_key()
 
 TEST_PRIVATE_KEY_PEM = _test_private_key.private_bytes(
@@ -51,32 +51,33 @@ TEST_PRIVATE_KEY_PEM = _test_private_key.private_bytes(
     encryption_algorithm=serialization.NoEncryption(),
 )
 
-TEST_PUBLIC_KEY_PEM = _test_public_key.public_bytes(
-    encoding=serialization.Encoding.PEM,
-    format=serialization.PublicFormat.SubjectPublicKeyInfo,
-)
+
+def _b64url_bytes(data: bytes) -> str:
+    """Encode bytes as Base64url without padding."""
+    import base64
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _ec_coord_bytes(val: int) -> bytes:
+    """Encode an EC coordinate as a 32-byte big-endian value (P-256)."""
+    return val.to_bytes(32, "big")
 
 
 class _TestJWKClient:
-    """A fake PyJWKClient that returns our test public key."""
+    """A fake PyJWKClient that returns our test EC public key."""
 
     def get_signing_key_from_jwt(self, token: str):
+        nums = _test_public_key.public_numbers()
         return PyJWK.from_json(
             json.dumps({
-                "kty": "RSA",
-                "n": _b64url_uint(_test_public_key.public_numbers().n),
-                "e": _b64url_uint(_test_public_key.public_numbers().e),
-                "alg": "RS256",
+                "kty": "EC",
+                "crv": "P-256",
+                "x": _b64url_bytes(_ec_coord_bytes(nums.x)),
+                "y": _b64url_bytes(_ec_coord_bytes(nums.y)),
+                "alg": "ES256",
                 "use": "sig",
             })
         )
-
-
-def _b64url_uint(val: int) -> str:
-    """Encode an integer as a Base64url-encoded unsigned big-endian value."""
-    import base64
-    byte_length = (val.bit_length() + 7) // 8
-    return base64.urlsafe_b64encode(val.to_bytes(byte_length, "big")).rstrip(b"=").decode()
 
 
 _test_jwk_client = _TestJWKClient()
@@ -86,7 +87,7 @@ def _make_test_token(supabase_user_id: str, extra_claims: dict | None = None) ->
     claims = {"sub": supabase_user_id, "exp": time.time() + 3600}
     if extra_claims:
         claims.update(extra_claims)
-    return jwt.encode(claims, TEST_PRIVATE_KEY_PEM, algorithm="RS256")
+    return jwt.encode(claims, TEST_PRIVATE_KEY_PEM, algorithm="ES256")
 
 
 @pytest.fixture(autouse=True)

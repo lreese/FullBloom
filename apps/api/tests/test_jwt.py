@@ -3,30 +3,31 @@ import time
 
 import jwt
 import pytest
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from jwt import PyJWK
 
 from app.auth.supabase import decode_supabase_jwt
-from tests.conftest import TEST_PRIVATE_KEY_PEM, _test_jwk_client, _test_public_key, _b64url_uint
+from tests.conftest import TEST_PRIVATE_KEY_PEM, _test_jwk_client, _test_public_key, _b64url_bytes, _ec_coord_bytes
 
 
 def _make_token(payload: dict) -> str:
-    """Sign a token with the test RSA private key."""
-    return jwt.encode(payload, TEST_PRIVATE_KEY_PEM, algorithm="RS256")
+    """Sign a token with the test EC private key."""
+    return jwt.encode(payload, TEST_PRIVATE_KEY_PEM, algorithm="ES256")
 
 
 class _WrongKeyJWKClient:
     """A JWKS client that returns a different public key (simulates wrong key)."""
 
     def __init__(self):
-        wrong_key = rsa.generate_private_key(public_exponent=65537, key_size=2048).public_key()
+        wrong_key = ec.generate_private_key(ec.SECP256R1()).public_key()
+        nums = wrong_key.public_numbers()
         self._jwk = PyJWK.from_json(
             json.dumps({
-                "kty": "RSA",
-                "n": _b64url_uint(wrong_key.public_numbers().n),
-                "e": _b64url_uint(wrong_key.public_numbers().e),
-                "alg": "RS256",
+                "kty": "EC",
+                "crv": "P-256",
+                "x": _b64url_bytes(_ec_coord_bytes(nums.x)),
+                "y": _b64url_bytes(_ec_coord_bytes(nums.y)),
+                "alg": "ES256",
                 "use": "sig",
             })
         )
@@ -61,6 +62,6 @@ class TestDecodeSupabaseJWT:
             decode_supabase_jwt(token, _jwks_client_override=_test_jwk_client)
 
     def test_token_missing_exp_raises(self):
-        token = jwt.encode({"sub": "user-uuid"}, TEST_PRIVATE_KEY_PEM, algorithm="RS256")
+        token = jwt.encode({"sub": "user-uuid"}, TEST_PRIVATE_KEY_PEM, algorithm="ES256")
         with pytest.raises(Exception):
             decode_supabase_jwt(token, _jwks_client_override=_test_jwk_client)

@@ -24,7 +24,7 @@ def _get_jwks_client() -> PyJWKClient:
     if _jwks_client is None:
         if not SUPABASE_URL:
             raise RuntimeError("SUPABASE_URL must be set for JWKS verification")
-        jwks_url = f"{SUPABASE_URL.rstrip('/')}/.well-known/jwks.json"
+        jwks_url = f"{SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
         _jwks_client = PyJWKClient(jwks_url, cache_keys=True)
     return _jwks_client
 
@@ -43,7 +43,7 @@ def decode_supabase_jwt(token: str, _jwks_client_override: PyJWKClient | None = 
         payload = jwt.decode(
             token,
             signing_key.key,
-            algorithms=["RS256"],
+            algorithms=["ES256", "RS256"],
             options={"require": ["sub", "exp"]},
         )
         return payload
