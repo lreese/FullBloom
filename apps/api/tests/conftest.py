@@ -84,7 +84,7 @@ _test_jwk_client = _TestJWKClient()
 
 
 def _make_test_token(supabase_user_id: str, extra_claims: dict | None = None) -> str:
-    claims = {"sub": supabase_user_id, "exp": time.time() + 3600}
+    claims = {"sub": supabase_user_id, "exp": time.time() + 3600, "aud": "authenticated"}
     if extra_claims:
         claims.update(extra_claims)
     return jwt.encode(claims, TEST_PRIVATE_KEY_PEM, algorithm="ES256")

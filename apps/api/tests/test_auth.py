@@ -178,7 +178,7 @@ async def test_pending_user_auto_activated_on_login(async_client: AsyncClient):
         status="pending",
     )
     token = jwt.encode(
-        {"sub": "pending-uuid", "exp": time.time() + 3600, "email": "pending@oregonflowers.com"},
+        {"sub": "pending-uuid", "exp": time.time() + 3600, "aud": "authenticated", "email": "pending@oregonflowers.com"},
         TEST_PRIVATE_KEY_PEM,
         algorithm=_TEST_ALGORITHM,
     )
@@ -206,7 +206,7 @@ async def test_deactivated_user_returns_401(async_client: AsyncClient):
         status="deactivated",
     )
     token = jwt.encode(
-        {"sub": "deactivated-uuid", "exp": time.time() + 3600},
+        {"sub": "deactivated-uuid", "exp": time.time() + 3600, "aud": "authenticated"},
         TEST_PRIVATE_KEY_PEM,
         algorithm=_TEST_ALGORITHM,
     )
@@ -230,7 +230,7 @@ async def test_pending_user_activated_on_first_login(async_client: AsyncClient):
         status="pending",
     )
     token = jwt.encode(
-        {"sub": "activate-me-uuid", "exp": time.time() + 3600, "email": "activate@oregonflowers.com"},
+        {"sub": "activate-me-uuid", "exp": time.time() + 3600, "aud": "authenticated", "email": "activate@oregonflowers.com"},
         TEST_PRIVATE_KEY_PEM,
         algorithm=_TEST_ALGORITHM,
     )

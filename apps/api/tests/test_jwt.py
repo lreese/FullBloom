@@ -38,7 +38,7 @@ class _WrongKeyJWKClient:
 
 class TestDecodeSupabaseJWT:
     def test_valid_token(self):
-        token = _make_token({"sub": "user-uuid-123", "exp": time.time() + 3600})
+        token = _make_token({"sub": "user-uuid-123", "exp": time.time() + 3600, "aud": "authenticated"})
         payload = decode_supabase_jwt(token, _jwks_client_override=_test_jwk_client)
         assert payload["sub"] == "user-uuid-123"
 
@@ -52,7 +52,7 @@ class TestDecodeSupabaseJWT:
             decode_supabase_jwt("not-a-jwt", _jwks_client_override=_test_jwk_client)
 
     def test_wrong_key_raises(self):
-        token = _make_token({"sub": "user-uuid-123", "exp": time.time() + 3600})
+        token = _make_token({"sub": "user-uuid-123", "exp": time.time() + 3600, "aud": "authenticated"})
         with pytest.raises(Exception):
             decode_supabase_jwt(token, _jwks_client_override=_WrongKeyJWKClient())
 
