@@ -256,12 +256,12 @@ export function OrdersPage() {
       case "order_number":
         return (
           <span className="flex items-center gap-1.5">
-            <span className="font-medium" style={{ color: "#c27890" }}>
+            <span className="font-medium" style={{ color: "var(--color-rose-action)" }}>
               {order.order_number}
             </span>
             {order.standing_order_id && (
               <span
-                className="inline-flex items-center justify-center rounded-full p-1 bg-[#f3e8ff] text-[#6b21a8]"
+                className="inline-flex items-center justify-center rounded-full p-1 bg-purple-100 text-purple-800"
                 title="From standing order"
               >
                 <RefreshCw className="h-3 w-3" />
@@ -271,19 +271,19 @@ export function OrdersPage() {
         );
       case "customer_name":
         return (
-          <span className="font-medium" style={{ color: "#334155" }}>
+          <span className="font-medium" style={{ color: "var(--color-text-body)" }}>
             {order.customer_name}
           </span>
         );
       case "order_date":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             {order.order_date}
           </span>
         );
       case "ship_via":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             {order.ship_via ?? "\u2014"}
           </span>
         );
@@ -291,7 +291,7 @@ export function OrdersPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#dbeafe", color: "#1e40af" }}
+            style={{ backgroundColor: "var(--color-box-blue-bg)", color: "var(--color-box-blue-text)" }}
           >
             {order.lines_count}
           </span>
@@ -300,26 +300,26 @@ export function OrdersPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#e8f0e8", color: "#2d4a2d" }}
+            style={{ backgroundColor: "var(--color-box-green-bg)", color: "var(--color-sidebar-hover)" }}
           >
             {order.total_stems.toLocaleString()}
           </span>
         );
       case "salesperson_email":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {order.salesperson_email ?? "\u2014"}
           </span>
         );
       case "created_at":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             {new Date(order.created_at).toLocaleDateString()}
           </span>
         );
       case "po_number":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             {order.po_number ?? "\u2014"}
           </span>
         );
@@ -334,15 +334,15 @@ export function OrdersPage() {
   const colSpan = activeColumns.length + 2; // +1 chevron, +1 actions
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f4f1ec" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--color-cream)" }}>
       <div className="max-w-[1400px] mx-auto px-4 py-6 sm:px-6">
         {/* ── Header ─────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold text-[#1e3a5f]">Orders</h1>
+            <h1 className="text-lg font-bold text-slate-heading">Orders</h1>
             {hasActiveFilters && (
               <button
-                className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1"
+                className="text-xs text-text-muted hover:text-text-body border border-border-warm rounded px-2 py-1"
                 onClick={clearAllFilters}
               >
                 Clear Filters
@@ -351,19 +351,19 @@ export function OrdersPage() {
             {columnPrefs && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 flex items-center gap-1">
+                  <button className="text-xs text-text-muted hover:text-text-body border border-border-warm rounded px-2 py-1 flex items-center gap-1">
                     <Settings2 className="h-3 w-3" /> Columns
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-56 p-2" align="end">
                   <div className="space-y-0.5">
                     {ALL_COLUMNS.map((col) => (
-                      <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer">
+                      <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-cream cursor-pointer">
                         <Checkbox
                           checked={columnPrefs?.visible.includes(col.key) ?? true}
                           onCheckedChange={() => tableState.toggleColumn(col.key)}
                         />
-                        <span className="text-[#334155] select-none">{col.label || col.key}</span>
+                        <span className="text-text-body select-none">{col.label || col.key}</span>
                       </label>
                     ))}
                   </div>
@@ -374,7 +374,7 @@ export function OrdersPage() {
           <Button
             onClick={() => navigate("/orders/new")}
             className="gap-1.5"
-            style={{ backgroundColor: "#c27890", color: "white" }}
+            style={{ backgroundColor: "var(--color-rose-action)", color: "white" }}
           >
             <Plus className="h-4 w-4" />
             New Order
@@ -384,14 +384,14 @@ export function OrdersPage() {
         {/* ── Filters bar ────────────────────────────────── */}
         <div
           className="rounded-lg border p-3 mb-4 space-y-3"
-          style={{ backgroundColor: "white", borderColor: "#e0ddd8" }}
+          style={{ backgroundColor: "white", borderColor: "var(--color-border-warm)" }}
         >
           {/* Row 1: Search + Salesperson + Standing Orders toggle */}
           <div className="flex items-center gap-3 flex-wrap">
             <div className="relative min-w-[140px] max-w-[280px] flex-1">
               <Search
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4"
-                style={{ color: "#94a3b8" }}
+                style={{ color: "var(--color-text-muted)" }}
               />
               <Input
                 placeholder="Search orders..."
@@ -403,14 +403,14 @@ export function OrdersPage() {
             <select
               value={salesperson}
               onChange={(e) => setSalesperson(e.target.value)}
-              className="h-9 rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              className="h-9 rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
             >
               <option value="">All Salespeople</option>
               {salespersonOptions.map((email) => (
                 <option key={email} value={email}>{email}</option>
               ))}
             </select>
-            <label className="flex items-center gap-2 text-sm text-[#334155] whitespace-nowrap">
+            <label className="flex items-center gap-2 text-sm text-text-body whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={fromStandingOrder}
@@ -429,7 +429,7 @@ export function OrdersPage() {
               title="From (YYYY-MM-DD)"
               placeholder="From (YYYY-MM-DD)"
             />
-            <span className="text-sm text-[#94a3b8]">to</span>
+            <span className="text-sm text-text-muted">to</span>
             <Input
               type="date"
               value={dateTo}
@@ -441,11 +441,11 @@ export function OrdersPage() {
         </div>
 
         {/* ── Table ──────────────────────────────────────── */}
-        <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
+        <div className="rounded-lg border border-border-warm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
+                <tr className="border-b-2 border-border-warm bg-cream-warm">
                   {/* Expand chevron column */}
                   <th className="w-8 px-2 py-2.5" />
                   {/* Data columns */}
@@ -461,7 +461,7 @@ export function OrdersPage() {
                         onDrop={handleHeaderDrop}
                         onDragEnd={handleHeaderDragEnd}
                         className={cn(
-                          "px-3 py-2.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap relative select-none",
+                          "px-3 py-2.5 text-left text-[10px] font-semibold text-slate-heading whitespace-nowrap relative select-none",
                           isSortable && "cursor-pointer",
                           headerDragIdx === idx && "opacity-50"
                         )}
@@ -471,13 +471,13 @@ export function OrdersPage() {
                         {headerDropIdx === idx &&
                           headerDragIdx !== idx &&
                           headerDragIdx !== idx - 1 && (
-                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
 
                         <span className="inline-flex items-center gap-1">
                           {col.label}
                           {isSorted && (
-                            <span className="text-[#c27890]">
+                            <span className="text-rose-action">
                               {sortConfig.direction === "asc" ? "\u25B2" : "\u25BC"}
                             </span>
                           )}
@@ -498,13 +498,13 @@ export function OrdersPage() {
                         {headerDropIdx === activeColumns.length &&
                           idx === activeColumns.length - 1 &&
                           headerDragIdx !== idx && (
-                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
                       </th>
                     );
                   })}
                   {/* Actions column */}
-                  <th className="px-3 py-2.5 text-right text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap">
+                  <th className="px-3 py-2.5 text-right text-[10px] font-semibold text-slate-heading whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
@@ -515,7 +515,7 @@ export function OrdersPage() {
                     <td colSpan={colSpan} className="text-center py-12">
                       <Loader2
                         className="h-5 w-5 animate-spin mx-auto"
-                        style={{ color: "#94a3b8" }}
+                        style={{ color: "var(--color-text-muted)" }}
                       />
                     </td>
                   </tr>
@@ -524,12 +524,12 @@ export function OrdersPage() {
                     <td
                       colSpan={colSpan}
                       className="text-center py-12"
-                      style={{ color: "#94a3b8" }}
+                      style={{ color: "var(--color-text-muted)" }}
                     >
                       No orders found.
                       {hasActiveFilters && (
                         <button
-                          className="ml-2 text-[#c27890] hover:underline"
+                          className="ml-2 text-rose-action hover:underline"
                           onClick={clearAllFilters}
                         >
                           Clear filters
@@ -567,7 +567,7 @@ export function OrdersPage() {
           {/* ── Pagination ───────────────────────────────── */}
           <div
             className="flex items-center justify-between px-4 py-3 border-t text-sm"
-            style={{ borderColor: "#e0ddd8", color: "#334155" }}
+            style={{ borderColor: "var(--color-border-warm)", color: "var(--color-text-body)" }}
           >
             <span>
               Showing {pageStart}-{pageEnd} of {total} orders
@@ -657,20 +657,20 @@ function OrderRow({
   return (
     <>
       <tr
-        className="border-b border-[#f0ede8] hover:bg-[#faf8f5] transition-colors cursor-pointer"
+        className="border-b border-border-warm hover:bg-cream-warm transition-colors cursor-pointer"
         onClick={onToggle}
       >
         <td className="px-2 py-2.5 text-center">
           <ChevronRight
             className="h-4 w-4 transition-transform inline-block"
             style={{
-              color: "#94a3b8",
+              color: "var(--color-text-muted)",
               transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
             }}
           />
         </td>
         {activeColumns.map((col) => (
-          <td key={col.key} className="px-3 py-2.5 text-[#334155]">
+          <td key={col.key} className="px-3 py-2.5 text-text-body">
             {renderCell(col, order)}
           </td>
         ))}
@@ -682,7 +682,7 @@ function OrderRow({
               onClick={onEdit}
               title="Edit order"
             >
-              <Pencil className="h-3.5 w-3.5" style={{ color: "#94a3b8" }} />
+              <Pencil className="h-3.5 w-3.5" style={{ color: "var(--color-text-muted)" }} />
             </Button>
             <Button
               variant="ghost"
@@ -690,23 +690,23 @@ function OrderRow({
               onClick={onDelete}
               title="Delete order"
             >
-              <Trash2 className="h-3.5 w-3.5" style={{ color: "#94a3b8" }} />
+              <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--color-text-muted)" }} />
             </Button>
           </div>
         </td>
       </tr>
       {isExpanded && (
-        <tr style={{ borderColor: "#e0ddd8" }}>
-          <td colSpan={colSpan} className="px-6 py-4" style={{ backgroundColor: "#faf9f7" }}>
+        <tr style={{ borderColor: "var(--color-border-warm)" }}>
+          <td colSpan={colSpan} className="px-6 py-4" style={{ backgroundColor: "var(--color-cream-warm)" }}>
             {detailLoading ? (
-              <div className="flex items-center gap-2 text-sm" style={{ color: "#94a3b8" }}>
+              <div className="flex items-center gap-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading line items...
               </div>
             ) : expandedDetail ? (
               <LineItemsTable detail={expandedDetail} />
             ) : (
-              <span className="text-sm" style={{ color: "#94a3b8" }}>
+              <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>
                 Could not load order details.
               </span>
             )}
@@ -721,32 +721,32 @@ function OrderRow({
 
 function LineItemsTable({ detail }: { detail: OrderDetailResponse }) {
   return (
-    <div className="rounded border overflow-hidden" style={{ borderColor: "#e0ddd8" }}>
+    <div className="rounded border overflow-hidden" style={{ borderColor: "var(--color-border-warm)" }}>
       <table className="w-full text-xs">
         <thead>
-          <tr style={{ backgroundColor: "#f4f1ec" }}>
-            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "#1e3a5f" }}>
+          <tr style={{ backgroundColor: "var(--color-cream)" }}>
+            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "var(--color-slate-heading)" }}>
               #
             </th>
-            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "var(--color-slate-heading)" }}>
               Product
             </th>
-            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "var(--color-slate-heading)" }}>
               Color / Variety
             </th>
-            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "var(--color-slate-heading)" }}>
               Stems
             </th>
-            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "var(--color-slate-heading)" }}>
               List Price
             </th>
-            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "var(--color-slate-heading)" }}>
               Price
             </th>
-            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-right font-medium" style={{ color: "var(--color-slate-heading)" }}>
               Eff. Price
             </th>
-            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "#1e3a5f" }}>
+            <th className="px-2 py-1.5 text-left font-medium" style={{ color: "var(--color-slate-heading)" }}>
               Box Ref
             </th>
           </tr>
@@ -758,33 +758,33 @@ function LineItemsTable({ detail }: { detail: OrderDetailResponse }) {
               <tr
                 key={line.id}
                 className="border-t"
-                style={{ borderColor: "#e0ddd8" }}
+                style={{ borderColor: "var(--color-border-warm)" }}
               >
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.line_number}
                 </td>
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.sales_item.name}
                 </td>
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.color_variety ?? "--"}
                 </td>
-                <td className="px-2 py-1.5 text-right" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5 text-right" style={{ color: "var(--color-text-body)" }}>
                   {line.stems}
                 </td>
-                <td className="px-2 py-1.5 text-right" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5 text-right" style={{ color: "var(--color-text-body)" }}>
                   ${line.list_price_per_stem}
                 </td>
                 <td
                   className="px-2 py-1.5 text-right font-medium"
-                  style={{ color: isOverridden ? "#c27890" : "#334155" }}
+                  style={{ color: isOverridden ? "var(--color-rose-action)" : "var(--color-text-body)" }}
                 >
                   ${line.price_per_stem}
                 </td>
-                <td className="px-2 py-1.5 text-right" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5 text-right" style={{ color: "var(--color-text-body)" }}>
                   ${line.effective_price_per_stem}
                 </td>
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.box_reference ?? "--"}
                 </td>
               </tr>

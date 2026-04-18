@@ -29,10 +29,10 @@ export function ProductArchiveDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#1e3a5f]">
+          <DialogTitle className="text-slate-heading">
             Archive {entityName}?
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#334155]">
+          <DialogDescription className="text-sm text-text-body">
             {warningText
               ? warningText
               : `This ${entityType} will be hidden from the active list but can be restored later.`}
@@ -44,7 +44,7 @@ export function ProductArchiveDialog({
           </Button>
           <Button
             size="sm"
-            className="bg-[#c27890] hover:bg-[#a8607a] text-white"
+            className="bg-rose-action hover:bg-rose-action/90 text-white"
             onClick={onConfirm}
           >
             Archive

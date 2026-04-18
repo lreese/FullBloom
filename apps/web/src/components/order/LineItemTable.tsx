@@ -160,7 +160,7 @@ export function LineItemTable({
     <div className="bg-white rounded-lg border border-border shadow-sm overflow-hidden">
       <table className="w-full border-collapse table-fixed">
         <thead>
-          <tr className="bg-[#1e3a5f] text-white text-xs">
+          <tr className="bg-slate-heading text-white text-xs">
             <th className="w-7 px-1">&nbsp;</th>
             <th className="w-[30%] text-left px-2 py-2 font-medium">Sales Item</th>
             <th className="w-[20%] text-center px-2 py-2 font-medium">Color / Variety</th>
@@ -241,7 +241,7 @@ export function LineItemTable({
                     className={cn(
                       "w-[80px] px-2 py-1.5 text-right tabular-nums text-xs",
                       isPriceOverridden
-                        ? "text-[#c27890] font-medium"
+                        ? "text-rose-action font-medium"
                         : "text-foreground"
                     )}
                   >

@@ -46,8 +46,8 @@ function CopyButton({ config }: { config: CopyButtonConfig }) {
       onClick={handleClick}
       title={!config.enabled ? config.disabledReason : config.label}
       className={cn(
-        "border-[#e0ddd8] text-[#334155] min-h-[36px] text-xs gap-1.5",
-        !config.enabled && "text-[#94a3b8] cursor-not-allowed"
+        "border-border-warm text-text-body min-h-[36px] text-xs gap-1.5",
+        !config.enabled && "text-text-muted cursor-not-allowed"
       )}
     >
       {loading ? (

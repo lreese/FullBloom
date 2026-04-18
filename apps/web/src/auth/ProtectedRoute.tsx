@@ -14,7 +14,7 @@ export function ProtectedRoute({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-[#94a3b8]">Loading...</p>
+        <p className="text-text-muted">Loading...</p>
       </div>
     );
   }
@@ -26,7 +26,7 @@ export function ProtectedRoute({
   // User has a session but no local profile (not yet set up or deactivated)
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: "#f4f1ec" }}>
+      <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--color-cream)" }}>
         <div className="text-center space-y-6 p-8 bg-white rounded-lg shadow max-w-sm">
           <div className="space-y-2">
             <h2 className="text-xl font-bold text-slate-heading">Access Denied</h2>

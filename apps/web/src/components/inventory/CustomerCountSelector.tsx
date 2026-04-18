@@ -415,7 +415,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[#94a3b8]">
+      <div className="flex items-center justify-center py-12 text-text-muted">
         Loading specials...
       </div>
     );
@@ -423,7 +423,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
 
   if (!data || columns.length === 0) {
     return (
-      <div className="py-8 text-center text-[#94a3b8]">
+      <div className="py-8 text-center text-text-muted">
         No specials columns configured for this product type. Use the gear icon to set up customer-bunch columns.
       </div>
     );
@@ -442,12 +442,12 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
               onClick={() => setSelectedIdx(realIdx)}
               className={cn(
                 "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors min-h-[36px]",
-                selectedIdx === realIdx && status === "done" && "bg-[#2d4a2d] text-white",
-                selectedIdx === realIdx && status === "active" && "bg-[#c27890] text-white",
-                selectedIdx === realIdx && status === "empty" && "bg-[#c27890] text-white",
-                selectedIdx !== realIdx && status === "done" && "bg-[#2d4a2d] text-white",
-                selectedIdx !== realIdx && status === "active" && "bg-[#c27890]/10 text-[#c27890] border border-[#c27890]/30",
-                selectedIdx !== realIdx && status === "empty" && "bg-white text-[#334155] border border-[#e0ddd8]"
+                selectedIdx === realIdx && status === "done" && "bg-sidebar-hover text-white",
+                selectedIdx === realIdx && status === "active" && "bg-rose-action text-white",
+                selectedIdx === realIdx && status === "empty" && "bg-rose-action text-white",
+                selectedIdx !== realIdx && status === "done" && "bg-sidebar-hover text-white",
+                selectedIdx !== realIdx && status === "active" && "bg-rose-action/10 text-rose-action border border-rose-action/30",
+                selectedIdx !== realIdx && status === "empty" && "bg-white text-text-body border border-border-warm"
               )}
             >
               {chipLabel(col)}
@@ -457,7 +457,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
         {!showAllChips && hiddenCount > 0 && (
           <button
             onClick={() => setShowAllChips(true)}
-            className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-[#94a3b8] border border-[#e0ddd8] hover:bg-[#f4f1ec] transition-colors min-h-[36px]"
+            className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-text-muted border border-border-warm hover:bg-cream transition-colors min-h-[36px]"
           >
             +{hiddenCount} more
           </button>
@@ -465,7 +465,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
         {showAllChips && columns.length > MAX_VISIBLE_CHIPS && (
           <button
             onClick={() => setShowAllChips(false)}
-            className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-[#94a3b8] border border-[#e0ddd8] hover:bg-[#f4f1ec] transition-colors min-h-[36px]"
+            className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-text-muted border border-border-warm hover:bg-cream transition-colors min-h-[36px]"
           >
             Show less
           </button>
@@ -474,36 +474,36 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
 
       {/* Selected customer header bar */}
       {selectedCol && (
-        <div className="flex items-center justify-between rounded-lg border border-[#e0ddd8] bg-white px-4 py-3">
+        <div className="flex items-center justify-between rounded-lg border border-border-warm bg-white px-4 py-3">
           <div>
-            <div className="text-sm font-semibold text-[#1e3a5f]">
+            <div className="text-sm font-semibold text-slate-heading">
               {selectedCol.customer_name}
             </div>
-            <div className="flex gap-3 text-xs text-[#94a3b8]">
+            <div className="flex gap-3 text-xs text-text-muted">
               <span>{selectedCol.bunch_size}-stem</span>
               <span>{selectedCol.sleeve_type}</span>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-[#1e3a5f]">{runningTotal}</div>
-            <div className="text-xs text-[#94a3b8]">bunches</div>
+            <div className="text-lg font-bold text-slate-heading">{runningTotal}</div>
+            <div className="text-xs text-text-muted">bunches</div>
           </div>
         </div>
       )}
 
       {/* Save status indicator */}
       {lastSavedAt && !hasDirtyValues && (
-        <div className="text-xs text-[#94a3b8] text-right">
+        <div className="text-xs text-text-muted text-right">
           Saved {lastSavedAt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
         </div>
       )}
       {hasDirtyValues && !saving && (
-        <div className="text-xs text-[#94a3b8] text-right">
+        <div className="text-xs text-text-muted text-right">
           Unsaved changes — auto-saves in 10s
         </div>
       )}
       {saving && (
-        <div className="text-xs text-[#94a3b8] text-right flex items-center justify-end gap-1">
+        <div className="text-xs text-text-muted text-right flex items-center justify-end gap-1">
           <Loader2 className="h-3 w-3 animate-spin" /> Saving...
         </div>
       )}
@@ -518,11 +518,11 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
         return (
           <div key={pl.product_line_id}>
             {/* Section header */}
-            <div className="flex items-center justify-between border-b border-[#e0ddd8] pb-2 mb-2">
-              <h3 className="text-sm font-semibold text-[#1e3a5f]">
+            <div className="flex items-center justify-between border-b border-border-warm pb-2 mb-2">
+              <h3 className="text-sm font-semibold text-slate-heading">
                 {pl.product_line_name}
               </h3>
-              <span className="text-xs font-medium text-[#94a3b8]">
+              <span className="text-xs font-medium text-text-muted">
                 Subtotal: {subtotal}
               </span>
             </div>
@@ -543,7 +543,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                     <div
                       className={cn(
                         "flex items-center gap-2 rounded-lg px-2 py-1 min-h-[36px] transition-colors",
-                        isDirtyRow ? "bg-[#fef3c7]/30" : "hover:bg-[#f4f1ec]"
+                        isDirtyRow ? "bg-box-amber-bg/30" : "hover:bg-cream"
                       )}
                     >
                       {/* Done checkbox */}
@@ -562,8 +562,8 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                           className={cn(
                             "text-sm truncate",
                             isDone
-                              ? "text-[#94a3b8] line-through"
-                              : "text-[#334155]"
+                              ? "text-text-muted line-through"
+                              : "text-text-body"
                           )}
                         >
                           {v.variety_name}
@@ -604,7 +604,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                                 setExpandedAmount("");
                               }
                             }}
-                            className="text-[#c27890] border-[#c27890]/30 hover:bg-[#c27890]/10 min-w-[44px] min-h-[44px]"
+                            className="text-rose-action border-rose-action/30 hover:bg-rose-action/10 min-w-[44px] min-h-[44px]"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -617,7 +617,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                           onChange={(e) => handleCountChange(v.variety_id, e.target.value)}
                           disabled={isComplete}
                           placeholder="--"
-                          className="w-20 text-center bg-white border-[#e0ddd8] text-[#334155] focus-visible:ring-[#c27890] min-h-[44px] text-base"
+                          className="w-20 text-center bg-white border-border-warm text-text-body focus-visible:ring-rose-action min-h-[44px] text-base"
                         />
 
                         {hasValue && (
@@ -634,7 +634,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                                 setExpandedAmount("");
                               }
                             }}
-                            className="text-[#2d4a2d] border-[#2d4a2d]/30 hover:bg-[#2d4a2d]/10 min-w-[44px] min-h-[44px]"
+                            className="text-sidebar-hover border-sidebar-hover/30 hover:bg-sidebar-hover/10 min-w-[44px] min-h-[44px]"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -648,16 +648,16 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                         className={cn(
                           "flex items-center gap-3 rounded-lg mx-3 px-3 py-2 mt-1 border",
                           expandedRow.mode === "add"
-                            ? "border-[#2d4a2d]/30 bg-[#2d4a2d]/5"
-                            : "border-[#c27890]/30 bg-[#c27890]/5"
+                            ? "border-sidebar-hover/30 bg-sidebar-hover/5"
+                            : "border-rose-action/30 bg-rose-action/5"
                         )}
                       >
                         <span
                           className={cn(
                             "text-sm font-medium shrink-0",
                             expandedRow.mode === "add"
-                              ? "text-[#2d4a2d]"
-                              : "text-[#c27890]"
+                              ? "text-sidebar-hover"
+                              : "text-rose-action"
                           )}
                         >
                           {expandedRow.mode === "add" ? "Add:" : "Remove:"}
@@ -682,10 +682,10 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                             }
                           }}
                           placeholder="0"
-                          className="w-20 text-center bg-white border-[#e0ddd8] min-h-[44px] text-base"
+                          className="w-20 text-center bg-white border-border-warm min-h-[44px] text-base"
                         />
 
-                        <span className="text-sm text-[#334155]">
+                        <span className="text-sm text-text-body">
                           &rarr; new total:{" "}
                           <span className="font-semibold">
                             {(() => {
@@ -707,7 +707,7 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                               setExpandedRow(null);
                               setExpandedAmount("");
                             }}
-                            className="min-h-[44px] border-[#e0ddd8] text-[#94a3b8]"
+                            className="min-h-[44px] border-border-warm text-text-muted"
                           >
                             Cancel
                           </Button>
@@ -723,8 +723,8 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
                             className={cn(
                               "min-h-[44px]",
                               expandedRow.mode === "add"
-                                ? "bg-[#2d4a2d] hover:bg-[#2d4a2d]/90 text-white"
-                                : "bg-[#c27890] hover:bg-[#c27890]/90 text-white"
+                                ? "bg-sidebar-hover hover:bg-sidebar-hover/90 text-white"
+                                : "bg-rose-action hover:bg-rose-action/90 text-white"
                             )}
                           >
                             Save
@@ -742,45 +742,45 @@ export const CustomerCountSelector = forwardRef<CustomerCountSelectorHandle, Cus
 
       {/* Summary totals — collapsible */}
       {summaryTotals.length > 0 && (
-        <div className="rounded-lg border border-[#e0ddd8] bg-white">
+        <div className="rounded-lg border border-border-warm bg-white">
           <button
             onClick={() => setSummaryOpen(!summaryOpen)}
-            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-[#1e3a5f] min-h-[44px]"
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-slate-heading min-h-[44px]"
           >
             <span>10-Stem Equivalents Summary</span>
             {summaryOpen ? (
-              <ChevronUp className="h-4 w-4 text-[#94a3b8]" />
+              <ChevronUp className="h-4 w-4 text-text-muted" />
             ) : (
-              <ChevronDown className="h-4 w-4 text-[#94a3b8]" />
+              <ChevronDown className="h-4 w-4 text-text-muted" />
             )}
           </button>
           {summaryOpen && (
-            <div className="border-t border-[#e0ddd8] px-4 py-3 space-y-2">
+            <div className="border-t border-border-warm px-4 py-3 space-y-2">
               {summaryTotals.map(({ size, total }) => (
                 <div key={size} className="flex items-center justify-between text-sm">
-                  <span className="text-[#334155]">Total {size}-stem</span>
-                  <span className="font-semibold text-[#1e3a5f]">
-                    {total} <span className="font-normal text-[#94a3b8]">× 10-stem</span>
+                  <span className="text-text-body">Total {size}-stem</span>
+                  <span className="font-semibold text-slate-heading">
+                    {total} <span className="font-normal text-text-muted">× 10-stem</span>
                   </span>
                 </div>
               ))}
               {data?.grand_totals && (
                 <>
-                  <div className="border-t border-[#e0ddd8] pt-2 mt-2 flex items-center justify-between text-sm">
-                    <span className="text-[#334155]">Specials Bunched</span>
-                    <span className="font-semibold text-[#1e3a5f]">
+                  <div className="border-t border-border-warm pt-2 mt-2 flex items-center justify-between text-sm">
+                    <span className="text-text-body">Specials Bunched</span>
+                    <span className="font-semibold text-slate-heading">
                       {data.grand_totals.total_customer_bunched}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#334155]">Standard</span>
-                    <span className="font-semibold text-[#1e3a5f]">
+                    <span className="text-text-body">Standard</span>
+                    <span className="font-semibold text-slate-heading">
                       {data.grand_totals.total_remaining}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm font-semibold">
-                    <span className="text-[#1e3a5f]">Grand Total (incl. standard)</span>
-                    <span className="text-[#1e3a5f]">
+                    <span className="text-slate-heading">Grand Total (incl. standard)</span>
+                    <span className="text-slate-heading">
                       {data.grand_totals.total_all_bunched}
                     </span>
                   </div>

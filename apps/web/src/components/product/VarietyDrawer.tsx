@@ -169,10 +169,10 @@ export function VarietyDrawer({
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full sm:max-w-[520px] flex flex-col p-0">
         {/* Header */}
-        <SheetHeader className="px-5 py-4 border-b border-[#e0ddd8]">
+        <SheetHeader className="px-5 py-4 border-b border-border-warm">
           <div className="flex items-center justify-between">
             <div>
-              <SheetTitle className="text-[#1e3a5f]">
+              <SheetTitle className="text-slate-heading">
                 {mode === "add" ? "New Variety" : "Edit Variety"}
               </SheetTitle>
               {mode === "edit" && variety && (
@@ -188,12 +188,12 @@ export function VarietyDrawer({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {/* Identity */}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] mb-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">
               Identity
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Name *</Label>
+                <Label className="text-xs font-semibold text-slate-heading">Name *</Label>
                 <Input
                   className="mt-1 h-8 text-sm"
                   value={form.name}
@@ -205,9 +205,9 @@ export function VarietyDrawer({
                 )}
               </div>
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Product Line *</Label>
+                <Label className="text-xs font-semibold text-slate-heading">Product Line *</Label>
                 {dropdownOptions.product_lines.length === 0 ? (
-                  <div className="mt-1 px-3 py-1.5 bg-[#f4f1ec] border border-[#e0ddd8] rounded-md text-sm text-[#94a3b8]">
+                  <div className="mt-1 px-3 py-1.5 bg-cream border border-border-warm rounded-md text-sm text-text-muted">
                     Loading...
                   </div>
                 ) : (
@@ -246,7 +246,7 @@ export function VarietyDrawer({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Color</Label>
+                <Label className="text-xs font-semibold text-slate-heading">Color</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Select
                     value={form.color_id || "__none__"}
@@ -273,12 +273,12 @@ export function VarietyDrawer({
                     const selectedColor = dropdownOptions.colors.find((c) => c.id === form.color_id);
                     return selectedColor?.hex_color ? (
                       <div
-                        className="h-8 w-8 rounded border border-[#e0ddd8] shrink-0"
+                        className="h-8 w-8 rounded border border-border-warm shrink-0"
                         style={{ backgroundColor: selectedColor.hex_color }}
                         title={selectedColor.hex_color}
                       />
                     ) : (
-                      <div className="h-8 w-8 rounded border border-[#e0ddd8] bg-[#f4f1ec] shrink-0" />
+                      <div className="h-8 w-8 rounded border border-border-warm bg-cream shrink-0" />
                     );
                   })()}
                 </div>
@@ -288,12 +288,12 @@ export function VarietyDrawer({
 
           {/* Classification */}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] mb-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">
               Classification
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Flowering Type</Label>
+                <Label className="text-xs font-semibold text-slate-heading">Flowering Type</Label>
                 <Select
                   value={form.flowering_type || "__none__"}
                   onValueChange={(v) => setField("flowering_type", v === "__none__" ? "" : v)}
@@ -311,7 +311,7 @@ export function VarietyDrawer({
                 </Select>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Weekly Sales Category</Label>
+                <Label className="text-xs font-semibold text-slate-heading">Weekly Sales Category</Label>
                 <Select
                   value={form.weekly_sales_category || "__none__"}
                   onValueChange={(v) => setField("weekly_sales_category", v === "__none__" ? "" : v)}
@@ -336,7 +336,7 @@ export function VarietyDrawer({
                   onCheckedChange={(checked) => setField("show", !!checked)}
                   disabled={isReadOnly}
                 />
-                <span className="text-sm text-[#334155]">Show in Orders</span>
+                <span className="text-sm text-text-body">Show in Orders</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <Checkbox
@@ -344,7 +344,7 @@ export function VarietyDrawer({
                   onCheckedChange={(checked) => setField("can_replace", !!checked)}
                   disabled={isReadOnly}
                 />
-                <span className="text-sm text-[#334155]">Can Replace</span>
+                <span className="text-sm text-text-body">Can Replace</span>
               </label>
             </div>
           </div>
@@ -354,7 +354,7 @@ export function VarietyDrawer({
             <button
               type="button"
               onClick={() => setAdvancedOpen((v) => !v)}
-              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] hover:text-[#334155] transition-colors"
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-text-muted hover:text-text-body transition-colors"
             >
               <span style={{ transform: advancedOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 150ms", display: "inline-block", fontSize: "8px" }}>▶</span>
               Advanced
@@ -362,7 +362,7 @@ export function VarietyDrawer({
             {advancedOpen && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <div>
-                  <Label className="text-xs font-semibold text-[#1e3a5f]">Item Group ID</Label>
+                  <Label className="text-xs font-semibold text-slate-heading">Item Group ID</Label>
                   <Input
                     type="number"
                     className="mt-1 h-8 text-sm"
@@ -373,7 +373,7 @@ export function VarietyDrawer({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-[#1e3a5f]">Item Group Description</Label>
+                  <Label className="text-xs font-semibold text-slate-heading">Item Group Description</Label>
                   <Input
                     className="mt-1 h-8 text-sm"
                     value={form.item_group_description}
@@ -406,12 +406,12 @@ export function VarietyDrawer({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 px-5 py-3 border-t border-[#e0ddd8] bg-[#faf8f5]">
+        <div className="flex gap-2 px-5 py-3 border-t border-border-warm bg-cream-warm">
           {mode === "edit" && variety && !isArchived && (
             <Button
               variant="outline"
               size="sm"
-              className="text-[#c27890] border-[#fce7f3] hover:bg-[#fce7f3] text-xs mr-auto"
+              className="text-rose-action border-box-pink-bg hover:bg-box-pink-bg text-xs mr-auto"
               onClick={() => onArchive(variety.id)}
             >
               Archive
@@ -421,7 +421,7 @@ export function VarietyDrawer({
             <Button
               variant="outline"
               size="sm"
-              className="text-[#2d4a2d] border-[#e8f0e8] hover:bg-[#e8f0e8] text-xs mr-auto"
+              className="text-sidebar-hover border-box-green-bg hover:bg-box-green-bg text-xs mr-auto"
               onClick={() => onRestore(variety.id)}
             >
               Restore
@@ -439,7 +439,7 @@ export function VarietyDrawer({
               </Button>
               <Button
                 size="sm"
-                className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+                className="bg-rose-action hover:bg-rose-action/90 text-white text-xs"
                 onClick={handleSave}
                 disabled={saving}
               >

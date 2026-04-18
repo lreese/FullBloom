@@ -33,7 +33,7 @@ export function OrderContextRow({
     <div className="flex flex-wrap items-start gap-2.5">
       {/* Customer */}
       <div className="flex-[2] min-w-[200px]">
-        <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
+        <label className="block text-xs font-semibold text-slate-heading mb-1 h-5 leading-5">
           Customer
         </label>
         {customerLocked && customer ? (
@@ -52,7 +52,7 @@ export function OrderContextRow({
       <div className="flex-[1] min-w-[140px]">
         <div className="h-5 mb-1 flex items-center">
           <FieldTooltip content="A label for this order, e.g. a specific store name or delivery reference for the customer">
-            <label className="text-xs font-semibold text-[#1e3a5f]">
+            <label className="text-xs font-semibold text-slate-heading">
               Order Label
             </label>
           </FieldTooltip>
@@ -67,7 +67,7 @@ export function OrderContextRow({
 
       {/* Date */}
       <div className="flex-[1] min-w-[140px]">
-        <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
+        <label className="block text-xs font-semibold text-slate-heading mb-1 h-5 leading-5">
           Date
         </label>
         <Input
@@ -79,7 +79,7 @@ export function OrderContextRow({
 
       {/* Ship Via */}
       <div className="flex-[1] min-w-[140px]">
-        <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
+        <label className="block text-xs font-semibold text-slate-heading mb-1 h-5 leading-5">
           Ship Via
         </label>
         <ShipViaSelector value={shipVia} onChange={onShipViaChange} customerDefault={customerDefaultShipVia} />

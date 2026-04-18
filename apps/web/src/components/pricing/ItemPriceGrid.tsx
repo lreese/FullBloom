@@ -102,7 +102,7 @@ export function ItemPriceGrid({
             type="text"
             className={cn(
               "w-20 h-6 px-1 text-xs text-center border-2 rounded outline-none bg-white",
-              editError ? "border-red-500" : "border-[#c27890]"
+              editError ? "border-red-500" : "border-rose-action"
             )}
             value={editValue}
             onChange={(e) => {
@@ -126,7 +126,7 @@ export function ItemPriceGrid({
               <TooltipTrigger asChild>
                 <span className="inline-flex items-center gap-1">
                   <button
-                    className="text-xs font-medium text-[#334155] hover:underline"
+                    className="text-xs font-medium text-text-body hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
                       startEdit(item);
@@ -139,7 +139,7 @@ export function ItemPriceGrid({
                     overridePrice={item.customer_override!}
                   />
                   <button
-                    className="text-[#94a3b8] hover:text-red-500 transition-colors"
+                    className="text-text-muted hover:text-red-500 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemoveOverride(item.customer_id);
@@ -166,7 +166,7 @@ export function ItemPriceGrid({
 
       return (
         <button
-          className="text-xs italic text-[#94a3b8] hover:text-[#c27890] transition-colors"
+          className="text-xs italic text-text-muted hover:text-rose-action transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             startEdit(item);
@@ -183,27 +183,27 @@ export function ItemPriceGrid({
   };
 
   const cellClassName = (col: ColumnDef, item: FlatItem) => {
-    if (item.source === "override") return "bg-[#fce7f3]";
+    if (item.source === "override") return "bg-box-pink-bg";
     return undefined;
   };
 
   return (
     <div>
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-[#fce7f3] rounded-lg text-xs">
-          <span className="font-semibold text-[#1e3a5f]">{selectedIds.size} selected:</span>
+        <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-box-pink-bg rounded-lg text-xs">
+          <span className="font-semibold text-slate-heading">{selectedIds.size} selected:</span>
           <input
             type="text"
             placeholder="Price"
             className={cn(
               "w-20 h-6 px-2 text-xs border rounded",
-              bulkError ? "border-red-500" : "border-[#e0ddd8]"
+              bulkError ? "border-red-500" : "border-border-warm"
             )}
             value={bulkPrice}
             onChange={(e) => { setBulkPrice(e.target.value); setBulkError(false); }}
           />
           <button
-            className="px-2 py-0.5 bg-[#c27890] text-white rounded text-xs"
+            className="px-2 py-0.5 bg-rose-action text-white rounded text-xs"
             onClick={async () => {
               const num = parseFloat(bulkPrice);
               if (isNaN(num) || num < 0) { setBulkError(true); return; }
@@ -214,13 +214,13 @@ export function ItemPriceGrid({
             Set Price
           </button>
           <button
-            className="px-2 py-0.5 border border-[#e0ddd8] rounded text-xs text-[#334155]"
+            className="px-2 py-0.5 border border-border-warm rounded text-xs text-text-body"
             onClick={() => onBulkRemoveOverrides(Array.from(selectedIds))}
           >
             Remove Overrides
           </button>
           <button
-            className="ml-auto text-xs text-[#94a3b8]"
+            className="ml-auto text-xs text-text-muted"
             onClick={() => { onToggleSelectAll(); }}
           >
             Clear Selection

@@ -30,7 +30,7 @@ export function LineItemExpandedRow({
 
   return (
     <tr>
-      <td colSpan={8} className="bg-[#faf8f6] border-b border-border/50">
+      <td colSpan={8} className="bg-cream-warm border-b border-border/50">
         <div className="py-3 pr-4" style={{ paddingLeft: "44px" }}>
           <div className="grid grid-cols-4 gap-x-6 gap-y-3">
             {/* Fees */}
@@ -124,7 +124,7 @@ export function LineItemExpandedRow({
                   onClick={() => onChange({ is_special: !line.is_special })}
                   className={cn(
                     "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
-                    line.is_special ? "bg-[#1e3a5f]" : "bg-gray-200"
+                    line.is_special ? "bg-slate-heading" : "bg-gray-200"
                   )}
                 >
                   <span

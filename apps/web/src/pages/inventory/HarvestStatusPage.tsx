@@ -37,8 +37,8 @@ export function HarvestStatusPage() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">Harvest Status</h1>
-        <p className="mt-1 text-sm text-[#94a3b8]">
+        <h1 className="text-2xl font-bold text-slate-heading">Harvest Status</h1>
+        <p className="mt-1 text-sm text-text-muted">
           Toggle varieties between in-harvest and dormant.
         </p>
       </div>
@@ -50,7 +50,7 @@ export function HarvestStatusPage() {
             value={selectedTypeId}
             onValueChange={(val) => setSelectedTypeId(val)}
           >
-            <SelectTrigger className="w-64 bg-white border-[#e0ddd8] text-[#334155] min-h-[44px]">
+            <SelectTrigger className="w-64 bg-white border-border-warm text-text-body min-h-[44px]">
               <SelectValue placeholder="Select product type">
                 {productTypes.find((pt) => pt.id === selectedTypeId)?.name ?? "Select product type"}
               </SelectValue>
@@ -68,7 +68,7 @@ export function HarvestStatusPage() {
 
       {/* Toggle list */}
       {selectedTypeId && !loading && (
-        <div className="rounded-lg border border-[#e0ddd8] bg-white p-4">
+        <div className="rounded-lg border border-border-warm bg-white p-4">
           <HarvestToggleList productTypeId={selectedTypeId} />
         </div>
       )}

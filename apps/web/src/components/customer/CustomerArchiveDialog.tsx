@@ -25,10 +25,10 @@ export function CustomerArchiveDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#1e3a5f]">
+          <DialogTitle className="text-slate-heading">
             Archive {customerName}?
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#334155]">
+          <DialogDescription className="text-sm text-text-body">
             They will be hidden from the active list but can be restored later.
             Existing orders will not be affected.
           </DialogDescription>
@@ -39,7 +39,7 @@ export function CustomerArchiveDialog({
           </Button>
           <Button
             size="sm"
-            className="bg-[#c27890] hover:bg-[#a8607a] text-white"
+            className="bg-rose-action hover:bg-rose-action/90 text-white"
             onClick={onConfirm}
           >
             Archive

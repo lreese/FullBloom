@@ -150,15 +150,15 @@ export function CountsPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Top bar */}
-      <div className="shrink-0 border-b border-[#e0ddd8] bg-white px-4 py-3">
+      <div className="shrink-0 border-b border-border-warm bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-bold text-[#1e3a5f]">Counts</h1>
+          <h1 className="text-xl font-bold text-slate-heading">Counts</h1>
           <div className="flex items-center gap-2 ml-auto">
             <Input
               type="date"
               value={countDate}
               onChange={(e) => setCountDate(e.target.value)}
-              className="w-40 bg-white border-[#e0ddd8] text-[#334155] focus-visible:ring-[#c27890] min-h-[44px]"
+              className="w-40 bg-white border-border-warm text-text-body focus-visible:ring-rose-action min-h-[44px]"
             />
             <select
               value={selectedPtId}
@@ -166,7 +166,7 @@ export function CountsPage() {
                 setSelectedPtId(e.target.value);
                 setProductLineFilter(null);
               }}
-              className="h-10 min-h-[44px] rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              className="h-10 min-h-[44px] rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
             >
               {productTypes.map((pt) => (
                 <option key={pt.id} value={pt.id}>
@@ -177,7 +177,7 @@ export function CountsPage() {
             <Button
               variant="outline"
               size="icon"
-              className="text-[#94a3b8] border-[#e0ddd8] min-w-[44px] min-h-[44px] hover:text-[#334155]"
+              className="text-text-muted border-border-warm min-w-[44px] min-h-[44px] hover:text-text-body"
               title="Print sheet"
               onClick={handlePrint}
             >
@@ -187,7 +187,7 @@ export function CountsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex mt-3 border-b border-[#e0ddd8]">
+        <div className="flex mt-3 border-b border-border-warm">
           <button
             onClick={() => {
               if (activeTab === "standard") return;
@@ -197,8 +197,8 @@ export function CountsPage() {
             className={cn(
               "px-4 py-2 text-sm font-medium border-b-2 transition-colors min-h-[44px]",
               activeTab === "standard"
-                ? "border-[#c27890] text-[#c27890]"
-                : "border-transparent text-[#94a3b8] hover:text-[#334155]"
+                ? "border-rose-action text-rose-action"
+                : "border-transparent text-text-muted hover:text-text-body"
             )}
           >
             Standard
@@ -212,8 +212,8 @@ export function CountsPage() {
             className={cn(
               "px-4 py-2 text-sm font-medium border-b-2 transition-colors min-h-[44px]",
               activeTab === "specials"
-                ? "border-[#c27890] text-[#c27890]"
-                : "border-transparent text-[#94a3b8] hover:text-[#334155]"
+                ? "border-rose-action text-rose-action"
+                : "border-transparent text-text-muted hover:text-text-body"
             )}
           >
             Specials
@@ -221,7 +221,7 @@ export function CountsPage() {
           {activeTab === "specials" && (
             <button
               onClick={() => setTemplateDrawerOpen(true)}
-              className="ml-auto p-2 rounded-md text-[#94a3b8] hover:text-[#c27890] hover:bg-[#f4f1ec] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="ml-auto p-2 rounded-md text-text-muted hover:text-rose-action hover:bg-cream transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               title="Configure specials columns"
             >
               <Settings className="h-4 w-4" />
@@ -231,7 +231,7 @@ export function CountsPage() {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 overflow-y-auto bg-[#f4f1ec] p-4 pb-24">
+      <div className="flex-1 overflow-y-auto bg-cream p-4 pb-24">
         {/* Toolbar */}
         <div className="mb-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -338,8 +338,8 @@ export function CountsPage() {
           className={cn(
             "shadow-lg px-8 rounded-full text-base font-medium min-h-[48px] min-w-[120px] transition-all",
             hasDirty && !saving
-              ? "bg-[#c27890] hover:bg-[#b0687e] text-white"
-              : "bg-[#e0ddd8] text-[#94a3b8] cursor-not-allowed"
+              ? "bg-rose-action hover:bg-rose-action/90 text-white"
+              : "bg-border-warm text-text-muted cursor-not-allowed"
           )}
         >
           {saving ? (

@@ -141,7 +141,7 @@ export function PriceListsPage() {
     <div>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2.5 mb-3">
-        <h1 className="text-lg font-bold text-[#1e3a5f] whitespace-nowrap">
+        <h1 className="text-lg font-bold text-slate-heading whitespace-nowrap">
           Price Lists
         </h1>
         <div className="flex-1" />
@@ -188,7 +188,7 @@ export function PriceListsPage() {
         />
         <Button
           size="sm"
-          className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+          className="bg-rose-action hover:bg-rose-action/90 text-white text-xs"
           onClick={() => setCreateOpen(true)}
         >
           + Add Price List
@@ -197,11 +197,11 @@ export function PriceListsPage() {
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 mb-3 p-2 bg-[#fce7f3] rounded-lg border border-[#e0ddd8]">
-          <span className="text-xs text-[#334155] font-medium">
+        <div className="flex items-center gap-2 mb-3 p-2 bg-box-pink-bg rounded-lg border border-border-warm">
+          <span className="text-xs text-text-body font-medium">
             {selectedIds.size} selected:
           </span>
-          <span className="text-xs text-[#334155]">Set</span>
+          <span className="text-xs text-text-body">Set</span>
           <Select value={bulkPriceListId} onValueChange={setBulkPriceListId}>
             <SelectTrigger className="h-7 w-40 text-xs">
               <SelectValue placeholder="Price list..." />
@@ -214,7 +214,7 @@ export function PriceListsPage() {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-[#334155]">=</span>
+          <span className="text-xs text-text-body">=</span>
           <Input
             type="text"
             value={bulkPrice}
@@ -224,7 +224,7 @@ export function PriceListsPage() {
           />
           <Button
             size="sm"
-            className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs h-7"
+            className="bg-rose-action hover:bg-rose-action/90 text-white text-xs h-7"
             onClick={handleBulkApply}
             disabled={!bulkPriceListId || !bulkPrice}
           >

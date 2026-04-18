@@ -203,43 +203,43 @@ export function CustomersPage() {
     switch (col.key) {
       case "customer_number":
         return (
-          <span className="text-[#94a3b8] font-mono text-xs">
+          <span className="text-text-muted font-mono text-xs">
             {item.customer_number}
           </span>
         );
       case "name":
         return (
-          <span className="font-medium" style={{ color: "#334155" }}>
+          <span className="font-medium" style={{ color: "var(--color-text-body)" }}>
             {item.name}
           </span>
         );
       case "salesperson":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.salesperson ?? "\u2014"}
           </span>
         );
       case "contact_name":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             {item.contact_name ?? "\u2014"}
           </span>
         );
       case "default_ship_via":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.default_ship_via ?? "\u2014"}
           </span>
         );
       case "phone":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.phone ?? "\u2014"}
           </span>
         );
       case "location":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.location ?? "\u2014"}
           </span>
         );
@@ -247,14 +247,14 @@ export function CustomersPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#e8f0e8", color: "#2d4a2d" }}
+            style={{ backgroundColor: "var(--color-box-green-bg)", color: "var(--color-sidebar-hover)" }}
           >
             {item.payment_terms ?? "\u2014"}
           </span>
         );
       case "email":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.email ?? "\u2014"}
           </span>
         );
@@ -262,7 +262,7 @@ export function CustomersPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#dbeafe", color: "#1e40af" }}
+            style={{ backgroundColor: "var(--color-box-blue-bg)", color: "var(--color-box-blue-text)" }}
           >
             {item.price_list_name ?? "Default"}
           </span>
@@ -271,14 +271,14 @@ export function CustomersPage() {
         return item.is_active ? (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#e8f0e8", color: "#2d4a2d" }}
+            style={{ backgroundColor: "var(--color-box-green-bg)", color: "var(--color-sidebar-hover)" }}
           >
             Active
           </span>
         ) : (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#f1f5f9", color: "#94a3b8" }}
+            style={{ backgroundColor: "var(--color-slate-100)", color: "var(--color-text-muted)" }}
           >
             Archived
           </span>
@@ -292,15 +292,15 @@ export function CustomersPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f4f1ec" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--color-cream)" }}>
       <div className="max-w-[1400px] mx-auto px-4 py-6 sm:px-6">
         {/* ── Header ─────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold text-[#1e3a5f]">Customers</h1>
+            <h1 className="text-lg font-bold text-slate-heading">Customers</h1>
             {hasActiveFilters && (
               <button
-                className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1"
+                className="text-xs text-text-muted hover:text-text-body border border-border-warm rounded px-2 py-1"
                 onClick={clearAllFilters}
               >
                 Clear Filters
@@ -309,19 +309,19 @@ export function CustomersPage() {
             {columnPrefs && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 flex items-center gap-1">
+                  <button className="text-xs text-text-muted hover:text-text-body border border-border-warm rounded px-2 py-1 flex items-center gap-1">
                     <Settings2 className="h-3 w-3" /> Columns
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-56 p-2" align="end">
                   <div className="space-y-0.5">
                     {ALL_COLUMNS.map((col) => (
-                      <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer">
+                      <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-cream cursor-pointer">
                         <Checkbox
                           checked={columnPrefs?.visible.includes(col.key) ?? true}
                           onCheckedChange={() => tableState.toggleColumn(col.key)}
                         />
-                        <span className="text-[#334155] select-none">{col.label || col.key}</span>
+                        <span className="text-text-body select-none">{col.label || col.key}</span>
                       </label>
                     ))}
                   </div>
@@ -333,7 +333,7 @@ export function CustomersPage() {
             <Button
               onClick={handleAddClick}
               className="gap-1.5"
-              style={{ backgroundColor: "#c27890", color: "white" }}
+              style={{ backgroundColor: "var(--color-rose-action)", color: "white" }}
             >
               <Plus className="h-4 w-4" />
               Add Customer
@@ -344,7 +344,7 @@ export function CustomersPage() {
         {/* ── Filters bar: view toggle + search ───────────── */}
         <div
           className="rounded-lg border p-3 mb-4 flex items-center gap-3 flex-wrap"
-          style={{ backgroundColor: "white", borderColor: "#e0ddd8" }}
+          style={{ backgroundColor: "white", borderColor: "var(--color-border-warm)" }}
         >
           <div className="flex gap-1">
             {(["active", "archived"] as const).map((view) => (
@@ -354,8 +354,8 @@ export function CustomersPage() {
                 className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors capitalize"
                 style={
                   activeView === view
-                    ? { backgroundColor: "#1e3a5f", color: "white" }
-                    : { backgroundColor: "transparent", color: "#64748b" }
+                    ? { backgroundColor: "var(--color-slate-heading)", color: "white" }
+                    : { backgroundColor: "transparent", color: "var(--color-slate-500)" }
                 }
               >
                 {view}
@@ -368,17 +368,17 @@ export function CustomersPage() {
               placeholder="Search customers..."
               value={tableState.searchTerm}
               onChange={(e) => tableState.setSearchTerm(e.target.value)}
-              className="w-full h-9 rounded-lg border border-[#e0ddd8] bg-white pl-3 pr-3 text-sm text-[#334155] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              className="w-full h-9 rounded-lg border border-border-warm bg-white pl-3 pr-3 text-sm text-text-body placeholder:text-text-muted focus:ring-2 focus:ring-rose-action focus:outline-none"
             />
           </div>
         </div>
 
         {/* ── Table ───────────────────────────────────────── */}
-        <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
+        <div className="rounded-lg border border-border-warm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
+                <tr className="border-b-2 border-border-warm bg-cream-warm">
                   {activeColumns.map((col, idx) => {
                     const isSortable = col.sortable !== false;
                     const isSorted = sortConfig?.key === col.key;
@@ -391,7 +391,7 @@ export function CustomersPage() {
                         onDrop={handleHeaderDrop}
                         onDragEnd={handleHeaderDragEnd}
                         className={cn(
-                          "px-3 py-2.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap relative select-none",
+                          "px-3 py-2.5 text-left text-[10px] font-semibold text-slate-heading whitespace-nowrap relative select-none",
                           isSortable && "cursor-pointer",
                           headerDragIdx === idx && "opacity-50"
                         )}
@@ -401,13 +401,13 @@ export function CustomersPage() {
                         {headerDropIdx === idx &&
                           headerDragIdx !== idx &&
                           headerDragIdx !== idx - 1 && (
-                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
 
                         <span className="inline-flex items-center gap-1">
                           {col.label}
                           {isSorted && (
-                            <span className="text-[#c27890]">
+                            <span className="text-rose-action">
                               {sortConfig.direction === "asc" ? "\u25B2" : "\u25BC"}
                             </span>
                           )}
@@ -428,7 +428,7 @@ export function CustomersPage() {
                         {headerDropIdx === activeColumns.length &&
                           idx === activeColumns.length - 1 &&
                           headerDragIdx !== idx && (
-                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
                       </th>
                     );
@@ -441,12 +441,12 @@ export function CustomersPage() {
                     <td
                       colSpan={activeColumns.length}
                       className="text-center py-12"
-                      style={{ color: "#94a3b8" }}
+                      style={{ color: "var(--color-text-muted)" }}
                     >
                       No customers found.
                       {hasActiveFilters && (
                         <button
-                          className="ml-2 text-[#c27890] hover:underline"
+                          className="ml-2 text-rose-action hover:underline"
                           onClick={clearAllFilters}
                         >
                           Clear filters
@@ -458,11 +458,11 @@ export function CustomersPage() {
                   filteredData.map((customer) => (
                     <tr
                       key={customer.id}
-                      className="border-b border-[#f0ede8] hover:bg-[#faf8f5] transition-colors cursor-pointer"
+                      className="border-b border-border-warm hover:bg-cream-warm transition-colors cursor-pointer"
                       onClick={() => handleRowClick(customer)}
                     >
                       {activeColumns.map((col) => (
-                        <td key={col.key} className="px-3 py-2.5 text-[#334155]">
+                        <td key={col.key} className="px-3 py-2.5 text-text-body">
                           {renderCell(col, customer)}
                         </td>
                       ))}
@@ -473,7 +473,7 @@ export function CustomersPage() {
             </table>
           </div>
           {/* Footer */}
-          <div className="px-3 py-2 text-xs text-[#94a3b8] bg-[#faf8f5] border-t border-[#e0ddd8]">
+          <div className="px-3 py-2 text-xs text-text-muted bg-cream-warm border-t border-border-warm">
             {filteredData.length} {activeView} customer{filteredData.length !== 1 ? "s" : ""}
             {hasActiveFilters ? " (filtered)" : ""}
           </div>

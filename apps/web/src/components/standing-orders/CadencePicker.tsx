@@ -72,7 +72,7 @@ export function CadencePicker({
       <div className="flex flex-wrap items-center gap-3">
         {/* Frequency */}
         <div className="flex items-center gap-1.5">
-          <span className="text-sm text-[#334155]">Every</span>
+          <span className="text-sm text-text-body">Every</span>
           <select
             value={frequencyWeeks}
             onChange={(e) => onFrequencyChange(Number(e.target.value))}
@@ -84,7 +84,7 @@ export function CadencePicker({
               </option>
             ))}
           </select>
-          <span className="text-sm text-[#334155]">
+          <span className="text-sm text-text-body">
             week{frequencyWeeks > 1 ? "s" : ""} on
           </span>
         </div>
@@ -101,8 +101,8 @@ export function CadencePicker({
                 className={cn(
                   "w-[40px] h-[36px] rounded-md text-xs font-medium transition-colors border",
                   selected
-                    ? "bg-[#1e3a5f] text-white border-[#1e3a5f]"
-                    : "bg-white text-[#94a3b8] border-[#e0ddd8] hover:border-[#94a3b8]"
+                    ? "bg-slate-heading text-white border-slate-heading"
+                    : "bg-white text-text-muted border-border-warm hover:border-text-muted"
                 )}
               >
                 {DAY_LABELS[dayIdx]}
@@ -113,7 +113,7 @@ export function CadencePicker({
 
         {/* Reference date */}
         <div className="flex items-center gap-1.5">
-          <span className="text-sm text-[#334155]">starting from</span>
+          <span className="text-sm text-text-body">starting from</span>
           <Input
             type="date"
             value={referenceDate}
@@ -125,7 +125,7 @@ export function CadencePicker({
 
       {/* Live summary */}
       {summary && (
-        <p className="text-sm text-[#64748b]">
+        <p className="text-sm text-slate-500">
           <span className="mr-1">&rarr;</span>
           {summary}
         </p>

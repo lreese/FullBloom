@@ -270,7 +270,7 @@ export function StandingOrdersPage() {
     switch (col.key) {
       case "customer_name":
         return (
-          <span className="font-medium" style={{ color: "#334155" }}>
+          <span className="font-medium" style={{ color: "var(--color-text-body)" }}>
             {item.customer_name}
           </span>
         );
@@ -280,7 +280,7 @@ export function StandingOrdersPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#dbeafe", color: "#1e40af" }}
+            style={{ backgroundColor: "var(--color-box-blue-bg)", color: "var(--color-box-blue-text)" }}
           >
             {item.lines_count}
           </span>
@@ -289,26 +289,26 @@ export function StandingOrdersPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#e8f0e8", color: "#2d4a2d" }}
+            style={{ backgroundColor: "var(--color-box-green-bg)", color: "var(--color-sidebar-hover)" }}
           >
             {item.total_stems.toLocaleString()}
           </span>
         );
       case "updated_at":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             {new Date(item.updated_at).toLocaleDateString()}
           </span>
         );
       case "salesperson_email":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.salesperson_email ?? "\u2014"}
           </span>
         );
       case "frequency_weeks":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             Every {item.frequency_weeks} week{item.frequency_weeks !== 1 ? "s" : ""}
           </span>
         );
@@ -323,15 +323,15 @@ export function StandingOrdersPage() {
   const colSpan = activeColumns.length + 2; // +1 chevron, +1 actions
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f4f1ec" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--color-cream)" }}>
       <div className="max-w-[1400px] mx-auto px-4 py-6 sm:px-6">
         {/* ── Header ─────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold text-[#1e3a5f]">Standing Orders</h1>
+            <h1 className="text-lg font-bold text-slate-heading">Standing Orders</h1>
             {tableState.hasActiveFilters && (
               <button
-                className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1"
+                className="text-xs text-text-muted hover:text-text-body border border-border-warm rounded px-2 py-1"
                 onClick={tableState.clearAllFilters}
               >
                 Clear Filters
@@ -340,19 +340,19 @@ export function StandingOrdersPage() {
             {columnPrefs && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="text-xs text-[#94a3b8] hover:text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 flex items-center gap-1">
+                  <button className="text-xs text-text-muted hover:text-text-body border border-border-warm rounded px-2 py-1 flex items-center gap-1">
                     <Settings2 className="h-3 w-3" /> Columns
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-56 p-2" align="end">
                   <div className="space-y-0.5">
                     {ALL_COLUMNS.map((col) => (
-                      <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer">
+                      <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-cream cursor-pointer">
                         <Checkbox
                           checked={columnPrefs?.visible.includes(col.key) ?? true}
                           onCheckedChange={() => tableState.toggleColumn(col.key)}
                         />
-                        <span className="text-[#334155] select-none">{col.label || col.key}</span>
+                        <span className="text-text-body select-none">{col.label || col.key}</span>
                       </label>
                     ))}
                   </div>
@@ -363,7 +363,7 @@ export function StandingOrdersPage() {
           <div className="flex items-center gap-2 ml-4 shrink-0">
             <Button
               className="gap-1.5"
-              style={{ backgroundColor: "#2d4a2d", color: "white" }}
+              style={{ backgroundColor: "var(--color-sidebar-hover)", color: "white" }}
               onClick={() => setGenerateDialogOpen(true)}
             >
               <RefreshCw className="h-4 w-4" />
@@ -372,7 +372,7 @@ export function StandingOrdersPage() {
             <Button
               onClick={() => navigate("/standing-orders/new")}
               className="gap-1.5"
-              style={{ backgroundColor: "#c27890", color: "white" }}
+              style={{ backgroundColor: "var(--color-rose-action)", color: "white" }}
             >
               <Plus className="h-4 w-4" />
               New Standing Order
@@ -383,7 +383,7 @@ export function StandingOrdersPage() {
         {/* ── Filters bar: status tabs + search + salesperson ── */}
         <div
           className="rounded-lg border p-3 mb-4 flex items-center gap-3 flex-wrap"
-          style={{ backgroundColor: "white", borderColor: "#e0ddd8" }}
+          style={{ backgroundColor: "white", borderColor: "var(--color-border-warm)" }}
         >
           <div className="flex gap-1">
             {STATUS_TABS.map((tab) => (
@@ -393,8 +393,8 @@ export function StandingOrdersPage() {
                 className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
                 style={
                   statusFilter === tab.value
-                    ? { backgroundColor: "#1e3a5f", color: "white" }
-                    : { backgroundColor: "transparent", color: "#64748b" }
+                    ? { backgroundColor: "var(--color-slate-heading)", color: "white" }
+                    : { backgroundColor: "transparent", color: "var(--color-slate-500)" }
                 }
               >
                 {tab.label}
@@ -407,13 +407,13 @@ export function StandingOrdersPage() {
               placeholder="Search..."
               value={tableState.searchTerm}
               onChange={(e) => tableState.setSearchTerm(e.target.value)}
-              className="w-full h-9 rounded-lg border border-[#e0ddd8] bg-white pl-3 pr-3 text-sm text-[#334155] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              className="w-full h-9 rounded-lg border border-border-warm bg-white pl-3 pr-3 text-sm text-text-body placeholder:text-text-muted focus:ring-2 focus:ring-rose-action focus:outline-none"
             />
           </div>
           <select
             value={salespersonFilter}
             onChange={(e) => setSalespersonFilter(e.target.value)}
-            className="h-9 rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+            className="h-9 rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
           >
             <option value="">All Salespeople</option>
             {salespersonOptions.map((email) => (
@@ -423,11 +423,11 @@ export function StandingOrdersPage() {
         </div>
 
         {/* ── Table (custom rendering for expandable rows) ── */}
-        <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
+        <div className="rounded-lg border border-border-warm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
+                <tr className="border-b-2 border-border-warm bg-cream-warm">
                   {/* Expand chevron column */}
                   <th className="w-8 px-2 py-2.5" />
                   {/* Data columns */}
@@ -443,7 +443,7 @@ export function StandingOrdersPage() {
                         onDrop={handleHeaderDrop}
                         onDragEnd={handleHeaderDragEnd}
                         className={cn(
-                          "px-3 py-2.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap relative select-none",
+                          "px-3 py-2.5 text-left text-[10px] font-semibold text-slate-heading whitespace-nowrap relative select-none",
                           isSortable && "cursor-pointer",
                           headerDragIdx === idx && "opacity-50"
                         )}
@@ -453,13 +453,13 @@ export function StandingOrdersPage() {
                         {headerDropIdx === idx &&
                           headerDragIdx !== idx &&
                           headerDragIdx !== idx - 1 && (
-                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
 
                         <span className="inline-flex items-center gap-1">
                           {col.label}
                           {isSorted && (
-                            <span className="text-[#c27890]">
+                            <span className="text-rose-action">
                               {sortConfig.direction === "asc" ? "\u25B2" : "\u25BC"}
                             </span>
                           )}
@@ -480,13 +480,13 @@ export function StandingOrdersPage() {
                         {headerDropIdx === activeColumns.length &&
                           idx === activeColumns.length - 1 &&
                           headerDragIdx !== idx && (
-                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
                       </th>
                     );
                   })}
                   {/* Actions column */}
-                  <th className="px-3 py-2.5 text-right text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap">
+                  <th className="px-3 py-2.5 text-right text-[10px] font-semibold text-slate-heading whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
@@ -497,7 +497,7 @@ export function StandingOrdersPage() {
                     <td colSpan={colSpan} className="text-center py-12">
                       <Loader2
                         className="h-5 w-5 animate-spin mx-auto"
-                        style={{ color: "#94a3b8" }}
+                        style={{ color: "var(--color-text-muted)" }}
                       />
                     </td>
                   </tr>
@@ -506,12 +506,12 @@ export function StandingOrdersPage() {
                     <td
                       colSpan={colSpan}
                       className="text-center py-12"
-                      style={{ color: "#94a3b8" }}
+                      style={{ color: "var(--color-text-muted)" }}
                     >
                       No standing orders found.
                       {hasActiveFilters && (
                         <button
-                          className="ml-2 text-[#c27890] hover:underline"
+                          className="ml-2 text-rose-action hover:underline"
                           onClick={clearAllFilters}
                         >
                           Clear filters
@@ -547,7 +547,7 @@ export function StandingOrdersPage() {
             </table>
           </div>
           {/* Footer */}
-          <div className="px-3 py-2 text-xs text-[#94a3b8] bg-[#faf8f5] border-t border-[#e0ddd8]">
+          <div className="px-3 py-2 text-xs text-text-muted bg-cream-warm border-t border-border-warm">
             {filteredData.length} standing order{filteredData.length !== 1 ? "s" : ""}
             {hasActiveFilters ? " (filtered)" : ""}
           </div>
@@ -590,7 +590,7 @@ export function StandingOrdersPage() {
           <div className="py-2">
             <label
               className="block text-sm font-medium mb-1"
-              style={{ color: "#334155" }}
+              style={{ color: "var(--color-text-body)" }}
             >
               Reason{reasonAction?.type === "cancel" ? "" : " (optional)"}
             </label>
@@ -614,8 +614,8 @@ export function StandingOrdersPage() {
               disabled={actionLoading}
               style={
                 reasonAction?.type === "cancel"
-                  ? { backgroundColor: "#dc2626", color: "white" }
-                  : { backgroundColor: "#d97706", color: "white" }
+                  ? { backgroundColor: "var(--color-red-600)", color: "white" }
+                  : { backgroundColor: "var(--color-amber-600)", color: "white" }
               }
             >
               {actionLoading ? (
@@ -637,9 +637,9 @@ export function StandingOrdersPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, { bg: string; color: string }> = {
-    active: { bg: "#e8f0e8", color: "#2d4a2d" },
-    paused: { bg: "#fef3c7", color: "#92400e" },
-    cancelled: { bg: "#f1f5f9", color: "#94a3b8" },
+    active: { bg: "var(--color-box-green-bg)", color: "var(--color-sidebar-hover)" },
+    paused: { bg: "var(--color-box-amber-bg)", color: "var(--color-box-amber-text)" },
+    cancelled: { bg: "var(--color-slate-100)", color: "var(--color-text-muted)" },
   };
   const s = styles[status] ?? styles.active;
 
@@ -692,7 +692,7 @@ function StandingOrderRow({
   return (
     <>
       <tr
-        className="border-b border-[#f0ede8] hover:bg-[#faf8f5] transition-colors cursor-pointer"
+        className="border-b border-border-warm hover:bg-cream-warm transition-colors cursor-pointer"
         style={{
           opacity: isCancelled ? 0.5 : 1,
         }}
@@ -702,13 +702,13 @@ function StandingOrderRow({
           <ChevronRight
             className="h-4 w-4 transition-transform inline-block"
             style={{
-              color: "#94a3b8",
+              color: "var(--color-text-muted)",
               transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
             }}
           />
         </td>
         {activeColumns.map((col) => (
-          <td key={col.key} className="px-3 py-2.5 text-[#334155]">
+          <td key={col.key} className="px-3 py-2.5 text-text-body">
             {renderCell(col, item)}
           </td>
         ))}
@@ -727,7 +727,7 @@ function StandingOrderRow({
                 >
                   <Pencil
                     className="h-3.5 w-3.5"
-                    style={{ color: "#94a3b8" }}
+                    style={{ color: "var(--color-text-muted)" }}
                   />
                 </Button>
                 <Button
@@ -738,7 +738,7 @@ function StandingOrderRow({
                 >
                   <Pause
                     className="h-3.5 w-3.5"
-                    style={{ color: "#d97706" }}
+                    style={{ color: "var(--color-amber-600)" }}
                   />
                 </Button>
                 <Button
@@ -749,7 +749,7 @@ function StandingOrderRow({
                 >
                   <XCircle
                     className="h-3.5 w-3.5"
-                    style={{ color: "#dc2626" }}
+                    style={{ color: "var(--color-red-600)" }}
                   />
                 </Button>
               </>
@@ -764,7 +764,7 @@ function StandingOrderRow({
                 >
                   <Play
                     className="h-3.5 w-3.5"
-                    style={{ color: "#2d4a2d" }}
+                    style={{ color: "var(--color-sidebar-hover)" }}
                   />
                 </Button>
                 <Button
@@ -775,7 +775,7 @@ function StandingOrderRow({
                 >
                   <XCircle
                     className="h-3.5 w-3.5"
-                    style={{ color: "#dc2626" }}
+                    style={{ color: "var(--color-red-600)" }}
                   />
                 </Button>
               </>
@@ -784,16 +784,16 @@ function StandingOrderRow({
         </td>
       </tr>
       {isExpanded && (
-        <tr style={{ borderColor: "#e0ddd8" }}>
+        <tr style={{ borderColor: "var(--color-border-warm)" }}>
           <td
             colSpan={colSpan}
             className="px-6 py-4"
-            style={{ backgroundColor: "#faf9f7" }}
+            style={{ backgroundColor: "var(--color-cream-warm)" }}
           >
             {detailLoading ? (
               <div
                 className="flex items-center gap-2 text-sm"
-                style={{ color: "#94a3b8" }}
+                style={{ color: "var(--color-text-muted)" }}
               >
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading line items...
@@ -801,7 +801,7 @@ function StandingOrderRow({
             ) : expandedDetail ? (
               <StandingOrderLineItems detail={expandedDetail} />
             ) : (
-              <span className="text-sm" style={{ color: "#94a3b8" }}>
+              <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>
                 Could not load standing order details.
               </span>
             )}
@@ -824,44 +824,44 @@ function StandingOrderLineItems({ detail }: { detail: StandingOrderDetail }) {
   return (
     <div
       className="rounded border overflow-hidden"
-      style={{ borderColor: "#e0ddd8" }}
+      style={{ borderColor: "var(--color-border-warm)" }}
     >
       <table className="w-full text-xs">
         <thead>
-          <tr style={{ backgroundColor: "#f4f1ec" }}>
+          <tr style={{ backgroundColor: "var(--color-cream)" }}>
             <th
               className="px-2 py-1.5 text-left font-medium"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               #
             </th>
             <th
               className="px-2 py-1.5 text-left font-medium"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               Sales Item
             </th>
             <th
               className="px-2 py-1.5 text-left font-medium"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               Color / Variety
             </th>
             <th
               className="px-2 py-1.5 text-right font-medium"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               Stems
             </th>
             <th
               className="px-2 py-1.5 text-right font-medium"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               Price
             </th>
             <th
               className="px-2 py-1.5 text-right font-medium"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               Line Total
             </th>
@@ -874,32 +874,32 @@ function StandingOrderLineItems({ detail }: { detail: StandingOrderDetail }) {
               <tr
                 key={line.id}
                 className="border-t"
-                style={{ borderColor: "#e0ddd8" }}
+                style={{ borderColor: "var(--color-border-warm)" }}
               >
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.line_number}
                 </td>
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.sales_item_name}
                 </td>
-                <td className="px-2 py-1.5" style={{ color: "#334155" }}>
+                <td className="px-2 py-1.5" style={{ color: "var(--color-text-body)" }}>
                   {line.color_variety ?? "--"}
                 </td>
                 <td
                   className="px-2 py-1.5 text-right"
-                  style={{ color: "#334155" }}
+                  style={{ color: "var(--color-text-body)" }}
                 >
                   {line.stems}
                 </td>
                 <td
                   className="px-2 py-1.5 text-right"
-                  style={{ color: "#334155" }}
+                  style={{ color: "var(--color-text-body)" }}
                 >
                   ${line.price_per_stem}
                 </td>
                 <td
                   className="px-2 py-1.5 text-right"
-                  style={{ color: "#334155" }}
+                  style={{ color: "var(--color-text-body)" }}
                 >
                   ${lineTotal.toFixed(2)}
                 </td>
@@ -909,21 +909,21 @@ function StandingOrderLineItems({ detail }: { detail: StandingOrderDetail }) {
           {/* Summary row */}
           <tr
             className="border-t font-medium"
-            style={{ borderColor: "#e0ddd8", backgroundColor: "#f4f1ec" }}
+            style={{ borderColor: "var(--color-border-warm)", backgroundColor: "var(--color-cream)" }}
           >
-            <td colSpan={3} className="px-2 py-1.5" style={{ color: "#1e3a5f" }}>
+            <td colSpan={3} className="px-2 py-1.5" style={{ color: "var(--color-slate-heading)" }}>
               Total
             </td>
             <td
               className="px-2 py-1.5 text-right"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               {totalStems.toLocaleString()}
             </td>
             <td className="px-2 py-1.5" />
             <td
               className="px-2 py-1.5 text-right"
-              style={{ color: "#1e3a5f" }}
+              style={{ color: "var(--color-slate-heading)" }}
             >
               ${totalValue.toFixed(2)}
             </td>

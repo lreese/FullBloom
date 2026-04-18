@@ -11,9 +11,9 @@ interface CountAuditLogProps {
 }
 
 const actionConfig = {
-  set: { label: "Set", color: "text-[#334155]", bg: "bg-[#f4f1ec]" },
-  add: { label: "Added", color: "text-[#2d4a2d]", bg: "bg-[#2d4a2d]/10" },
-  remove: { label: "Removed", color: "text-[#c27890]", bg: "bg-[#c27890]/10" },
+  set: { label: "Set", color: "text-text-body", bg: "bg-cream" },
+  add: { label: "Added", color: "text-sidebar-hover", bg: "bg-sidebar-hover/10" },
+  remove: { label: "Removed", color: "text-rose-action", bg: "bg-rose-action/10" },
 } as const;
 
 function formatTime(iso: string): string {
@@ -57,7 +57,7 @@ export function CountAuditLog({ varietyId, countDate, fetchUrl }: CountAuditLogP
     <div className="inline-flex items-center">
       <button
         onClick={handleToggle}
-        className="flex items-center gap-1 text-[#94a3b8] hover:text-[#334155] transition-colors p-1 min-h-[44px] min-w-[44px] justify-center"
+        className="flex items-center gap-1 text-text-muted hover:text-text-body transition-colors p-1 min-h-[44px] min-w-[44px] justify-center"
         aria-label={expanded ? "Hide audit log" : "Show audit log"}
       >
         {loading ? (
@@ -73,12 +73,12 @@ export function CountAuditLog({ varietyId, countDate, fetchUrl }: CountAuditLogP
       </button>
 
       {expanded && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-[#e0ddd8] bg-white shadow-md p-2 space-y-1">
-          <p className="text-xs font-medium text-[#94a3b8] px-1 mb-1">
+        <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-border-warm bg-white shadow-md p-2 space-y-1">
+          <p className="text-xs font-medium text-text-muted px-1 mb-1">
             Recent activity
           </p>
           {entries.length === 0 ? (
-            <p className="text-xs text-[#94a3b8] px-1">No activity yet</p>
+            <p className="text-xs text-text-muted px-1">No activity yet</p>
           ) : (
             entries.slice(0, 10).map((entry) => {
               const config = actionConfig[entry.action];
@@ -90,13 +90,13 @@ export function CountAuditLog({ varietyId, countDate, fetchUrl }: CountAuditLogP
                     config.bg
                   )}
                 >
-                  <span className="text-[#94a3b8] shrink-0">
+                  <span className="text-text-muted shrink-0">
                     {formatTime(entry.created_at)}
                   </span>
                   <span className={cn("font-medium", config.color)}>
                     {config.label} {entry.amount}
                   </span>
-                  <span className="text-[#334155]">
+                  <span className="text-text-body">
                     &rarr; {entry.resulting_total}
                   </span>
                 </div>

@@ -51,9 +51,9 @@ function todayISO(): string {
 }
 
 const STATUS_BADGES: Record<string, { label: string; bg: string; text: string }> = {
-  active: { label: "Active", bg: "bg-[#e8f0e8]", text: "text-[#2d4a2d]" },
-  paused: { label: "Paused", bg: "bg-[#fef3c7]", text: "text-[#92400e]" },
-  cancelled: { label: "Cancelled", bg: "bg-[#c27890]/10", text: "text-[#c27890]" },
+  active: { label: "Active", bg: "bg-box-green-bg", text: "text-sidebar-hover" },
+  paused: { label: "Paused", bg: "bg-box-amber-bg", text: "text-box-amber-text" },
+  cancelled: { label: "Cancelled", bg: "bg-rose-action/10", text: "text-rose-action" },
 };
 
 export function StandingOrderForm() {
@@ -535,9 +535,9 @@ export function StandingOrderForm() {
             onClick={() => navigate("/standing-orders")}
             className="p-1 rounded hover:bg-accent/50 transition-colors"
           >
-            <ArrowLeft className="h-5 w-5 text-[#1e3a5f]" />
+            <ArrowLeft className="h-5 w-5 text-slate-heading" />
           </button>
-          <h1 className="text-xl font-extrabold text-[#1e3a5f]">
+          <h1 className="text-xl font-extrabold text-slate-heading">
             {isEditMode ? "Edit Standing Order" : "New Standing Order"}
           </h1>
           {isEditMode && statusBadge && (
@@ -606,12 +606,12 @@ export function StandingOrderForm() {
 
       {/* ── Customer section ─────────────────────────────────── */}
       <div className="bg-white border border-border rounded-lg p-4">
-        <h3 className="text-xs font-bold text-[#c27890] uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-bold text-rose-action uppercase tracking-wider mb-3">
           Customer
         </h3>
         <div className="flex flex-wrap items-start gap-2.5">
           <div className="flex-[2] min-w-[200px]">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
+            <label className="block text-xs font-semibold text-slate-heading mb-1 h-5 leading-5">
               Customer
             </label>
             {isEditMode && customer ? (
@@ -624,7 +624,7 @@ export function StandingOrderForm() {
           </div>
 
           <div className="flex-[1] min-w-[140px]">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
+            <label className="block text-xs font-semibold text-slate-heading mb-1 h-5 leading-5">
               Ship Via
             </label>
             <ShipViaSelector
@@ -638,7 +638,7 @@ export function StandingOrderForm() {
           </div>
 
           <div className="flex-[1] min-w-[200px]">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1 h-5 leading-5">
+            <label className="block text-xs font-semibold text-slate-heading mb-1 h-5 leading-5">
               Salesperson Email
             </label>
             <Input
@@ -659,7 +659,7 @@ export function StandingOrderForm() {
 
       {/* ── Cadence section ──────────────────────────────────── */}
       <div className="bg-white border border-border rounded-lg p-4">
-        <h3 className="text-xs font-bold text-[#c27890] uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-bold text-rose-action uppercase tracking-wider mb-3">
           Cadence
         </h3>
         <CadencePicker
@@ -690,10 +690,10 @@ export function StandingOrderForm() {
       {/* ── Line items section ───────────────────────────────── */}
       <div className="bg-white border border-border rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3">
-          <h3 className="text-xs font-bold text-[#c27890] uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-rose-action uppercase tracking-wider">
             Line Items
           </h3>
-          <div className="flex items-center gap-3 text-xs text-[#334155]">
+          <div className="flex items-center gap-3 text-xs text-text-body">
             <span>
               {lines.length} item{lines.length !== 1 ? "s" : ""}
             </span>
@@ -704,7 +704,7 @@ export function StandingOrderForm() {
 
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-[#1e3a5f] text-white text-xs">
+            <tr className="bg-slate-heading text-white text-xs">
               <th className="w-[40px] text-center px-2 py-2 font-medium">#</th>
               <th className="text-left px-2 py-2 font-medium">Sales Item</th>
               <th className="w-[18%] text-center px-2 py-2 font-medium">
@@ -722,7 +722,7 @@ export function StandingOrderForm() {
               return (
                 <Fragment key={line.localId}>
                   <tr className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                    <td className="text-center px-2 py-1.5 text-xs text-[#94a3b8]">
+                    <td className="text-center px-2 py-1.5 text-xs text-text-muted">
                       {idx + 1}
                     </td>
                     <td className="px-2 py-1.5">{line.salesItemName}</td>
@@ -794,7 +794,7 @@ export function StandingOrderForm() {
                   type="button"
                   onClick={() => setProductPickerOpen(true)}
                   disabled={!customer}
-                  className="text-xs text-[#c27890] hover:underline disabled:text-[#94a3b8] disabled:no-underline"
+                  className="text-xs text-rose-action hover:underline disabled:text-text-muted disabled:no-underline"
                 >
                   + Add Line Item
                 </button>
@@ -818,9 +818,9 @@ export function StandingOrderForm() {
           onChange={handleFeeChange}
         />
         <div className="bg-white border border-border rounded-lg p-4 flex-1 min-w-[260px]">
-          <h3 className="text-sm font-bold text-[#1e3a5f] mb-3">Details</h3>
+          <h3 className="text-sm font-bold text-slate-heading mb-3">Details</h3>
           <div>
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+            <label className="block text-xs font-semibold text-slate-heading mb-1">
               Notes
             </label>
             <textarea
@@ -866,7 +866,7 @@ export function StandingOrderForm() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+              <label className="block text-xs font-semibold text-slate-heading mb-1">
                 Reason
               </label>
               <textarea
@@ -877,7 +877,7 @@ export function StandingOrderForm() {
               />
             </div>
             {reasonDialog.showApplyFuture && (
-              <label className="flex items-center gap-2 text-sm text-[#334155]">
+              <label className="flex items-center gap-2 text-sm text-text-body">
                 <input
                   type="checkbox"
                   checked={applyToFuture}

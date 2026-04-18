@@ -12,14 +12,14 @@ const actionConfig: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  created: { label: "Created", color: "text-[#2d4a2d]", bg: "bg-[#2d4a2d]/10" },
-  updated: { label: "Updated", color: "text-[#1e40af]", bg: "bg-[#1e40af]/10" },
-  paused: { label: "Paused", color: "text-[#92400e]", bg: "bg-[#92400e]/10" },
-  resumed: { label: "Resumed", color: "text-[#2d4a2d]", bg: "bg-[#2d4a2d]/10" },
+  created: { label: "Created", color: "text-sidebar-hover", bg: "bg-sidebar-hover/10" },
+  updated: { label: "Updated", color: "text-box-blue-text", bg: "bg-box-blue-text/10" },
+  paused: { label: "Paused", color: "text-box-amber-text", bg: "bg-box-amber-text/10" },
+  resumed: { label: "Resumed", color: "text-sidebar-hover", bg: "bg-sidebar-hover/10" },
   cancelled: {
     label: "Cancelled",
-    color: "text-[#c27890]",
-    bg: "bg-[#c27890]/10",
+    color: "text-rose-action",
+    bg: "bg-rose-action/10",
   },
 };
 
@@ -77,10 +77,10 @@ export function StandingOrderAuditLog({
   };
 
   return (
-    <div className="rounded-lg border border-[#e0ddd8] bg-white">
+    <div className="rounded-lg border border-border-warm bg-white">
       <button
         onClick={handleToggle}
-        className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-[#1e3a5f] hover:bg-accent/50 transition-colors rounded-lg"
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-slate-heading hover:bg-accent/50 transition-colors rounded-lg"
       >
         <span>
           Audit Log{entries.length > 0 ? ` (${entries.length})` : ""}
@@ -96,15 +96,15 @@ export function StandingOrderAuditLog({
       </button>
 
       {expanded && (
-        <div className="border-t border-[#e0ddd8] px-4 py-3 space-y-2 max-h-64 overflow-y-auto">
+        <div className="border-t border-border-warm px-4 py-3 space-y-2 max-h-64 overflow-y-auto">
           {entries.length === 0 ? (
-            <p className="text-xs text-[#94a3b8]">No activity recorded</p>
+            <p className="text-xs text-text-muted">No activity recorded</p>
           ) : (
             entries.map((entry) => {
               const config = actionConfig[entry.action] ?? {
                 label: entry.action,
-                color: "text-[#334155]",
-                bg: "bg-[#f4f1ec]",
+                color: "text-text-body",
+                bg: "bg-cream",
               };
               return (
                 <div
@@ -115,22 +115,22 @@ export function StandingOrderAuditLog({
                     <span className={cn("font-medium", config.color)}>
                       {config.label}
                     </span>
-                    <span className="text-[#94a3b8] shrink-0">
+                    <span className="text-text-muted shrink-0">
                       {formatTime(entry.created_at)}
                     </span>
                   </div>
                   {entry.entered_by && (
-                    <p className="text-[#64748b] mb-1">
+                    <p className="text-slate-500 mb-1">
                       by {entry.entered_by}
                     </p>
                   )}
                   {entry.reason && (
-                    <p className="text-[#334155] italic mb-1">
+                    <p className="text-text-body italic mb-1">
                       {entry.reason}
                     </p>
                   )}
                   {entry.changes && entry.changes.length > 0 && (
-                    <ul className="text-[#334155] space-y-0.5">
+                    <ul className="text-text-body space-y-0.5">
                       {entry.changes.map((change, i) => (
                         <li key={i}>{formatChange(change)}</li>
                       ))}

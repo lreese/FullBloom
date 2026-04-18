@@ -59,14 +59,14 @@ export function PriceListCreateDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="text-[#1e3a5f]">Add Price List</DialogTitle>
+          <DialogTitle className="text-slate-heading">Add Price List</DialogTitle>
           <DialogDescription>
             Create a new price list with prices copied from an existing source.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-[#1e3a5f]">
+            <Label className="text-xs font-semibold text-slate-heading">
               Name *
             </Label>
             <Input
@@ -78,7 +78,7 @@ export function PriceListCreateDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-[#1e3a5f]">
+            <Label className="text-xs font-semibold text-slate-heading">
               Copy prices from
             </Label>
             <Select value={copyFrom} onValueChange={setCopyFrom}>
@@ -106,7 +106,7 @@ export function PriceListCreateDialog({
             </Button>
             <Button
               size="sm"
-              className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+              className="bg-rose-action hover:bg-rose-action/90 text-white text-xs"
               onClick={handleCreate}
               disabled={!name.trim() || saving}
             >
@@ -171,7 +171,7 @@ export function PriceListHeaderPopover({
         ) : (
           <div className="space-y-1">
             <button
-              className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-[#f4f1ec] text-[#334155]"
+              className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-cream text-text-body"
               onClick={() => {
                 setName(priceList.name);
                 setEditing(true);
@@ -180,12 +180,12 @@ export function PriceListHeaderPopover({
               Rename
             </button>
             <button
-              className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-[#fce7f3] text-red-600"
+              className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-box-pink-bg text-red-600"
               onClick={handleArchive}
             >
               Archive
               {priceList.customer_count > 0 && (
-                <span className="text-xs text-[#94a3b8] block">
+                <span className="text-xs text-text-muted block">
                   {priceList.customer_count} customer
                   {priceList.customer_count !== 1 ? "s" : ""} will be converted
                 </span>

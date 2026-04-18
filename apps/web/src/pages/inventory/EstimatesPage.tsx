@@ -174,25 +174,25 @@ export function EstimatesPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Top bar */}
-      <div className="shrink-0 border-b border-[#e0ddd8] bg-white px-4 py-3">
+      <div className="shrink-0 border-b border-border-warm bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-bold text-[#1e3a5f]">Estimates</h1>
+          <h1 className="text-xl font-bold text-slate-heading">Estimates</h1>
           <div className="flex items-center gap-2 ml-auto">
             {/* Week picker */}
-            <div className="flex items-center gap-1 rounded-lg border border-[#e0ddd8] bg-white">
+            <div className="flex items-center gap-1 rounded-lg border border-border-warm bg-white">
               <button
                 onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
-                className="p-2 text-[#334155] hover:bg-[#f4f1ec] rounded-l-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 text-text-body hover:bg-cream rounded-l-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Previous week"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="px-3 text-sm font-medium text-[#334155] whitespace-nowrap">
+              <span className="px-3 text-sm font-medium text-text-body whitespace-nowrap">
                 {formatWeekLabel(weekStart)}
               </span>
               <button
                 onClick={() => setWeekStart(shiftWeek(weekStart, 1))}
-                className="p-2 text-[#334155] hover:bg-[#f4f1ec] rounded-r-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 text-text-body hover:bg-cream rounded-r-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Next week"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -203,7 +203,7 @@ export function EstimatesPage() {
             <select
               value={selectedPtId}
               onChange={(e) => setSelectedPtId(e.target.value)}
-              className="h-8 rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              className="h-8 rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
             >
               {productTypes.map((pt) => (
                 <option key={pt.id} value={pt.id}>
@@ -216,7 +216,7 @@ export function EstimatesPage() {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 overflow-y-auto bg-[#f4f1ec] p-4 pb-24">
+      <div className="flex-1 overflow-y-auto bg-cream p-4 pb-24">
         {/* Toolbar row */}
         <div className="mb-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ export function EstimatesPage() {
                 variant="outline"
                 size="sm"
                 onClick={handlePrint}
-                className="border-[#e0ddd8] text-[#94a3b8] hover:text-[#334155] min-h-[44px] min-w-[44px]"
+                className="border-border-warm text-text-muted hover:text-text-body min-h-[44px] min-w-[44px]"
                 title="Print estimate sheet"
               >
                 <Printer className="h-4 w-4" />
@@ -308,8 +308,8 @@ export function EstimatesPage() {
           className={cn(
             "shadow-lg px-8 rounded-full text-base font-medium min-h-[48px] min-w-[120px] transition-all",
             hasDirty && !saving
-              ? "bg-[#c27890] hover:bg-[#b0687e] text-white"
-              : "bg-[#e0ddd8] text-[#94a3b8] cursor-not-allowed"
+              ? "bg-rose-action hover:bg-rose-action/90 text-white"
+              : "bg-border-warm text-text-muted cursor-not-allowed"
           )}
         >
           <Save className="h-4 w-4 mr-2" />

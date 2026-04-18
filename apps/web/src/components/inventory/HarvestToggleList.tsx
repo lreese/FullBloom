@@ -123,7 +123,7 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[#94a3b8]">
+      <div className="flex items-center justify-center py-12 text-text-muted">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         Loading varieties...
       </div>
@@ -132,7 +132,7 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="text-center py-12 text-[#94a3b8]">
+      <div className="text-center py-12 text-text-muted">
         No varieties found for this product type.
       </div>
     );
@@ -148,9 +148,9 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
           placeholder="Search varieties..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8]"
+          className="flex-1 bg-white border-border-warm text-text-body placeholder:text-text-muted"
         />
-        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#e8f0e8] text-[#2d4a2d] whitespace-nowrap">
+        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-box-green-bg text-sidebar-hover whitespace-nowrap">
           {totalInHarvest}/{entries.length} in harvest
         </span>
       </div>
@@ -163,21 +163,21 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
           return (
             <div key={group.productLineName}>
               {/* Section header — clickable to collapse */}
-              <div className="flex items-center justify-between gap-3 border-b border-[#e0ddd8] pb-2 mb-3">
+              <div className="flex items-center justify-between gap-3 border-b border-border-warm pb-2 mb-3">
                 <button
                   type="button"
                   onClick={() => toggleCollapse(group.productLineName)}
-                  className="flex items-center gap-2 hover:text-[#1e3a5f] transition-colors"
+                  className="flex items-center gap-2 hover:text-slate-heading transition-colors"
                 >
                   {isCollapsed ? (
-                    <ChevronRight className="h-4 w-4 text-[#94a3b8]" />
+                    <ChevronRight className="h-4 w-4 text-text-muted" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-[#94a3b8]" />
+                    <ChevronDown className="h-4 w-4 text-text-muted" />
                   )}
-                  <h3 className="text-sm font-semibold text-[#1e3a5f]">
+                  <h3 className="text-sm font-semibold text-slate-heading">
                     {group.productLineName}
                   </h3>
-                  <span className="text-xs text-[#94a3b8]">
+                  <span className="text-xs text-text-muted">
                     {harvestCount}/{group.varieties.length} in harvest
                   </span>
                 </button>
@@ -186,7 +186,7 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
                     variant="outline"
                     size="xs"
                     onClick={() => handleBulkSetAll(group.varieties, true)}
-                    className="text-[#2d4a2d] border-[#2d4a2d]/30 hover:bg-[#2d4a2d]/10"
+                    className="text-sidebar-hover border-sidebar-hover/30 hover:bg-sidebar-hover/10"
                   >
                     All in harvest
                   </Button>
@@ -194,7 +194,7 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
                     variant="outline"
                     size="xs"
                     onClick={() => handleBulkSetAll(group.varieties, false)}
-                    className="text-[#94a3b8] border-[#e0ddd8] hover:bg-[#f4f1ec]"
+                    className="text-text-muted border-border-warm hover:bg-cream"
                   >
                     All dormant
                   </Button>
@@ -209,9 +209,9 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
                     return (
                       <div
                         key={variety.variety_id}
-                        className="flex items-center justify-between rounded-lg px-3 py-2 min-h-[44px] hover:bg-[#f4f1ec] transition-colors"
+                        className="flex items-center justify-between rounded-lg px-3 py-2 min-h-[44px] hover:bg-cream transition-colors"
                       >
-                        <span className="flex-1 text-sm text-[#334155]">
+                        <span className="flex-1 text-sm text-text-body">
                           {variety.variety_name}
                         </span>
                         <div className="flex items-center gap-2 min-w-[36px] min-h-[36px] justify-center">
@@ -219,7 +219,7 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
                             checked={variety.in_harvest}
                             onCheckedChange={() => handleToggle(variety.variety_id, variety.in_harvest)}
                             disabled={isSaving}
-                            className="h-5 w-5 data-checked:bg-[#2d4a2d] data-checked:border-[#2d4a2d]"
+                            className="h-5 w-5 data-checked:bg-sidebar-hover data-checked:border-sidebar-hover"
                             aria-label={`${variety.variety_name} harvest status`}
                           />
                         </div>
@@ -233,7 +233,7 @@ export function HarvestToggleList({ productTypeId }: HarvestToggleListProps) {
         })}
 
         {groups.length === 0 && search && (
-          <div className="text-center py-8 text-[#94a3b8] text-sm">
+          <div className="text-center py-8 text-text-muted text-sm">
             No varieties matching "{search}"
           </div>
         )}

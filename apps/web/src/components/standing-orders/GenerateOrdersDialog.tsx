@@ -235,7 +235,7 @@ export function GenerateOrdersDialog({
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="right" className="w-full !sm:max-w-full !max-w-none flex flex-col p-0">
         <SheetHeader className="px-6 pt-6 pb-2">
-          <SheetTitle style={{ color: "#1e3a5f" }}>
+          <SheetTitle style={{ color: "var(--color-slate-heading)" }}>
             Generate Orders
           </SheetTitle>
           <SheetDescription>
@@ -251,15 +251,15 @@ export function GenerateOrdersDialog({
           <div className="flex flex-col items-center gap-3 py-6">
             <CheckCircle2
               className="h-10 w-10"
-              style={{ color: "#2d4a2d" }}
+              style={{ color: "var(--color-sidebar-hover)" }}
             />
-            <p className="text-base font-medium" style={{ color: "#2d4a2d" }}>
+            <p className="text-base font-medium" style={{ color: "var(--color-sidebar-hover)" }}>
               {successResult.orders_created} order
               {successResult.orders_created !== 1 ? "s" : ""} created
               successfully
             </p>
             {successResult.orders_skipped > 0 && (
-              <p className="text-sm" style={{ color: "#92400e" }}>
+              <p className="text-sm" style={{ color: "var(--color-box-amber-text)" }}>
                 {successResult.orders_skipped} duplicate
                 {successResult.orders_skipped !== 1 ? "s" : ""} skipped
               </p>
@@ -272,18 +272,18 @@ export function GenerateOrdersDialog({
             <div
               className="rounded-lg border p-3"
               style={{
-                backgroundColor: "#faf9f7",
-                borderColor: "#e0ddd8",
+                backgroundColor: "var(--color-cream-warm)",
+                borderColor: "var(--color-border-warm)",
               }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <Calendar
                   className="h-4 w-4"
-                  style={{ color: "#64748b" }}
+                  style={{ color: "var(--color-slate-500)" }}
                 />
                 <span
                   className="text-sm font-medium"
-                  style={{ color: "#334155" }}
+                  style={{ color: "var(--color-text-body)" }}
                 >
                   Date Range
                 </span>
@@ -292,7 +292,7 @@ export function GenerateOrdersDialog({
                 <div className="flex-1">
                   <label
                     className="block text-xs mb-1"
-                    style={{ color: "#64748b" }}
+                    style={{ color: "var(--color-slate-500)" }}
                   >
                     From
                   </label>
@@ -301,13 +301,13 @@ export function GenerateOrdersDialog({
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
                     className="w-full rounded-md border px-2 py-1.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-                    style={{ borderColor: "#e0ddd8" }}
+                    style={{ borderColor: "var(--color-border-warm)" }}
                   />
                 </div>
                 <div className="flex-1">
                   <label
                     className="block text-xs mb-1"
-                    style={{ color: "#64748b" }}
+                    style={{ color: "var(--color-slate-500)" }}
                   >
                     To
                   </label>
@@ -316,14 +316,14 @@ export function GenerateOrdersDialog({
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
                     className="w-full rounded-md border px-2 py-1.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-                    style={{ borderColor: "#e0ddd8" }}
+                    style={{ borderColor: "var(--color-border-warm)" }}
                   />
                 </div>
               </div>
               {dateSummary && (
                 <p
                   className="text-xs mt-2"
-                  style={{ color: "#64748b" }}
+                  style={{ color: "var(--color-slate-500)" }}
                 >
                   {dateSummary}
                 </p>
@@ -336,11 +336,11 @@ export function GenerateOrdersDialog({
                 <div className="flex items-center justify-center py-8">
                   <Loader2
                     className="h-5 w-5 animate-spin"
-                    style={{ color: "#94a3b8" }}
+                    style={{ color: "var(--color-text-muted)" }}
                   />
                   <span
                     className="ml-2 text-sm"
-                    style={{ color: "#94a3b8" }}
+                    style={{ color: "var(--color-text-muted)" }}
                   >
                     Loading preview...
                   </span>
@@ -349,9 +349,9 @@ export function GenerateOrdersDialog({
                 <div
                   className="rounded-lg border p-4 text-sm text-center"
                   style={{
-                    backgroundColor: "#fef2f2",
-                    borderColor: "#fecaca",
-                    color: "#dc2626",
+                    backgroundColor: "var(--color-red-50)",
+                    borderColor: "var(--color-red-200)",
+                    color: "var(--color-red-600)",
                   }}
                 >
                   {previewError}
@@ -360,9 +360,9 @@ export function GenerateOrdersDialog({
                 <div
                   className="rounded-lg border p-4 text-sm text-center"
                   style={{
-                    backgroundColor: "#faf9f7",
-                    borderColor: "#e0ddd8",
-                    color: "#94a3b8",
+                    backgroundColor: "var(--color-cream-warm)",
+                    borderColor: "var(--color-border-warm)",
+                    color: "var(--color-text-muted)",
                   }}
                 >
                   No matching standing orders for the selected dates.
@@ -370,11 +370,11 @@ export function GenerateOrdersDialog({
               ) : (
                 <div
                   className="rounded-lg border overflow-x-auto"
-                  style={{ borderColor: "#e0ddd8" }}
+                  style={{ borderColor: "var(--color-border-warm)" }}
                 >
                   <table className="w-full text-sm min-w-[500px]">
                     <thead>
-                      <tr style={{ backgroundColor: "#faf9f7" }}>
+                      <tr style={{ backgroundColor: "var(--color-cream-warm)" }}>
                         <th className="w-8 px-2 py-2">
                           <Checkbox
                             checked={allSelected}
@@ -384,31 +384,31 @@ export function GenerateOrdersDialog({
                         </th>
                         <th
                           className="px-3 py-2 text-left font-medium"
-                          style={{ color: "#1e3a5f" }}
+                          style={{ color: "var(--color-slate-heading)" }}
                         >
                           Customer
                         </th>
                         <th
                           className="px-3 py-2 text-left font-medium"
-                          style={{ color: "#1e3a5f" }}
+                          style={{ color: "var(--color-slate-heading)" }}
                         >
                           Date
                         </th>
                         <th
                           className="px-3 py-2 text-center font-medium"
-                          style={{ color: "#1e3a5f" }}
+                          style={{ color: "var(--color-slate-heading)" }}
                         >
                           Lines
                         </th>
                         <th
                           className="px-3 py-2 text-center font-medium"
-                          style={{ color: "#1e3a5f" }}
+                          style={{ color: "var(--color-slate-heading)" }}
                         >
                           Stems
                         </th>
                         <th
                           className="px-3 py-2 text-left font-medium"
-                          style={{ color: "#1e3a5f" }}
+                          style={{ color: "var(--color-slate-heading)" }}
                         >
                           Status
                         </th>
@@ -421,8 +421,8 @@ export function GenerateOrdersDialog({
                         return (
                           <tr
                             key={key}
-                            className="border-t cursor-pointer hover:bg-[#faf9f7] transition-colors"
-                            style={{ borderColor: "#e0ddd8" }}
+                            className="border-t cursor-pointer hover:bg-cream-warm transition-colors"
+                            style={{ borderColor: "var(--color-border-warm)" }}
                             onClick={() => toggleOne(key)}
                           >
                             <td className="px-2 py-2 text-center">
@@ -433,13 +433,13 @@ export function GenerateOrdersDialog({
                             </td>
                             <td
                               className="px-3 py-2 font-medium"
-                              style={{ color: "#334155" }}
+                              style={{ color: "var(--color-text-body)" }}
                             >
                               {m.customer_name}
                             </td>
                             <td
                               className="px-3 py-2"
-                              style={{ color: "#334155" }}
+                              style={{ color: "var(--color-text-body)" }}
                             >
                               {formatShortDate(m.generate_date)}
                             </td>
@@ -447,8 +447,8 @@ export function GenerateOrdersDialog({
                               <span
                                 className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                                 style={{
-                                  backgroundColor: "#dbeafe",
-                                  color: "#1e40af",
+                                  backgroundColor: "var(--color-box-blue-bg)",
+                                  color: "var(--color-box-blue-text)",
                                 }}
                               >
                                 {m.lines_count}
@@ -458,8 +458,8 @@ export function GenerateOrdersDialog({
                               <span
                                 className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                                 style={{
-                                  backgroundColor: "#e8f0e8",
-                                  color: "#2d4a2d",
+                                  backgroundColor: "var(--color-box-green-bg)",
+                                  color: "var(--color-sidebar-hover)",
                                 }}
                               >
                                 {m.total_stems.toLocaleString()}
@@ -470,8 +470,8 @@ export function GenerateOrdersDialog({
                                 <span
                                   className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                                   style={{
-                                    backgroundColor: "#fef3c7",
-                                    color: "#92400e",
+                                    backgroundColor: "var(--color-box-amber-bg)",
+                                    color: "var(--color-box-amber-text)",
                                   }}
                                 >
                                   Already generated
@@ -480,8 +480,8 @@ export function GenerateOrdersDialog({
                                 <span
                                   className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                                   style={{
-                                    backgroundColor: "#e8f0e8",
-                                    color: "#2d4a2d",
+                                    backgroundColor: "var(--color-box-green-bg)",
+                                    color: "var(--color-sidebar-hover)",
                                   }}
                                 >
                                   Ready
@@ -502,8 +502,8 @@ export function GenerateOrdersDialog({
               <div
                 className="rounded-lg px-4 py-2.5 text-sm font-medium"
                 style={{
-                  backgroundColor: "#e8f0e8",
-                  color: "#2d4a2d",
+                  backgroundColor: "var(--color-box-green-bg)",
+                  color: "var(--color-sidebar-hover)",
                 }}
               >
                 {selectedCount} selected of {totalCount} match
@@ -516,18 +516,18 @@ export function GenerateOrdersDialog({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[#e0ddd8] px-6 py-4 mt-auto">
+        <div className="border-t border-border-warm px-6 py-4 mt-auto">
           {successResult ? (
             <Button
               onClick={handleClose}
               className="w-full"
-              style={{ backgroundColor: "#2d4a2d", color: "white" }}
+              style={{ backgroundColor: "var(--color-sidebar-hover)", color: "white" }}
             >
               Done
             </Button>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs" style={{ color: "#64748b" }}>
+              <p className="text-xs" style={{ color: "var(--color-slate-500)" }}>
                 Orders will appear in the Orders list with a standing order badge.
               </p>
               <div className="flex items-center gap-2">
@@ -540,7 +540,7 @@ export function GenerateOrdersDialog({
                   disabled={selectedCount === 0 || generating || previewLoading}
                   style={{
                     backgroundColor:
-                      selectedCount === 0 ? "#94a3b8" : "#2d4a2d",
+                      selectedCount === 0 ? "var(--color-text-muted)" : "var(--color-sidebar-hover)",
                     color: "white",
                   }}
                 >

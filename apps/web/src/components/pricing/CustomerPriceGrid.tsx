@@ -171,7 +171,7 @@ export function CustomerPriceGrid({
             type="text"
             className={cn(
               "w-20 h-6 px-1 text-xs text-center border-2 rounded outline-none bg-white",
-              editError ? "border-red-500" : "border-[#c27890]"
+              editError ? "border-red-500" : "border-rose-action"
             )}
             value={editValue}
             onChange={(e) => {
@@ -193,7 +193,7 @@ export function CustomerPriceGrid({
           item,
           <span className="inline-flex items-center gap-1">
             <button
-              className="text-xs font-medium text-[#334155] hover:underline"
+              className="text-xs font-medium text-text-body hover:underline"
               onClick={(e) => {
                 e.stopPropagation();
                 startEdit(item);
@@ -206,7 +206,7 @@ export function CustomerPriceGrid({
               overridePrice={item.customer_override!}
             />
             <button
-              className="text-[#94a3b8] hover:text-red-500 transition-colors"
+              className="text-text-muted hover:text-red-500 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemoveOverride(item.sales_item_id);
@@ -222,7 +222,7 @@ export function CustomerPriceGrid({
       return renderPriceTooltip(
         item,
         <button
-          className="text-xs italic text-[#94a3b8] hover:text-[#c27890] transition-colors"
+          className="text-xs italic text-text-muted hover:text-rose-action transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             startEdit(item);
@@ -243,7 +243,7 @@ export function CustomerPriceGrid({
   };
 
   const cellClassName = (col: ColumnDef, item: FlatItem) => {
-    if (item.source === "override") return "bg-[#fce7f3]";
+    if (item.source === "override") return "bg-box-pink-bg";
     return undefined;
   };
 
@@ -251,7 +251,7 @@ export function CustomerPriceGrid({
     <div>
       {/* Only Overrides toggle */}
       <div className="flex items-center gap-2 mb-2">
-        <label className="flex items-center gap-1.5 text-xs text-[#334155] cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs text-text-body cursor-pointer">
           <Checkbox
             checked={onlyOverrides}
             onCheckedChange={(v) => setOnlyOverrides(v === true)}
@@ -262,8 +262,8 @@ export function CustomerPriceGrid({
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 mb-3 p-2 bg-[#fce7f3] rounded-lg border border-[#e0ddd8]">
-          <span className="text-xs text-[#334155] font-medium">
+        <div className="flex items-center gap-2 mb-3 p-2 bg-box-pink-bg rounded-lg border border-border-warm">
+          <span className="text-xs text-text-body font-medium">
             {selectedIds.size} selected:
           </span>
           <Input
@@ -278,7 +278,7 @@ export function CustomerPriceGrid({
           />
           <Button
             size="sm"
-            className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs h-7"
+            className="bg-rose-action hover:bg-rose-action/90 text-white text-xs h-7"
             onClick={handleBulkSetPrice}
             disabled={!bulkPrice.trim()}
           >

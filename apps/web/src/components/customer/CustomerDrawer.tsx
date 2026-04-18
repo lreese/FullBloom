@@ -157,7 +157,7 @@ export function CustomerDrawer({
     value: string
   ) => (
     <div>
-      <Label className="text-xs font-semibold text-[#1e3a5f]">{label}</Label>
+      <Label className="text-xs font-semibold text-slate-heading">{label}</Label>
       <Select
         value={value || "__none__"}
         onValueChange={(v) => setField(field, v === "__none__" ? "" : v)}
@@ -182,10 +182,10 @@ export function CustomerDrawer({
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full sm:max-w-[520px] flex flex-col p-0">
         {/* Header */}
-        <SheetHeader className="px-5 py-4 border-b border-[#e0ddd8]">
+        <SheetHeader className="px-5 py-4 border-b border-border-warm">
           <div className="flex items-center justify-between">
             <div>
-              <SheetTitle className="text-[#1e3a5f]">
+              <SheetTitle className="text-slate-heading">
                 {mode === "add" ? "New Customer" : "Edit Customer"}
               </SheetTitle>
               {mode === "edit" && customer && (
@@ -201,16 +201,16 @@ export function CustomerDrawer({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {/* Identity */}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] mb-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">
               Identity
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">
+                <Label className="text-xs font-semibold text-slate-heading">
                   Customer Number
                 </Label>
                 {mode === "edit" ? (
-                  <div className="mt-1 px-3 py-1.5 bg-[#f4f1ec] border border-[#e0ddd8] rounded-md text-sm text-[#94a3b8]">
+                  <div className="mt-1 px-3 py-1.5 bg-cream border border-border-warm rounded-md text-sm text-text-muted">
                     {form.customer_number}
                   </div>
                 ) : (
@@ -233,7 +233,7 @@ export function CustomerDrawer({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">Price List</Label>
+                <Label className="text-xs font-semibold text-slate-heading">Price List</Label>
                 <Select
                   value={form.price_list_id || "__none__"}
                   onValueChange={(v) => setField("price_list_id", v === "__none__" ? "" : v)}
@@ -254,7 +254,7 @@ export function CustomerDrawer({
               </div>
             </div>
             <div className="mt-3">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Name *
               </Label>
               <Input
@@ -271,12 +271,12 @@ export function CustomerDrawer({
 
           {/* Contact */}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] mb-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">
               Contact
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">
+                <Label className="text-xs font-semibold text-slate-heading">
                   Contact Name
                 </Label>
                 <Input
@@ -287,7 +287,7 @@ export function CustomerDrawer({
                 />
               </div>
               <div>
-                <Label className="text-xs font-semibold text-[#1e3a5f]">
+                <Label className="text-xs font-semibold text-slate-heading">
                   Phone
                 </Label>
                 <Input
@@ -299,7 +299,7 @@ export function CustomerDrawer({
               </div>
             </div>
             <div className="mt-3">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Email
               </Label>
               <Input
@@ -313,7 +313,7 @@ export function CustomerDrawer({
 
           {/* Shipping & Billing */}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] mb-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">
               Shipping &amp; Billing
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -331,7 +331,7 @@ export function CustomerDrawer({
               )}
             </div>
             <div className="mt-3">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Location
               </Label>
               <Input
@@ -345,7 +345,7 @@ export function CustomerDrawer({
 
           {/* Notes */}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8] mb-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">
               Notes
             </div>
             <Textarea
@@ -364,12 +364,12 @@ export function CustomerDrawer({
 
         {/* Footer */}
         {!isReadOnly && (
-          <div className="flex gap-2 px-5 py-3 border-t border-[#e0ddd8] bg-[#faf8f5]">
+          <div className="flex gap-2 px-5 py-3 border-t border-border-warm bg-cream-warm">
             {mode === "edit" && customer && !isArchived && (
               <Button
                 variant="outline"
                 size="sm"
-                className="text-[#c27890] border-[#fce7f3] hover:bg-[#fce7f3] text-xs mr-auto"
+                className="text-rose-action border-box-pink-bg hover:bg-box-pink-bg text-xs mr-auto"
                 onClick={() => onArchive(customer.id)}
               >
                 Archive
@@ -379,7 +379,7 @@ export function CustomerDrawer({
               <Button
                 variant="outline"
                 size="sm"
-                className="text-[#2d4a2d] border-[#e8f0e8] hover:bg-[#e8f0e8] text-xs mr-auto"
+                className="text-sidebar-hover border-box-green-bg hover:bg-box-green-bg text-xs mr-auto"
                 onClick={() => onRestore(customer.id)}
               >
                 Restore
@@ -396,7 +396,7 @@ export function CustomerDrawer({
             </Button>
             <Button
               size="sm"
-              className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+              className="bg-rose-action hover:bg-rose-action/90 text-white text-xs"
               onClick={handleSave}
               disabled={saving}
             >

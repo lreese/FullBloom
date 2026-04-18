@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 
 const BADGE_COLORS = [
-  { bg: "bg-[#dbeafe]", text: "text-[#1e3a5f]" },
-  { bg: "bg-[#fce7f3]", text: "text-[#831843]" },
-  { bg: "bg-[#e8f0e8]", text: "text-[#2d4a2d]" },
-  { bg: "bg-[#fef3c7]", text: "text-[#92400e]" },
-  { bg: "bg-[#ede9fe]", text: "text-[#5b21b6]" },
+  { bg: "bg-box-blue-bg", text: "text-slate-heading" },
+  { bg: "bg-box-pink-bg", text: "text-box-pink-text" },
+  { bg: "bg-box-green-bg", text: "text-sidebar-hover" },
+  { bg: "bg-box-amber-bg", text: "text-box-amber-text" },
+  { bg: "bg-box-purple-bg", text: "text-box-purple-text" },
 ] as const;
 
 interface BoxReferenceBadgeProps {

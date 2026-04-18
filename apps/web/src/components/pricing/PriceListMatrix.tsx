@@ -270,7 +270,7 @@ export function PriceListMatrix({
             type="text"
             className={cn(
               "w-full h-6 px-1 text-xs text-center border-2 rounded outline-none bg-white",
-              editError ? "border-red-500" : "border-[#c27890]"
+              editError ? "border-red-500" : "border-rose-action"
             )}
             value={editing.value}
             onChange={(e) => {
@@ -284,8 +284,8 @@ export function PriceListMatrix({
           {impact &&
             impact.salesItemId === item.sales_item_id &&
             impact.priceListId === columnId && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 z-20 mt-1 bg-white border border-[#e0ddd8] rounded-lg shadow-lg p-3 w-56 text-xs">
-                <div className="text-[#334155] space-y-1">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 z-20 mt-1 bg-white border border-border-warm rounded-lg shadow-lg p-3 w-56 text-xs">
+                <div className="text-text-body space-y-1">
                   <div>{impact.preview.customers_on_list} customers on this list</div>
                   <div>
                     {impact.preview.customers_with_overrides} have overrides
@@ -297,7 +297,7 @@ export function PriceListMatrix({
                 </div>
                 <div className="flex gap-2 mt-2">
                   <button
-                    className="flex-1 px-2 py-1 bg-[#c27890] text-white rounded text-xs hover:bg-[#a8607a]"
+                    className="flex-1 px-2 py-1 bg-rose-action text-white rounded text-xs hover:bg-rose-action/90"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       handleConfirmImpact();
@@ -306,7 +306,7 @@ export function PriceListMatrix({
                     Save
                   </button>
                   <button
-                    className="flex-1 px-2 py-1 border border-[#e0ddd8] rounded text-xs text-[#334155] hover:bg-[#f4f1ec]"
+                    className="flex-1 px-2 py-1 border border-border-warm rounded text-xs text-text-body hover:bg-cream"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       handleCancel();
@@ -331,15 +331,15 @@ export function PriceListMatrix({
     return (
       <button
         className={cn(
-          "w-full h-6 text-xs text-center cursor-pointer rounded hover:bg-[#fce7f3] transition-colors",
-          isSaved && "bg-[#e8f0e8] animate-pulse"
+          "w-full h-6 text-xs text-center cursor-pointer rounded hover:bg-box-pink-bg transition-colors",
+          isSaved && "bg-box-green-bg animate-pulse"
         )}
         onClick={() => handleCellClick(item, columnId)}
       >
         {value ? `$${Number(value).toFixed(2)}` : "\u2014"}
         {isAnomaly && (
           <span
-            className="ml-0.5 inline-flex items-center text-[7px] bg-white border border-[#c27890] text-[#c27890] px-0.5 rounded"
+            className="ml-0.5 inline-flex items-center text-[7px] bg-white border border-rose-action text-rose-action px-0.5 rounded"
             title={`${anomalyPct > 0 ? "+" : ""}${anomalyPct}% from retail`}
           >
             ⚠ {anomalyPct > 0 ? "+" : ""}{anomalyPct}%
@@ -353,7 +353,7 @@ export function PriceListMatrix({
     <div>
       {/* Search */}
       <div className="mb-3 relative max-w-[320px]">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94a3b8]" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
         <Input
           placeholder="Search sales items..."
           className="pl-8 h-8 text-sm"
@@ -363,11 +363,11 @@ export function PriceListMatrix({
       </div>
 
       {/* Grid */}
-      <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
+      <div className="rounded-lg border border-border-warm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
+              <tr className="border-b-2 border-border-warm bg-cream-warm">
                 <th className="px-2 py-1.5 w-8">
                   <Checkbox
                     checked={allSelected}
@@ -375,33 +375,33 @@ export function PriceListMatrix({
                   />
                 </th>
                 <th
-                  className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap cursor-pointer select-none"
+                  className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-heading whitespace-nowrap cursor-pointer select-none"
                   onClick={() => handleSort("sales_item_name")}
                 >
-                  Sales Item {sortConfig?.key === "sales_item_name" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                  Sales Item {sortConfig?.key === "sales_item_name" && <span className="text-rose-action">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
                 <th
-                  className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap cursor-pointer select-none"
+                  className="px-2 py-1.5 text-left text-[10px] font-semibold text-text-muted whitespace-nowrap cursor-pointer select-none"
                   onClick={() => handleSort("variety_name")}
                 >
-                  Variety {sortConfig?.key === "variety_name" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                  Variety {sortConfig?.key === "variety_name" && <span className="text-rose-action">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
                 <th
-                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-16 cursor-pointer select-none"
+                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-slate-heading whitespace-nowrap w-16 cursor-pointer select-none"
                   onClick={() => handleSort("stems_per_order")}
                 >
-                  Stems {sortConfig?.key === "stems_per_order" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                  Stems {sortConfig?.key === "stems_per_order" && <span className="text-rose-action">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
                 <th
-                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20 bg-[#fce7f3] cursor-pointer select-none"
+                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-slate-heading whitespace-nowrap w-20 bg-box-pink-bg cursor-pointer select-none"
                   onClick={() => handleSort("retail")}
                 >
-                  Retail {sortConfig?.key === "retail" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                  Retail {sortConfig?.key === "retail" && <span className="text-rose-action">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
                 {priceLists.map((pl) => (
                   <th
                     key={pl.id}
-                    className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap w-20 cursor-pointer select-none"
+                    className="px-2 py-1.5 text-center text-[10px] font-semibold text-slate-heading whitespace-nowrap w-20 cursor-pointer select-none"
                     onClick={() => handleSort(pl.id)}
                   >
                     <div>
@@ -412,7 +412,7 @@ export function PriceListMatrix({
                             onRename={onRename}
                             onArchive={onArchive}
                           >
-                            <button className="cursor-pointer hover:bg-[#f4f1ec] rounded px-1 py-0.5">
+                            <button className="cursor-pointer hover:bg-cream rounded px-1 py-0.5">
                               {pl.name}
                             </button>
                           </PriceListHeaderPopover>
@@ -420,18 +420,18 @@ export function PriceListMatrix({
                       ) : (
                         <span>{pl.name}</span>
                       )}
-                      {sortConfig?.key === pl.id && <span className="text-[#c27890] ml-0.5">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
-                      <div className="text-[#94a3b8] font-normal">
+                      {sortConfig?.key === pl.id && <span className="text-rose-action ml-0.5">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                      <div className="text-text-muted font-normal">
                         {pl.customer_count} customers
                       </div>
                     </div>
                   </th>
                 ))}
                 <th
-                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-[#94a3b8] whitespace-nowrap w-24 cursor-pointer select-none"
+                  className="px-2 py-1.5 text-center text-[10px] font-semibold text-text-muted whitespace-nowrap w-24 cursor-pointer select-none"
                   onClick={() => handleSort("spread")}
                 >
-                  Spread {sortConfig?.key === "spread" && <span className="text-[#c27890]">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
+                  Spread {sortConfig?.key === "spread" && <span className="text-rose-action">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>}
                 </th>
               </tr>
             </thead>
@@ -440,7 +440,7 @@ export function PriceListMatrix({
                 <tr>
                   <td
                     colSpan={5 + priceLists.length + 1}
-                    className="px-3 py-8 text-center text-[#94a3b8]"
+                    className="px-3 py-8 text-center text-text-muted"
                   >
                     No sales items found.
                   </td>
@@ -453,9 +453,9 @@ export function PriceListMatrix({
                     <tr
                       key={item.sales_item_id}
                       className={cn(
-                        "border-b border-[#f0ede8] transition-colors",
-                        idx % 2 === 1 && "bg-[#faf8f5]",
-                        isSelected && "bg-[#fce7f3]"
+                        "border-b border-border-warm transition-colors",
+                        idx % 2 === 1 && "bg-cream-warm",
+                        isSelected && "bg-box-pink-bg"
                       )}
                     >
                       <td className="px-2 py-1 w-8">
@@ -464,16 +464,16 @@ export function PriceListMatrix({
                           onCheckedChange={() => onToggleSelect(item.sales_item_id)}
                         />
                       </td>
-                      <td className="px-2 py-1 text-[#334155] font-medium whitespace-nowrap">
+                      <td className="px-2 py-1 text-text-body font-medium whitespace-nowrap">
                         {item.sales_item_name}
                       </td>
-                      <td className="px-2 py-1 text-[#94a3b8] whitespace-nowrap">
+                      <td className="px-2 py-1 text-text-muted whitespace-nowrap">
                         {item.variety_name}
                       </td>
-                      <td className="px-2 py-1 text-center text-[#334155]">
+                      <td className="px-2 py-1 text-center text-text-body">
                         {item.stems_per_order}
                       </td>
-                      <td className="px-1 py-1 bg-[#fce7f3]/30">
+                      <td className="px-1 py-1 bg-box-pink-bg/30">
                         {renderCell(item, "retail")}
                       </td>
                       {priceLists.map((pl) => (
@@ -481,8 +481,8 @@ export function PriceListMatrix({
                           {renderCell(item, pl.id)}
                         </td>
                       ))}
-                      <td className="px-2 py-1 text-center text-[10px] text-[#94a3b8]">
-                        <span className={spread.hasSpread ? "" : "text-[#94a3b8] italic"}>
+                      <td className="px-2 py-1 text-center text-[10px] text-text-muted">
+                        <span className={spread.hasSpread ? "" : "text-text-muted italic"}>
                           {spread.text}
                         </span>
                       </td>
@@ -493,7 +493,7 @@ export function PriceListMatrix({
             </tbody>
           </table>
         </div>
-        <div className="px-3 py-2 text-xs text-[#94a3b8] bg-[#faf8f5] border-t border-[#e0ddd8]">
+        <div className="px-3 py-2 text-xs text-text-muted bg-cream-warm border-t border-border-warm">
           {filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""} ·{" "}
           {priceLists.length} price list{priceLists.length !== 1 ? "s" : ""}
           {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}

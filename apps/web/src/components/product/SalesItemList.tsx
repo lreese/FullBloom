@@ -139,12 +139,12 @@ export function SalesItemList({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-[#94a3b8]">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
           Sales Items
         </div>
         {!readOnly && (
           <button
-            className="text-xs text-[#c27890] hover:underline"
+            className="text-xs text-rose-action hover:underline"
             onClick={startAdd}
             disabled={adding}
           >
@@ -155,14 +155,14 @@ export function SalesItemList({
 
       {/* Archive confirmation inline */}
       {archiveConfirmId && archiveTarget && (
-        <div className="mb-2 p-2 bg-[#fce7f3] border border-[#f9a8d4] rounded text-xs text-[#831843]">
+        <div className="mb-2 p-2 bg-box-pink-bg border border-pink-300 rounded text-xs text-box-pink-text">
           <p className="font-medium">
             This sales item has {archiveTarget.customer_prices_count} customer price{archiveTarget.customer_prices_count !== 1 ? "s" : ""}. Archive it?
           </p>
           <div className="flex gap-2 mt-1.5">
             <Button
               size="sm"
-              className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs h-6 px-2"
+              className="bg-rose-action hover:bg-rose-action/90 text-white text-xs h-6 px-2"
               onClick={confirmArchive}
             >
               Archive
@@ -183,22 +183,22 @@ export function SalesItemList({
         <p className="text-xs text-red-500 mb-2">{error}</p>
       )}
 
-      <div className="rounded border border-[#e0ddd8] overflow-hidden">
+      <div className="rounded border border-border-warm overflow-hidden">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-[#e0ddd8] bg-[#faf8f5]">
-              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f]">Name</th>
-              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-16">Stems</th>
-              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] w-20">Retail $</th>
+            <tr className="border-b border-border-warm bg-cream-warm">
+              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-heading">Name</th>
+              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-heading w-16">Stems</th>
+              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-heading w-20">Retail $</th>
               {!readOnly && (
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-[#1e3a5f] w-16">Actions</th>
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-slate-heading w-16">Actions</th>
               )}
             </tr>
           </thead>
           <tbody>
             {activeItems.length === 0 && !adding && (
               <tr>
-                <td colSpan={readOnly ? 3 : 4} className="px-2 py-4 text-center text-[#94a3b8]">
+                <td colSpan={readOnly ? 3 : 4} className="px-2 py-4 text-center text-text-muted">
                   No sales items
                 </td>
               </tr>
@@ -206,19 +206,19 @@ export function SalesItemList({
             {activeItems.map((item) => {
               const isEditing = editingId === item.id;
               return (
-                <tr key={item.id} className="border-b border-[#f0ede8]">
+                <tr key={item.id} className="border-b border-border-warm">
                   {isEditing ? (
                     <>
                       <td className="px-2 py-1">
                         <Input
-                          className="h-7 text-xs border-[#c27890]"
+                          className="h-7 text-xs border-rose-action"
                           value={editForm.name}
                           onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                         />
                       </td>
                       <td className="px-2 py-1">
                         <Input
-                          className="h-7 text-xs border-[#c27890] w-14"
+                          className="h-7 text-xs border-rose-action w-14"
                           type="number"
                           value={editForm.stems_per_order}
                           onChange={(e) => setEditForm((f) => ({ ...f, stems_per_order: e.target.value }))}
@@ -226,7 +226,7 @@ export function SalesItemList({
                       </td>
                       <td className="px-2 py-1">
                         <Input
-                          className="h-7 text-xs border-[#c27890] w-18"
+                          className="h-7 text-xs border-rose-action w-18"
                           value={editForm.retail_price}
                           onChange={(e) => setEditForm((f) => ({ ...f, retail_price: e.target.value }))}
                         />
@@ -236,11 +236,11 @@ export function SalesItemList({
                           <button
                             onClick={saveEdit}
                             disabled={saving}
-                            className="text-[#2d4a2d] hover:text-[#1a2e1a]"
+                            className="text-sidebar-hover hover:text-sidebar"
                           >
                             <Check className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={cancelEdit} className="text-[#94a3b8] hover:text-[#334155]">
+                          <button onClick={cancelEdit} className="text-text-muted hover:text-text-body">
                             <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -248,28 +248,28 @@ export function SalesItemList({
                     </>
                   ) : (
                     <>
-                      <td className="px-2 py-1.5 text-[#334155]">
+                      <td className="px-2 py-1.5 text-text-body">
                         <div>{item.name}</div>
                         {item.customer_prices_count > 0 && (
-                          <div className="text-[10px] text-[#94a3b8]">
+                          <div className="text-[10px] text-text-muted">
                             {item.customer_prices_count} customer price{item.customer_prices_count !== 1 ? "s" : ""}
                           </div>
                         )}
                       </td>
-                      <td className="px-2 py-1.5 text-[#334155]">{item.stems_per_order}</td>
-                      <td className="px-2 py-1.5 text-[#334155]">${item.retail_price}</td>
+                      <td className="px-2 py-1.5 text-text-body">{item.stems_per_order}</td>
+                      <td className="px-2 py-1.5 text-text-body">${item.retail_price}</td>
                       {!readOnly && (
                         <td className="px-2 py-1.5 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => startEdit(item)}
-                              className="text-[#94a3b8] hover:text-[#334155]"
+                              className="text-text-muted hover:text-text-body"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => handleArchiveClick(item)}
-                              className="text-[#94a3b8] hover:text-[#c27890]"
+                              className="text-text-muted hover:text-rose-action"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -284,10 +284,10 @@ export function SalesItemList({
 
             {/* Add row */}
             {adding && (
-              <tr className="border-b border-[#f0ede8]">
+              <tr className="border-b border-border-warm">
                 <td className="px-2 py-1">
                   <Input
-                    className="h-7 text-xs border-[#c27890]"
+                    className="h-7 text-xs border-rose-action"
                     placeholder="Name"
                     value={addForm.name}
                     onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
@@ -295,7 +295,7 @@ export function SalesItemList({
                 </td>
                 <td className="px-2 py-1">
                   <Input
-                    className="h-7 text-xs border-[#c27890] w-14"
+                    className="h-7 text-xs border-rose-action w-14"
                     type="number"
                     placeholder="10"
                     value={addForm.stems_per_order}
@@ -304,7 +304,7 @@ export function SalesItemList({
                 </td>
                 <td className="px-2 py-1">
                   <Input
-                    className="h-7 text-xs border-[#c27890] w-18"
+                    className="h-7 text-xs border-rose-action w-18"
                     placeholder="0.00"
                     value={addForm.retail_price}
                     onChange={(e) => setAddForm((f) => ({ ...f, retail_price: e.target.value }))}
@@ -315,11 +315,11 @@ export function SalesItemList({
                     <button
                       onClick={saveAdd}
                       disabled={saving}
-                      className="text-[#2d4a2d] hover:text-[#1a2e1a]"
+                      className="text-sidebar-hover hover:text-sidebar"
                     >
                       <Check className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={cancelAdd} className="text-[#94a3b8] hover:text-[#334155]">
+                    <button onClick={cancelAdd} className="text-text-muted hover:text-text-body">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -334,24 +334,24 @@ export function SalesItemList({
       {archivedItems.length > 0 && (
         <div className="mt-2">
           <button
-            className="text-xs text-[#94a3b8] hover:text-[#334155] hover:underline"
+            className="text-xs text-text-muted hover:text-text-body hover:underline"
             onClick={() => setShowArchived((prev) => !prev)}
           >
             {showArchived ? "Hide" : "Show"} archived ({archivedItems.length})
           </button>
           {showArchived && (
-            <div className="mt-1 rounded border border-[#e0ddd8] overflow-hidden">
+            <div className="mt-1 rounded border border-border-warm overflow-hidden">
               <table className="w-full text-xs">
                 <tbody>
                   {archivedItems.map((item) => (
-                    <tr key={item.id} className={cn("border-b border-[#f0ede8] opacity-60")}>
-                      <td className="px-2 py-1.5 text-[#94a3b8]">{item.name}</td>
-                      <td className="px-2 py-1.5 text-[#94a3b8] w-16">{item.stems_per_order}</td>
-                      <td className="px-2 py-1.5 text-[#94a3b8] w-20">${item.retail_price}</td>
+                    <tr key={item.id} className={cn("border-b border-border-warm opacity-60")}>
+                      <td className="px-2 py-1.5 text-text-muted">{item.name}</td>
+                      <td className="px-2 py-1.5 text-text-muted w-16">{item.stems_per_order}</td>
+                      <td className="px-2 py-1.5 text-text-muted w-20">${item.retail_price}</td>
                       <td className="px-2 py-1.5 text-right w-16">
                         <button
                           onClick={() => onRestore(item.id)}
-                          className="text-[#2d4a2d] hover:text-[#1a2e1a]"
+                          className="text-sidebar-hover hover:text-sidebar"
                         >
                           <RotateCcw className="h-3.5 w-3.5" />
                         </button>

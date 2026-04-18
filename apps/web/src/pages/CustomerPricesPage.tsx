@@ -222,17 +222,17 @@ export function CustomerPricesPage() {
     <div>
       {/* Header + view toggle */}
       <div className="flex flex-wrap items-center gap-2.5 mb-3">
-        <h1 className="text-lg font-bold text-[#1e3a5f] whitespace-nowrap">
+        <h1 className="text-lg font-bold text-slate-heading whitespace-nowrap">
           Customer Prices
         </h1>
 
-        <div className="flex gap-px bg-[#e0ddd8] rounded-md overflow-hidden">
+        <div className="flex gap-px bg-border-warm rounded-md overflow-hidden">
           <button
             className={cn(
               "px-3 py-1 text-xs transition-colors",
               viewMode === "customer"
-                ? "bg-[#c27890] text-white"
-                : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
+                ? "bg-rose-action text-white"
+                : "bg-white text-text-body hover:bg-cream"
             )}
             onClick={() => setViewMode("customer")}
           >
@@ -242,8 +242,8 @@ export function CustomerPricesPage() {
             className={cn(
               "px-3 py-1 text-xs transition-colors",
               viewMode === "item"
-                ? "bg-[#c27890] text-white"
-                : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
+                ? "bg-rose-action text-white"
+                : "bg-white text-text-body hover:bg-cream"
             )}
             onClick={() => setViewMode("item")}
           >
@@ -288,7 +288,7 @@ export function CustomerPricesPage() {
           {/* Customer selector */}
           <div className="mb-3">
             <div className="relative max-w-[400px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94a3b8]" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 placeholder="Search customers..."
                 className="pl-8 h-8 text-sm"
@@ -297,29 +297,29 @@ export function CustomerPricesPage() {
               />
             </div>
             {(customerSearch || !selectedCustomerId) && (
-              <div className="mt-1 max-h-48 overflow-y-auto border border-[#e0ddd8] rounded-md bg-white">
+              <div className="mt-1 max-h-48 overflow-y-auto border border-border-warm rounded-md bg-white">
                 {filteredCustomers.map((c) => (
                   <button
                     key={c.id}
                     className={cn(
-                      "w-full text-left px-3 py-1.5 text-sm hover:bg-[#f4f1ec] transition-colors flex items-center gap-2",
-                      selectedCustomerId === c.id && "bg-[#f4f1ec] font-medium"
+                      "w-full text-left px-3 py-1.5 text-sm hover:bg-cream transition-colors flex items-center gap-2",
+                      selectedCustomerId === c.id && "bg-cream font-medium"
                     )}
                     onClick={() => {
                       setSelectedCustomerId(c.id);
                       setCustomerSearch("");
                     }}
                   >
-                    <span className="text-[#334155]">{c.name}</span>
+                    <span className="text-text-body">{c.name}</span>
                     {c.price_list_name && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#dbeafe] text-[#1e3a5f]">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-box-blue-bg text-slate-heading">
                         {c.price_list_name}
                       </span>
                     )}
                   </button>
                 ))}
                 {filteredCustomers.length === 0 && (
-                  <div className="px-3 py-4 text-sm text-[#94a3b8] text-center">
+                  <div className="px-3 py-4 text-sm text-text-muted text-center">
                     No customers found.
                   </div>
                 )}
@@ -348,7 +348,7 @@ export function CustomerPricesPage() {
               onBulkRemoveOverrides={handleBulkRemoveOverrides}
             />
           ) : (
-            <div className="py-12 text-center text-sm text-[#94a3b8]">
+            <div className="py-12 text-center text-sm text-text-muted">
               Select a customer to view their pricing.
             </div>
           )}
@@ -361,7 +361,7 @@ export function CustomerPricesPage() {
           {/* Sales item selector */}
           <div className="mb-3">
             <div className="relative max-w-[400px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94a3b8]" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 placeholder="Search sales items..."
                 className="pl-8 h-8 text-sm"
@@ -370,27 +370,27 @@ export function CustomerPricesPage() {
               />
             </div>
             {(itemSearch || !selectedItemId) && (
-              <div className="mt-1 max-h-48 overflow-y-auto border border-[#e0ddd8] rounded-md bg-white">
+              <div className="mt-1 max-h-48 overflow-y-auto border border-border-warm rounded-md bg-white">
                 {filteredSalesItems.map((s) => (
                   <button
                     key={s.id}
                     className={cn(
-                      "w-full text-left px-3 py-1.5 text-sm hover:bg-[#f4f1ec] transition-colors",
-                      selectedItemId === s.id && "bg-[#f4f1ec] font-medium"
+                      "w-full text-left px-3 py-1.5 text-sm hover:bg-cream transition-colors",
+                      selectedItemId === s.id && "bg-cream font-medium"
                     )}
                     onClick={() => {
                       setSelectedItemId(s.id);
                       setItemSearch("");
                     }}
                   >
-                    <span className="text-[#334155]">{s.name}</span>
-                    <span className="text-[#94a3b8] ml-2 text-xs">
+                    <span className="text-text-body">{s.name}</span>
+                    <span className="text-text-muted ml-2 text-xs">
                       ${Number(s.retail_price).toFixed(2)}
                     </span>
                   </button>
                 ))}
                 {filteredSalesItems.length === 0 && (
-                  <div className="px-3 py-4 text-sm text-[#94a3b8] text-center">
+                  <div className="px-3 py-4 text-sm text-text-muted text-center">
                     No sales items found.
                   </div>
                 )}
@@ -414,7 +414,7 @@ export function CustomerPricesPage() {
               onBulkRemoveOverrides={handleItemBulkRemoveOverrides}
             />
           ) : (
-            <div className="py-12 text-center text-sm text-[#94a3b8]">
+            <div className="py-12 text-center text-sm text-text-muted">
               Select a sales item to view customer pricing.
             </div>
           )}

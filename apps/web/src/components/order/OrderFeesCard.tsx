@@ -21,13 +21,13 @@ export function OrderFeesCard({
 }: OrderFeesCardProps) {
   return (
     <div className="bg-white border border-border rounded-lg p-4 flex-1 min-w-[260px]">
-      <h3 className="text-sm font-bold text-[#1e3a5f] mb-3">Order Fees</h3>
+      <h3 className="text-sm font-bold text-slate-heading mb-3">Order Fees</h3>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Box Charge */}
         <div>
           <FieldTooltip content="Flat dollar charge per box">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+            <label className="block text-xs font-semibold text-slate-heading mb-1">
               Box Charge ($)
             </label>
           </FieldTooltip>
@@ -44,7 +44,7 @@ export function OrderFeesCard({
         {/* Holiday Charge */}
         <div>
           <FieldTooltip content="Percentage surcharge applied for holiday periods">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+            <label className="block text-xs font-semibold text-slate-heading mb-1">
               Holiday Charge (%)
             </label>
           </FieldTooltip>
@@ -61,7 +61,7 @@ export function OrderFeesCard({
         {/* Special Charge */}
         <div>
           <FieldTooltip content="Flat dollar charge for special handling">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+            <label className="block text-xs font-semibold text-slate-heading mb-1">
               Special Charge ($)
             </label>
           </FieldTooltip>
@@ -78,7 +78,7 @@ export function OrderFeesCard({
         {/* Freight Charge */}
         <div>
           <FieldTooltip content="Flat dollar charge for freight/shipping">
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+            <label className="block text-xs font-semibold text-slate-heading mb-1">
               Freight Charge ($)
             </label>
           </FieldTooltip>
@@ -96,7 +96,7 @@ export function OrderFeesCard({
       {/* Freight Charge Included toggle */}
       <div className="mt-3 flex items-center gap-2">
         <FieldTooltip content="When on, freight is already included in pricing — no additional charge applied">
-          <span className="text-xs font-semibold text-[#1e3a5f]">
+          <span className="text-xs font-semibold text-slate-heading">
             Freight Charge Included
           </span>
         </FieldTooltip>

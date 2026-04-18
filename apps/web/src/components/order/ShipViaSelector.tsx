@@ -117,7 +117,7 @@ export function ShipViaSelector({ value, onChange, customerDefault }: ShipViaSel
             ))}
             {canAddNew && (
               <CommandItem onSelect={handleAddNew}>
-                <PlusIcon className="size-3.5 mr-1.5 text-[#c27890]" />
+                <PlusIcon className="size-3.5 mr-1.5 text-rose-action" />
                 <span>
                   Add "<span className="font-medium">{search.trim()}</span>"
                 </span>

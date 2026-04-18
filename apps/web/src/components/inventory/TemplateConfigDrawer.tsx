@@ -173,7 +173,7 @@ export function TemplateConfigDrawer({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="text-[#1e3a5f]">
+          <SheetTitle className="text-slate-heading">
             Specials Column Configuration
           </SheetTitle>
           <SheetDescription>
@@ -183,7 +183,7 @@ export function TemplateConfigDrawer({
 
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center py-8 text-[#94a3b8]">
+            <div className="flex items-center justify-center py-8 text-text-muted">
               <Loader2 className="h-5 w-5 animate-spin mr-2" />
               Loading...
             </div>
@@ -202,16 +202,16 @@ export function TemplateConfigDrawer({
                     className={cn(
                       "flex items-center gap-2 rounded-lg border bg-white px-3 py-2 transition-colors cursor-grab active:cursor-grabbing",
                       dragOverIdx === idx
-                        ? "border-[#c27890] bg-[#c27890]/5"
-                        : "border-[#e0ddd8]"
+                        ? "border-rose-action bg-rose-action/5"
+                        : "border-border-warm"
                     )}
                   >
-                    <GripVertical className="h-4 w-4 shrink-0 text-[#94a3b8]" />
+                    <GripVertical className="h-4 w-4 shrink-0 text-text-muted" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-[#334155] truncate">
+                      <div className="text-sm font-medium text-text-body truncate">
                         {col.customer_name}
                       </div>
-                      <div className="text-xs text-[#94a3b8]">
+                      <div className="text-xs text-text-muted">
                         {col.bunch_size}-stem / {col.sleeve_type}
                       </div>
                     </div>
@@ -230,7 +230,7 @@ export function TemplateConfigDrawer({
                           variant="outline"
                           size="sm"
                           onClick={() => setConfirmDeleteIdx(null)}
-                          className="text-[#94a3b8] border-[#e0ddd8] text-xs h-8"
+                          className="text-text-muted border-border-warm text-xs h-8"
                         >
                           Cancel
                         </Button>
@@ -238,7 +238,7 @@ export function TemplateConfigDrawer({
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteIdx(idx)}
-                        className="shrink-0 p-2 rounded-md text-[#94a3b8] hover:text-red-500 hover:bg-red-50 transition-colors"
+                        className="shrink-0 p-2 rounded-md text-text-muted hover:text-red-500 hover:bg-red-50 transition-colors"
                         title="Remove column"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -248,22 +248,22 @@ export function TemplateConfigDrawer({
                 ))}
 
                 {columns.length === 0 && (
-                  <div className="text-center py-6 text-sm text-[#94a3b8]">
+                  <div className="text-center py-6 text-sm text-text-muted">
                     No columns configured yet. Add one below.
                   </div>
                 )}
               </div>
 
               {/* Add column form */}
-              <div className="rounded-lg border border-dashed border-[#e0ddd8] bg-[#f4f1ec] p-3 space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#1e3a5f]">
+              <div className="rounded-lg border border-dashed border-border-warm bg-cream p-3 space-y-3">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-heading">
                   Add Column
                 </h4>
                 <div className="space-y-2">
                   <select
                     value={newCustomerId}
                     onChange={(e) => setNewCustomerId(e.target.value)}
-                    className="w-full h-10 rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+                    className="w-full h-10 rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
                   >
                     <option value="">Select customer...</option>
                     {customers.map((c) => (
@@ -286,7 +286,7 @@ export function TemplateConfigDrawer({
                     <select
                       value={newSleeveType}
                       onChange={(e) => setNewSleeveType(e.target.value)}
-                      className="h-10 rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+                      className="h-10 rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
                     >
                       <option value="Plastic">Plastic</option>
                       <option value="Paper">Paper</option>
@@ -295,7 +295,7 @@ export function TemplateConfigDrawer({
                   <Button
                     onClick={handleAddColumn}
                     disabled={!newCustomerId || !newBunchSize}
-                    className="w-full bg-[#c27890] hover:bg-[#b0687e] text-white disabled:bg-[#e0ddd8] disabled:text-[#94a3b8]"
+                    className="w-full bg-rose-action hover:bg-rose-action/90 text-white disabled:bg-border-warm disabled:text-text-muted"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Column
@@ -304,7 +304,7 @@ export function TemplateConfigDrawer({
               </div>
 
               {confirmDeleteIdx !== null && (
-                <p className="text-xs text-[#94a3b8] italic text-center">
+                <p className="text-xs text-text-muted italic text-center">
                   Historical data for removed columns is preserved and will not be deleted.
                 </p>
               )}
@@ -317,14 +317,14 @@ export function TemplateConfigDrawer({
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-[#e0ddd8] text-[#334155]"
+              className="flex-1 border-border-warm text-text-body"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 bg-[#c27890] hover:bg-[#b0687e] text-white"
+              className="flex-1 bg-rose-action hover:bg-rose-action/90 text-white"
             >
               {saving ? (
                 <>

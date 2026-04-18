@@ -87,11 +87,11 @@ export function DataTable<T extends Record<string, unknown>>({
   }, []);
 
   return (
-    <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
+    <div className="rounded-lg border border-border-warm overflow-hidden">
       <div>
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
+            <tr className="border-b-2 border-border-warm bg-cream-warm">
               {hasBulkSelect && (
                 <th className="px-2 py-1.5 w-8">
                   <Checkbox
@@ -112,7 +112,7 @@ export function DataTable<T extends Record<string, unknown>>({
                     onDrop={handleHeaderDrop}
                     onDragEnd={handleHeaderDragEnd}
                     className={cn(
-                      "px-2 py-1.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap relative",
+                      "px-2 py-1.5 text-left text-[10px] font-semibold text-slate-heading whitespace-nowrap relative",
                       isSortable && "cursor-pointer select-none",
                       headerDragIdx === idx && "opacity-50"
                     )}
@@ -120,13 +120,13 @@ export function DataTable<T extends Record<string, unknown>>({
                   >
                     {/* Left drop indicator */}
                     {headerDropIdx === idx && headerDragIdx !== idx && headerDragIdx !== idx - 1 && (
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                     )}
 
                     <span className="inline-flex items-center gap-1">
                       {col.label}
                       {isSorted && (
-                        <span className="text-[#c27890]">
+                        <span className="text-rose-action">
                           {sortConfig.direction === "asc" ? "\u25B2" : "\u25BC"}
                         </span>
                       )}
@@ -145,7 +145,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
                     {/* Right drop indicator (only on last column) */}
                     {headerDropIdx === activeColumns.length && idx === activeColumns.length - 1 && headerDragIdx !== idx && (
-                      <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                      <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                     )}
                   </th>
                 );
@@ -157,12 +157,12 @@ export function DataTable<T extends Record<string, unknown>>({
               <tr>
                 <td
                   colSpan={colSpan}
-                  className="px-3 py-8 text-center text-[#94a3b8]"
+                  className="px-3 py-8 text-center text-text-muted"
                 >
                   {emptyMessage}
                   {hasActiveFilters && (
                     <button
-                      className="ml-2 text-[#c27890] hover:underline"
+                      className="ml-2 text-rose-action hover:underline"
                       onClick={clearAllFilters}
                     >
                       Clear filters
@@ -178,8 +178,8 @@ export function DataTable<T extends Record<string, unknown>>({
                   <tr
                     key={rowKey}
                     className={cn(
-                      "border-b border-[#f0ede8] hover:bg-[#faf8f5] cursor-pointer transition-colors",
-                      isSelected && "bg-[#fce7f3] hover:bg-[#fce7f3]"
+                      "border-b border-border-warm hover:bg-cream-warm cursor-pointer transition-colors",
+                      isSelected && "bg-box-pink-bg hover:bg-box-pink-bg"
                     )}
                     onClick={() => onRowClick?.(item)}
                   >
@@ -198,7 +198,7 @@ export function DataTable<T extends Record<string, unknown>>({
                       <td
                         key={col.key}
                         className={cn(
-                          "px-2 py-1.5 text-[#334155]",
+                          "px-2 py-1.5 text-text-body",
                           cellClassName?.(col, item)
                         )}
                       >
@@ -215,7 +215,7 @@ export function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
       {footerText && (
-        <div className="px-3 py-2 text-xs text-[#94a3b8] bg-[#faf8f5] border-t border-[#e0ddd8]">
+        <div className="px-3 py-2 text-xs text-text-muted bg-cream-warm border-t border-border-warm">
           {footerText}
         </div>
       )}

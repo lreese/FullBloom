@@ -27,12 +27,12 @@ export function OrderDetailsCard({
 
   return (
     <div className="bg-white border border-border rounded-lg p-4 flex-1 min-w-[260px]">
-      <h3 className="text-sm font-bold text-[#1e3a5f] mb-3">Order Details</h3>
+      <h3 className="text-sm font-bold text-slate-heading mb-3">Order Details</h3>
 
       <div className="flex flex-col gap-3">
         {/* PO Number */}
         <div>
-          <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+          <label className="block text-xs font-semibold text-slate-heading mb-1">
             PO Number
           </label>
           <Input
@@ -47,7 +47,7 @@ export function OrderDetailsCard({
         {/* Salesperson */}
         {canWriteOrders && (
           <div>
-            <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+            <label className="block text-xs font-semibold text-slate-heading mb-1">
               Salesperson
             </label>
             {hasSalespeople ? (
@@ -77,7 +77,7 @@ export function OrderDetailsCard({
 
         {/* Order Notes */}
         <div>
-          <label className="block text-xs font-semibold text-[#1e3a5f] mb-1">
+          <label className="block text-xs font-semibold text-slate-heading mb-1">
             Order Notes
           </label>
           <textarea

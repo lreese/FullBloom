@@ -134,7 +134,7 @@ export function SalesItemDrawer({
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full sm:max-w-[520px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-[#1e3a5f]">
+          <SheetTitle className="text-slate-heading">
             {mode === "add" ? "Add Sales Item" : salesItem?.name ?? "Sales Item"}
           </SheetTitle>
           <SheetDescription>
@@ -148,7 +148,7 @@ export function SalesItemDrawer({
           {/* Identity section */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Name *
               </Label>
               <Input
@@ -158,7 +158,7 @@ export function SalesItemDrawer({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Variety
               </Label>
               <Select
@@ -178,7 +178,7 @@ export function SalesItemDrawer({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Stems per Order *
               </Label>
               <Input
@@ -195,7 +195,7 @@ export function SalesItemDrawer({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[#1e3a5f]">
+              <Label className="text-xs font-semibold text-slate-heading">
                 Retail Price *
               </Label>
               <Input
@@ -211,30 +211,30 @@ export function SalesItemDrawer({
 
           {/* Price Lists section */}
           <div>
-            <h3 className="text-sm font-semibold text-[#1e3a5f] mb-2">
+            <h3 className="text-sm font-semibold text-slate-heading mb-2">
               Price Lists
             </h3>
 
             {mode === "add" && (
               <div className="mb-3">
                 <div className="flex items-center gap-3 mb-2">
-                  <label className="flex items-center gap-1.5 text-xs text-[#334155] cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-text-body cursor-pointer">
                     <input
                       type="radio"
                       name="priceMode"
                       checked={samePrice}
                       onChange={() => setSamePrice(true)}
-                      className="accent-[#c27890]"
+                      className="accent-rose-action"
                     />
                     Same price for all
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-[#334155] cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-text-body cursor-pointer">
                     <input
                       type="radio"
                       name="priceMode"
                       checked={!samePrice}
                       onChange={() => setSamePrice(false)}
-                      className="accent-[#c27890]"
+                      className="accent-rose-action"
                     />
                     Edit individually
                   </label>
@@ -256,7 +256,7 @@ export function SalesItemDrawer({
                 return (
                   <div
                     key={pl.id}
-                    className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[#f4f1ec]"
+                    className="flex items-center gap-2 px-2 py-1 rounded hover:bg-cream"
                   >
                     {mode === "add" && (
                       <Checkbox
@@ -264,7 +264,7 @@ export function SalesItemDrawer({
                         onCheckedChange={() => togglePriceList(pl.id)}
                       />
                     )}
-                    <span className="text-sm text-[#334155] flex-1">
+                    <span className="text-sm text-text-body flex-1">
                       {pl.name}
                     </span>
                     {mode === "edit" ? (
@@ -300,7 +300,7 @@ export function SalesItemDrawer({
 
           {/* Customer prices info */}
           {mode === "edit" && customerPricesCount > 0 && (
-            <div className="text-xs text-[#94a3b8]">
+            <div className="text-xs text-text-muted">
               {customerPricesCount} customer price
               {customerPricesCount !== 1 ? "s" : ""} reference this item.
             </div>
@@ -308,7 +308,7 @@ export function SalesItemDrawer({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center mt-6 pt-4 border-t border-[#e0ddd8]">
+        <div className="flex items-center mt-6 pt-4 border-t border-border-warm">
           {mode === "edit" && salesItem && (
             <div>
               {isArchived ? (
@@ -344,7 +344,7 @@ export function SalesItemDrawer({
             </Button>
             <Button
               size="sm"
-              className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+              className="bg-rose-action hover:bg-rose-action/90 text-white text-xs"
               onClick={handleSubmit}
               disabled={!form.name.trim() || !form.retail_price.trim() || saving}
             >

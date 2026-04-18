@@ -94,12 +94,12 @@ export function SheetCompletionBar({
   if (isComplete) {
     return (
       <div className="space-y-2">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 rounded-lg border border-[#8fbc8f] bg-[#2d4a2d]/10 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-[#2d4a2d]">
-            <CheckCircle2 className="h-5 w-5 text-[#2d4a2d]" />
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 rounded-lg border border-emerald-400 bg-sidebar-hover/10 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-sidebar-hover">
+            <CheckCircle2 className="h-5 w-5 text-sidebar-hover" />
             <span className="font-medium">
               Completed by {completedBy ?? "Unknown"}
-              {completedAt && <span className="font-normal text-[#2d4a2d]/80"> at {formatTime(completedAt)}</span>}
+              {completedAt && <span className="font-normal text-sidebar-hover/80"> at {formatTime(completedAt)}</span>}
             </span>
           </div>
           <Button
@@ -107,7 +107,7 @@ export function SheetCompletionBar({
             size="sm"
             onClick={handleReopen}
             disabled={loading}
-            className="border-[#2d4a2d]/30 text-[#2d4a2d] hover:bg-[#2d4a2d]/10"
+            className="border-sidebar-hover/30 text-sidebar-hover hover:bg-sidebar-hover/10"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reopen"}
           </Button>
@@ -124,9 +124,9 @@ export function SheetCompletionBar({
   // In-progress state: progress bar + complete button
   return (
     <div className="space-y-2">
-      <div className="sticky top-0 z-10 flex flex-col gap-2 rounded-lg border border-[#e0ddd8] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-0 z-10 flex flex-col gap-2 rounded-lg border border-border-warm bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 space-y-1.5">
-          <div className="flex items-center justify-between text-sm text-[#334155]">
+          <div className="flex items-center justify-between text-sm text-text-body">
             <div className="flex items-center gap-2">
               <span className="font-medium">
                 {doneCount}/{totalCount} varieties done
@@ -134,29 +134,29 @@ export function SheetCompletionBar({
               {grandTotal !== undefined && grandTotal > 0 && (
                 <span className={cn(
                   "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                  grandTotalVariant === "green" && "bg-[#e8f0e8] text-[#2d4a2d]",
-                  grandTotalVariant === "teal" && "bg-[#e0f2f1] text-[#0d7377]"
+                  grandTotalVariant === "green" && "bg-box-green-bg text-sidebar-hover",
+                  grandTotalVariant === "teal" && "bg-teal-50 text-teal-700"
                 )}>
                   {grandTotal} {grandTotalLabel}
                 </span>
               )}
               {combinedTotal !== undefined && combinedTotal > 0 && (
                 <>
-                  <div className="mx-1 h-5 w-px bg-[#e0ddd8]" />
-                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#f1f5f9] text-[#475569]">
+                  <div className="mx-1 h-5 w-px bg-border-warm" />
+                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">
                     {combinedTotal} combined
                   </span>
                 </>
               )}
             </div>
-            <span className="text-xs text-[#94a3b8]">{pct}%</span>
+            <span className="text-xs text-text-muted">{pct}%</span>
           </div>
           {/* Progress bar */}
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#e0ddd8]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-border-warm">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-300",
-                allDone ? "bg-[#2d4a2d]" : "bg-[#c27890]"
+                allDone ? "bg-sidebar-hover" : "bg-rose-action"
               )}
               style={{ width: `${pct}%` }}
             />
@@ -170,8 +170,8 @@ export function SheetCompletionBar({
           className={cn(
             "mt-2 sm:mt-0 sm:ml-4 shrink-0",
             loading
-              ? "bg-[#e0ddd8] text-[#94a3b8] cursor-not-allowed"
-              : "bg-[#2d4a2d] hover:bg-[#2d4a2d]/90 text-white"
+              ? "bg-border-warm text-text-muted cursor-not-allowed"
+              : "bg-sidebar-hover hover:bg-sidebar-hover/90 text-white"
           )}
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

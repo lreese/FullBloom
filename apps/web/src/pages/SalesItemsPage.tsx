@@ -304,13 +304,13 @@ export function SalesItemsPage() {
     switch (col.key) {
       case "name":
         return (
-          <span className="font-medium" style={{ color: "#334155" }}>
+          <span className="font-medium" style={{ color: "var(--color-text-body)" }}>
             {item.name}
           </span>
         );
       case "variety_name":
         return (
-          <span style={{ color: "#64748b" }}>
+          <span style={{ color: "var(--color-slate-500)" }}>
             {item.variety_name ?? "\u2014"}
           </span>
         );
@@ -318,14 +318,14 @@ export function SalesItemsPage() {
         return (
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ backgroundColor: "#e8f0e8", color: "#2d4a2d" }}
+            style={{ backgroundColor: "var(--color-box-green-bg)", color: "var(--color-sidebar-hover)" }}
           >
             {item.stems_per_order}
           </span>
         );
       case "retail_price":
         return (
-          <span style={{ color: "#334155" }}>
+          <span style={{ color: "var(--color-text-body)" }}>
             ${Number(item.retail_price).toFixed(2)}
           </span>
         );
@@ -335,7 +335,7 @@ export function SalesItemsPage() {
           const val = item[col.key];
           if (val == null) return "\u2014";
           return (
-            <span style={{ color: "#334155" }}>
+            <span style={{ color: "var(--color-text-body)" }}>
               ${Number(val).toFixed(2)}
             </span>
           );
@@ -350,19 +350,19 @@ export function SalesItemsPage() {
   const colSpan = activeColumns.length + 1; // +1 for checkbox column
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f4f1ec" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--color-cream)" }}>
       <div className="max-w-[1400px] mx-auto px-4 py-6 sm:px-6">
         {/* ── Bulk selection bar OR Header ───────────────── */}
         {someSelected ? (
-          <div className="flex flex-wrap items-center gap-2.5 mb-3 px-3 py-2 bg-[#fce7f3] rounded-lg border border-[#f9a8d4]">
-            <span className="flex items-center gap-1.5 text-sm font-medium text-[#831843]">
+          <div className="flex flex-wrap items-center gap-2.5 mb-3 px-3 py-2 bg-box-pink-bg rounded-lg border border-pink-300">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-box-pink-text">
               <CheckCircle2 className="h-4 w-4" />
               {selectedIds.size} selected
             </span>
 
-            <div className="h-5 w-px bg-[#f9a8d4]" />
+            <div className="h-5 w-px bg-pink-300" />
 
-            <span className="text-xs text-[#831843]">Set</span>
+            <span className="text-xs text-box-pink-text">Set</span>
             <Select value={bulkField} onValueChange={(v) => { setBulkField(v); setBulkValue(""); }}>
               <SelectTrigger className="h-7 w-[140px] text-xs bg-white">
                 <SelectValue placeholder="Field..." />
@@ -374,7 +374,7 @@ export function SalesItemsPage() {
               </SelectContent>
             </Select>
 
-            <span className="text-xs text-[#831843]">to</span>
+            <span className="text-xs text-box-pink-text">to</span>
 
             {bulkField === "variety_id" ? (
               <Select value={bulkValue} onValueChange={setBulkValue}>
@@ -400,7 +400,7 @@ export function SalesItemsPage() {
 
             <Button
               size="sm"
-              className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs h-7"
+              className="bg-rose-action hover:bg-rose-action/90 text-white text-xs h-7"
               disabled={!bulkField || !bulkValue}
               onClick={handleBulkApply}
             >
@@ -408,7 +408,7 @@ export function SalesItemsPage() {
             </Button>
 
             <button
-              className="ml-auto text-xs text-[#94a3b8] hover:text-[#334155]"
+              className="ml-auto text-xs text-text-muted hover:text-text-body"
               onClick={() => setSelectedIds(new Set())}
             >
               Clear Selection
@@ -426,7 +426,7 @@ export function SalesItemsPage() {
             />
             <div className="ml-auto flex items-center gap-2">
               <button
-                className="text-xs text-[#334155] border border-[#e0ddd8] rounded px-2 py-1 hover:bg-[#f4f1ec]"
+                className="text-xs text-text-body border border-border-warm rounded px-2 py-1 hover:bg-cream"
                 onClick={() => importFileRef.current?.click()}
               >
                 Import CSV
@@ -440,7 +440,7 @@ export function SalesItemsPage() {
               />
               <Button
                 size="sm"
-                className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+                className="bg-rose-action hover:bg-rose-action/90 text-white text-xs"
                 onClick={handleAddClick}
               >
                 + Add Sales Item
@@ -450,11 +450,11 @@ export function SalesItemsPage() {
         )}
 
         {/* ── Table ──────────────────────────────────────── */}
-        <div className="rounded-lg border border-[#e0ddd8] overflow-hidden">
+        <div className="rounded-lg border border-border-warm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-[#e0ddd8] bg-[#faf8f5]">
+                <tr className="border-b-2 border-border-warm bg-cream-warm">
                   {/* Checkbox column */}
                   <th className="px-2 py-2.5 w-8">
                     <Checkbox
@@ -475,7 +475,7 @@ export function SalesItemsPage() {
                         onDrop={handleHeaderDrop}
                         onDragEnd={handleHeaderDragEnd}
                         className={cn(
-                          "px-3 py-2.5 text-left text-[10px] font-semibold text-[#1e3a5f] whitespace-nowrap relative select-none",
+                          "px-3 py-2.5 text-left text-[10px] font-semibold text-slate-heading whitespace-nowrap relative select-none",
                           isSortable && "cursor-pointer",
                           headerDragIdx === idx && "opacity-50"
                         )}
@@ -485,13 +485,13 @@ export function SalesItemsPage() {
                         {headerDropIdx === idx &&
                           headerDragIdx !== idx &&
                           headerDragIdx !== idx - 1 && (
-                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
 
                         <span className="inline-flex items-center gap-1">
                           {col.label}
                           {isSorted && (
-                            <span className="text-[#c27890]">
+                            <span className="text-rose-action">
                               {sortConfig.direction === "asc" ? "\u25B2" : "\u25BC"}
                             </span>
                           )}
@@ -512,7 +512,7 @@ export function SalesItemsPage() {
                         {headerDropIdx === activeColumns.length &&
                           idx === activeColumns.length - 1 &&
                           headerDragIdx !== idx && (
-                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-[#c27890] z-10" />
+                            <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-rose-action z-10" />
                           )}
                       </th>
                     );
@@ -525,12 +525,12 @@ export function SalesItemsPage() {
                     <td
                       colSpan={colSpan}
                       className="text-center py-12"
-                      style={{ color: "#94a3b8" }}
+                      style={{ color: "var(--color-text-muted)" }}
                     >
                       No sales items found.
                       {hasActiveFilters && (
                         <button
-                          className="ml-2 text-[#c27890] hover:underline"
+                          className="ml-2 text-rose-action hover:underline"
                           onClick={clearAllFilters}
                         >
                           Clear filters
@@ -545,8 +545,8 @@ export function SalesItemsPage() {
                       <tr
                         key={item.id}
                         className={cn(
-                          "border-b border-[#f0ede8] hover:bg-[#faf8f5] cursor-pointer transition-colors",
-                          isSelected && "bg-[#fce7f3] hover:bg-[#fce7f3]"
+                          "border-b border-border-warm hover:bg-cream-warm cursor-pointer transition-colors",
+                          isSelected && "bg-box-pink-bg hover:bg-box-pink-bg"
                         )}
                         onClick={() => handleRowClick(item)}
                       >
@@ -560,7 +560,7 @@ export function SalesItemsPage() {
                           />
                         </td>
                         {activeColumns.map((col) => (
-                          <td key={col.key} className="px-3 py-2.5 text-[#334155]">
+                          <td key={col.key} className="px-3 py-2.5 text-text-body">
                             {renderCell(col, item)}
                           </td>
                         ))}
@@ -572,7 +572,7 @@ export function SalesItemsPage() {
             </table>
           </div>
           {/* Footer */}
-          <div className="px-3 py-2 text-xs text-[#94a3b8] bg-[#faf8f5] border-t border-[#e0ddd8]">
+          <div className="px-3 py-2 text-xs text-text-muted bg-cream-warm border-t border-border-warm">
             {filteredData.length} sales item{filteredData.length !== 1 ? "s" : ""}
             {hasActiveFilters ? " (filtered)" : ""}
           </div>

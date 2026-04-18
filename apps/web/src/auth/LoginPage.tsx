@@ -54,15 +54,15 @@ export function LoginPage() {
 
   if (showReset) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: "#f4f1ec" }}>
+      <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--color-cream)" }}>
         <div className="w-full max-w-sm space-y-6 p-8 bg-white rounded-lg shadow">
           <div className="text-center">
-            <h1 className="text-2xl font-bold" style={{ color: "#1e3a5f" }}>Reset Password</h1>
-            <p className="text-sm mt-1" style={{ color: "#94a3b8" }}>Enter your email to receive a reset link</p>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--color-slate-heading)" }}>Reset Password</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Enter your email to receive a reset link</p>
           </div>
           {resetSent ? (
             <div className="text-center space-y-4">
-              <p className="text-sm" style={{ color: "#334155" }}>Check your email for the reset link.</p>
+              <p className="text-sm" style={{ color: "var(--color-text-body)" }}>Check your email for the reset link.</p>
               <Button variant="outline" className="w-full" onClick={() => { setShowReset(false); setResetSent(false); }}>Back to Login</Button>
             </div>
           ) : (
@@ -79,11 +79,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen" style={{ background: "#f4f1ec" }}>
+    <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--color-cream)" }}>
       <div className="w-full max-w-sm space-y-6 p-8 bg-white rounded-lg shadow">
         <div className="text-center">
-          <h1 className="text-2xl font-bold" style={{ color: "#1e3a5f" }}>FullBloom</h1>
-          <p className="text-sm mt-1" style={{ color: "#94a3b8" }}>Sign in to continue</p>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--color-slate-heading)" }}>FullBloom</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Sign in to continue</p>
         </div>
 
         <div className="space-y-4">
@@ -94,14 +94,14 @@ export function LoginPage() {
         </div>
 
         <div className="relative">
-          <div className="absolute inset-0 flex items-center"><span className="w-full border-t" style={{ borderColor: "#e0ddd8" }} /></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2" style={{ color: "#94a3b8" }}>or</span></div>
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t" style={{ borderColor: "var(--color-border-warm)" }} /></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2" style={{ color: "var(--color-text-muted)" }}>or</span></div>
         </div>
 
         <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>Sign in with Google</Button>
 
         <div className="text-center">
-          <button type="button" className="text-sm hover:underline" style={{ color: "#c27890" }} onClick={() => setShowReset(true)}>Forgot Password?</button>
+          <button type="button" className="text-sm hover:underline" style={{ color: "var(--color-rose-action)" }} onClick={() => setShowReset(true)}>Forgot Password?</button>
         </div>
       </div>
     </div>

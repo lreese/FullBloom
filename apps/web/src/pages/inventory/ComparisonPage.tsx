@@ -80,32 +80,32 @@ export function ComparisonPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Top bar */}
-      <div className="shrink-0 border-b border-[#e0ddd8] bg-white px-4 py-3">
+      <div className="shrink-0 border-b border-border-warm bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/inventory/availability"
-            className="flex items-center gap-1 text-[#94a3b8] hover:text-[#334155] transition-colors"
+            className="flex items-center gap-1 text-text-muted hover:text-text-body transition-colors"
             title="Back to Availability"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <h1 className="text-xl font-bold text-[#1e3a5f]">Estimate vs. Actual</h1>
+          <h1 className="text-xl font-bold text-slate-heading">Estimate vs. Actual</h1>
           <div className="flex items-center gap-2 ml-auto">
             {/* Week picker */}
-            <div className="flex items-center gap-1 rounded-lg border border-[#e0ddd8] bg-white">
+            <div className="flex items-center gap-1 rounded-lg border border-border-warm bg-white">
               <button
                 onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
-                className="p-2 text-[#334155] hover:bg-[#f4f1ec] rounded-l-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 text-text-body hover:bg-cream rounded-l-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Previous week"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="px-3 text-sm font-medium text-[#334155] whitespace-nowrap">
+              <span className="px-3 text-sm font-medium text-text-body whitespace-nowrap">
                 {formatWeekLabel(weekStart)}
               </span>
               <button
                 onClick={() => setWeekStart(shiftWeek(weekStart, 1))}
-                className="p-2 text-[#334155] hover:bg-[#f4f1ec] rounded-r-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 text-text-body hover:bg-cream rounded-r-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Next week"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -116,7 +116,7 @@ export function ComparisonPage() {
             <select
               value={selectedPtId}
               onChange={(e) => setSelectedPtId(e.target.value)}
-              className="h-10 min-h-[44px] rounded-lg border border-[#e0ddd8] bg-white px-3 text-sm text-[#334155] focus:ring-2 focus:ring-[#c27890] focus:outline-none"
+              className="h-10 min-h-[44px] rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body focus:ring-2 focus:ring-rose-action focus:outline-none"
             >
               {productTypes.map((pt) => (
                 <option key={pt.id} value={pt.id}>
@@ -129,9 +129,9 @@ export function ComparisonPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto bg-[#f4f1ec] p-4">
+      <div className="flex-1 overflow-y-auto bg-cream p-4">
         {loading && (
-          <div className="flex items-center justify-center py-12 text-[#94a3b8]">
+          <div className="flex items-center justify-center py-12 text-text-muted">
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
             Loading comparison...
           </div>

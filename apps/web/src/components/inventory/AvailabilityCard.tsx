@@ -33,13 +33,13 @@ function sumVarieties(varieties: AvailabilityVariety[], mode: ViewMode) {
 function ViewModeToggle({ value, onChange, size = "sm", disabled = false }: { value: ViewMode; onChange: (m: ViewMode) => void; size?: "sm" | "xs"; disabled?: boolean }) {
   const px = size === "xs" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs";
   return (
-    <div className={cn("flex rounded-md border border-[#e0ddd8] overflow-hidden", disabled && "opacity-50")}>
+    <div className={cn("flex rounded-md border border-border-warm overflow-hidden", disabled && "opacity-50")}>
       <button
         type="button"
         onClick={() => onChange("counts")}
         disabled={disabled}
         className={`${px} font-medium transition-colors ${
-          value === "counts" ? "bg-[#1e3a5f] text-white" : "bg-white text-[#94a3b8] hover:bg-[#f4f1ec]"
+          value === "counts" ? "bg-slate-heading text-white" : "bg-white text-text-muted hover:bg-cream"
         }`}
       >
         Counts
@@ -48,8 +48,8 @@ function ViewModeToggle({ value, onChange, size = "sm", disabled = false }: { va
         type="button"
         onClick={() => onChange("estimates")}
         disabled={disabled}
-        className={`${px} font-medium transition-colors border-l border-[#e0ddd8] ${
-          value === "estimates" ? "bg-[#1e3a5f] text-white" : "bg-white text-[#94a3b8] hover:bg-[#f4f1ec]"
+        className={`${px} font-medium transition-colors border-l border-border-warm ${
+          value === "estimates" ? "bg-slate-heading text-white" : "bg-white text-text-muted hover:bg-cream"
         }`}
       >
         Estimates
@@ -105,7 +105,7 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
   };
 
   return (
-    <div className="rounded-lg border border-[#e0ddd8] bg-white overflow-hidden">
+    <div className="rounded-lg border border-border-warm bg-white overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <button
@@ -113,14 +113,14 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
           className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
         >
           {expanded ? (
-            <ChevronDown className="h-4 w-4 text-[#94a3b8] shrink-0" />
+            <ChevronDown className="h-4 w-4 text-text-muted shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-[#94a3b8] shrink-0" />
+            <ChevronRight className="h-4 w-4 text-text-muted shrink-0" />
           )}
-          <span className="text-lg font-semibold text-[#1e3a5f]">
+          <span className="text-lg font-semibold text-slate-heading">
             {productType.product_type_name}
           </span>
-          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#e8f0e8] text-[#2d4a2d]">
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-box-green-bg text-sidebar-hover">
             {productTypeTotal} total
           </span>
         </button>
@@ -133,8 +133,8 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
         className={cn(
           "flex items-center gap-2 px-4 py-2 text-sm",
           isActual
-            ? "bg-[#2d4a2d]/10 text-[#2d4a2d] border-t border-[#8fbc8f]/30"
-            : "bg-[#fef3c7] text-[#92400e] border-t border-[#f59e0b]/30"
+            ? "bg-sidebar-hover/10 text-sidebar-hover border-t border-emerald-400/30"
+            : "bg-box-amber-bg text-box-amber-text border-t border-amber-500/30"
         )}
       >
         {isActual ? (
@@ -156,7 +156,7 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
 
       {/* Variety list */}
       {expanded && (
-        <div className="divide-y divide-[#e0ddd8]/60">
+        <div className="divide-y divide-border-warm/60">
           {productType.product_lines.map((pl) => {
             const isLineCollapsed = collapsedLines.has(pl.product_line_name);
             const lineMode = getLineViewMode(pl.product_line_name);
@@ -165,24 +165,24 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
             return (
               <div key={pl.product_line_name}>
                 {/* Product line header */}
-                <div className="flex items-center justify-between px-4 py-2 bg-[#f4f1ec]/50 hover:bg-[#f4f1ec] transition-colors">
+                <div className="flex items-center justify-between px-4 py-2 bg-cream/50 hover:bg-cream transition-colors">
                   <button
                     type="button"
                     onClick={() => toggleLine(pl.product_line_name)}
                     className="flex items-center gap-2 text-left"
                   >
                     {isLineCollapsed ? (
-                      <ChevronRight className="h-3 w-3 text-[#94a3b8]" />
+                      <ChevronRight className="h-3 w-3 text-text-muted" />
                     ) : (
-                      <ChevronDown className="h-3 w-3 text-[#94a3b8]" />
+                      <ChevronDown className="h-3 w-3 text-text-muted" />
                     )}
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[#94a3b8]">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
                       {pl.product_line_name}
                     </span>
-                    <span className="text-xs text-[#94a3b8]">
+                    <span className="text-xs text-text-muted">
                       ({pl.varieties.length})
                     </span>
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#e8f0e8] text-[#2d4a2d]">
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-box-green-bg text-sidebar-hover">
                       {lineTotal}
                     </span>
                   </button>
@@ -203,30 +203,30 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
                     return (
                       <div
                         key={v.variety_name}
-                        className="flex items-center justify-between px-4 py-2.5 hover:bg-[#f4f1ec]/30"
+                        className="flex items-center justify-between px-4 py-2.5 hover:bg-cream/30"
                       >
                         <div className="flex items-center gap-2">
                           {v.color_hex && (
                             <span
-                              className="inline-block h-3 w-3 rounded-full border border-[#e0ddd8] shrink-0"
+                              className="inline-block h-3 w-3 rounded-full border border-border-warm shrink-0"
                               style={{ backgroundColor: v.color_hex }}
                             />
                           )}
-                          <span className="text-sm text-[#334155]">{v.variety_name}</span>
+                          <span className="text-sm text-text-body">{v.variety_name}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
                               "text-sm font-medium tabular-nums",
                               displayValue === null || displayValue === undefined
-                                ? "text-[#94a3b8]"
-                                : "text-[#334155]"
+                                ? "text-text-muted"
+                                : "text-text-body"
                             )}
                           >
                             {displayValue ?? "—"}
                           </span>
                           {isEst && displayValue !== null && displayValue !== undefined && (
-                            <span className="text-xs text-[#f59e0b]">(est)</span>
+                            <span className="text-xs text-amber-500">(est)</span>
                           )}
                         </div>
                       </div>
@@ -236,7 +236,7 @@ export function AvailabilityCard({ productType, defaultViewMode = "counts" }: Av
             );
           })}
           {productType.product_lines.length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-[#94a3b8]">
+            <div className="px-4 py-8 text-center text-sm text-text-muted">
               No varieties available
             </div>
           )}

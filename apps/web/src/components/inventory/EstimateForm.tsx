@@ -276,7 +276,7 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[#94a3b8]">
+      <div className="flex items-center justify-center py-12 text-text-muted">
         Loading estimates...
       </div>
     );
@@ -284,7 +284,7 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
 
   if (!data) {
     return (
-      <div className="py-8 text-center text-[#94a3b8]">
+      <div className="py-8 text-center text-text-muted">
         No estimate data available. Select a product type to begin.
       </div>
     );
@@ -293,19 +293,19 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
   return (
     <div className="space-y-4">
       {draftRestored && (
-        <div className="rounded-lg border border-[#fef3c7] bg-[#fef3c7]/30 px-4 py-2 text-xs text-[#92400e]">
+        <div className="rounded-lg border border-box-amber-bg bg-box-amber-bg/30 px-4 py-2 text-xs text-box-amber-text">
           Draft restored from previous session
         </div>
       )}
       {/* Week toggle tabs */}
-      <div className="flex rounded-lg border border-[#e0ddd8] bg-white p-1">
+      <div className="flex rounded-lg border border-border-warm bg-white p-1">
         <button
           onClick={() => setActiveTab("this_week")}
           className={cn(
             "flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px]",
             activeTab === "this_week"
-              ? "bg-[#c27890] text-white"
-              : "text-[#334155] hover:bg-[#f4f1ec]"
+              ? "bg-rose-action text-white"
+              : "text-text-body hover:bg-cream"
           )}
         >
           This Week's Estimate
@@ -315,8 +315,8 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
           className={cn(
             "flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px]",
             activeTab === "last_week"
-              ? "bg-[#1e3a5f] text-white"
-              : "text-[#334155] hover:bg-[#f4f1ec]"
+              ? "bg-slate-heading text-white"
+              : "text-text-body hover:bg-cream"
           )}
         >
           Last Week's Actual
@@ -324,15 +324,15 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
       </div>
 
       {/* Pull-day column headers */}
-      <div className="sticky top-0 z-[5] flex items-center gap-2 bg-[#f4f1ec] py-2 px-2">
+      <div className="sticky top-0 z-[5] flex items-center gap-2 bg-cream py-2 px-2">
         <div className="flex-1" /> {/* Spacer for checkbox + name */}
         {pullDays.map((day) => (
           <div
             key={day}
-            className="w-20 shrink-0 text-center text-xs font-semibold uppercase tracking-wider text-[#1e3a5f]"
+            className="w-20 shrink-0 text-center text-xs font-semibold uppercase tracking-wider text-slate-heading"
           >
             {shortDay(day)}
-            <div className="text-[10px] font-normal text-[#94a3b8]">
+            <div className="text-[10px] font-normal text-text-muted">
               {formatPullDay(day).split(",")[0]?.trim()}
             </div>
           </div>
@@ -342,8 +342,8 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
       {/* Variety rows grouped by product line */}
       {filteredLines.map((pl) => (
         <div key={pl.product_line_id}>
-          <div className="sticky top-10 z-[4] flex items-center bg-[#f4f1ec] px-2 py-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#1e3a5f]">
+          <div className="sticky top-10 z-[4] flex items-center bg-cream px-2 py-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-heading">
               {pl.product_line_name}
             </h3>
           </div>
@@ -356,7 +356,7 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
                   key={v.variety_id}
                   className={cn(
                     "flex items-center gap-2 rounded-lg border bg-white px-3 py-2",
-                    isDone ? "border-[#8fbc8f]/40 bg-[#2d4a2d]/5" : "border-[#e0ddd8]"
+                    isDone ? "border-emerald-400/40 bg-sidebar-hover/5" : "border-border-warm"
                   )}
                 >
                   <div className="min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0">
@@ -364,11 +364,11 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
                       checked={isDone}
                       onCheckedChange={() => handleDoneToggle(v.variety_id)}
                       disabled={isComplete}
-                      className="h-5 w-5 data-checked:bg-[#2d4a2d] data-checked:border-[#2d4a2d]"
+                      className="h-5 w-5 data-checked:bg-sidebar-hover data-checked:border-sidebar-hover"
                     />
                   </div>
                   <div className="flex-1 flex items-center gap-1 min-w-0">
-                    <span className="text-sm text-[#334155] truncate">
+                    <span className="text-sm text-text-body truncate">
                       {v.variety_name}
                     </span>
                     <CountAuditLog
@@ -385,7 +385,7 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
                       return (
                         <div
                           key={day}
-                          className="w-20 shrink-0 h-11 flex items-center justify-center rounded-md bg-[#f4f1ec] text-sm text-[#94a3b8]"
+                          className="w-20 shrink-0 h-11 flex items-center justify-center rounded-md bg-cream text-sm text-text-muted"
                         >
                           {actual ?? "—"}
                         </div>
@@ -402,7 +402,7 @@ export const EstimateForm = forwardRef<EstimateFormHandle, EstimateFormProps>(fu
                         onChange={(e) => handleEstimateChange(v.variety_id, day, e.target.value)}
                         disabled={isComplete}
                         placeholder="—"
-                        className="w-20 shrink-0 h-11 text-center text-base bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8] focus-visible:ring-[#c27890]"
+                        className="w-20 shrink-0 h-11 text-center text-base bg-white border-border-warm text-text-body placeholder:text-text-muted focus-visible:ring-rose-action"
                       />
                     );
                   })}

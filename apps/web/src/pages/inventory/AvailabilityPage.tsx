@@ -70,19 +70,19 @@ export function AvailabilityPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Top bar */}
-      <div className="shrink-0 border-b border-[#e0ddd8] bg-white px-4 py-3">
+      <div className="shrink-0 border-b border-border-warm bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-bold text-[#1e3a5f]">Availability</h1>
+          <h1 className="text-xl font-bold text-slate-heading">Availability</h1>
           <div className="flex items-center gap-2 ml-auto">
             <Input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-40 bg-white border-[#e0ddd8] text-[#334155] focus-visible:ring-[#c27890] min-h-[44px]"
+              className="w-40 bg-white border-border-warm text-text-body focus-visible:ring-rose-action min-h-[44px]"
             />
             <Link
               to="/inventory/comparison"
-              className="flex items-center gap-1.5 rounded-lg border border-[#e0ddd8] bg-white px-3 py-2 text-sm text-[#334155] hover:bg-[#f4f1ec] transition-colors min-h-[44px]"
+              className="flex items-center gap-1.5 rounded-lg border border-border-warm bg-white px-3 py-2 text-sm text-text-body hover:bg-cream transition-colors min-h-[44px]"
             >
               <BarChart3 className="h-4 w-4" />
               Comparison
@@ -96,18 +96,18 @@ export function AvailabilityPage() {
             placeholder="Search varieties..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8]"
+            className="flex-1 bg-white border-border-warm text-text-body placeholder:text-text-muted"
           />
 
           {/* Counts / Estimates toggle */}
-          <div className="flex rounded-lg border border-[#e0ddd8] overflow-hidden shrink-0">
+          <div className="flex rounded-lg border border-border-warm overflow-hidden shrink-0">
             <button
               type="button"
               onClick={() => setViewMode("counts")}
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 viewMode === "counts"
-                  ? "bg-[#1e3a5f] text-white"
-                  : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
+                  ? "bg-slate-heading text-white"
+                  : "bg-white text-text-body hover:bg-cream"
               }`}
             >
               Counts
@@ -115,17 +115,17 @@ export function AvailabilityPage() {
             <button
               type="button"
               onClick={() => setViewMode("estimates")}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-[#e0ddd8] ${
+              className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-border-warm ${
                 viewMode === "estimates"
-                  ? "bg-[#1e3a5f] text-white"
-                  : "bg-white text-[#334155] hover:bg-[#f4f1ec]"
+                  ? "bg-slate-heading text-white"
+                  : "bg-white text-text-body hover:bg-cream"
               }`}
             >
               Estimates
             </button>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-[#334155] whitespace-nowrap cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-text-body whitespace-nowrap cursor-pointer">
             <Checkbox
               checked={hideNoCount}
               onCheckedChange={(v) => setHideNoCount(v === true)}
@@ -137,9 +137,9 @@ export function AvailabilityPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto bg-[#f4f1ec] p-4">
+      <div className="flex-1 overflow-y-auto bg-cream p-4">
         {loading && (
-          <div className="flex items-center justify-center py-12 text-[#94a3b8]">
+          <div className="flex items-center justify-center py-12 text-text-muted">
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
             Loading availability...
           </div>
@@ -157,7 +157,7 @@ export function AvailabilityPage() {
               <AvailabilityCard key={pt.product_type_id} productType={pt} defaultViewMode={viewMode} />
             ))}
             {filtered.length === 0 && (
-              <div className="text-center py-12 text-sm text-[#94a3b8]">
+              <div className="text-center py-12 text-sm text-text-muted">
                 {search || hideNoCount
                   ? "No varieties match your filters."
                   : "No availability data for this date."}

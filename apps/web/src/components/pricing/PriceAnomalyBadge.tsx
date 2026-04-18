@@ -27,7 +27,7 @@ export function PriceAnomalyBadge({
     <span
       className={cn(
         "inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded border",
-        "border-[#c27890] text-[#c27890] bg-white",
+        "border-rose-action text-rose-action bg-white",
         className
       )}
       title={`${label} from list price ($${list.toFixed(2)})`}

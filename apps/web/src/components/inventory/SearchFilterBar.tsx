@@ -54,17 +54,17 @@ export function SearchFilterBar({
     <div className="space-y-3">
       {/* Search input — full width */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94a3b8]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
         <Input
           placeholder="Search varieties..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-9 pr-9 bg-white border-[#e0ddd8] text-[#334155] placeholder:text-[#94a3b8] focus-visible:ring-[#c27890]"
+          className="pl-9 pr-9 bg-white border-border-warm text-text-body placeholder:text-text-muted focus-visible:ring-rose-action"
         />
         {search && (
           <button
             onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#334155] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-body transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -81,8 +81,8 @@ export function SearchFilterBar({
             className={cn(
               "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors",
               activeLineId === line.id
-                ? "bg-[#2d4a2d] text-white"
-                : "bg-white text-[#334155] border border-[#e0ddd8] hover:bg-[#f4f1ec]"
+                ? "bg-sidebar-hover text-white"
+                : "bg-white text-text-body border border-border-warm hover:bg-cream"
             )}
           >
             {line.name}
@@ -91,7 +91,7 @@ export function SearchFilterBar({
 
         {/* Separator if both chips exist */}
         {productLines.length > 0 && (
-          <div className="w-px h-5 bg-[#e0ddd8] mx-1" />
+          <div className="w-px h-5 bg-border-warm mx-1" />
         )}
 
         {/* Status filter chips */}
@@ -102,8 +102,8 @@ export function SearchFilterBar({
             className={cn(
               "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors",
               activeStatus === opt.value
-                ? "bg-[#1e3a5f] text-white"
-                : "bg-white text-[#334155] border border-[#e0ddd8] hover:bg-[#f4f1ec]"
+                ? "bg-slate-heading text-white"
+                : "bg-white text-text-body border border-border-warm hover:bg-cream"
             )}
           >
             {opt.label}

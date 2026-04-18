@@ -29,7 +29,7 @@ export function ColumnFilter({
         <button
           className={cn(
             "ml-1 inline-flex items-center text-[10px]",
-            isActive ? "text-[#c27890]" : "text-[#94a3b8] hover:text-[#334155]"
+            isActive ? "text-rose-action" : "text-text-muted hover:text-text-body"
           )}
           aria-label="Filter column"
         >
@@ -39,13 +39,13 @@ export function ColumnFilter({
       <PopoverContent className="w-56 p-2" align="start">
         <div className="flex items-center justify-between mb-2 px-1">
           <button
-            className="text-xs text-[#c27890] hover:underline"
+            className="text-xs text-rose-action hover:underline"
             onClick={() => onChange([...values])}
           >
             Select All
           </button>
           <button
-            className="text-xs text-[#94a3b8] hover:underline"
+            className="text-xs text-text-muted hover:underline"
             onClick={() => onChange([])}
           >
             Clear
@@ -55,7 +55,7 @@ export function ColumnFilter({
           {values.map((value) => (
             <label
               key={value}
-              className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-[#f4f1ec] cursor-pointer"
+              className="flex items-center gap-2 px-1 py-0.5 text-sm rounded hover:bg-cream cursor-pointer"
             >
               <Checkbox
                 checked={selected.includes(value)}
@@ -67,14 +67,14 @@ export function ColumnFilter({
                   }
                 }}
               />
-              <span className="truncate text-[#334155]">{value || "\u2014"}</span>
+              <span className="truncate text-text-body">{value || "\u2014"}</span>
             </label>
           ))}
         </div>
-        <div className="mt-2 pt-2 border-t border-[#e0ddd8]">
+        <div className="mt-2 pt-2 border-t border-border-warm">
           <Button
             size="sm"
-            className="w-full bg-[#c27890] hover:bg-[#a8607a] text-white text-xs"
+            className="w-full bg-rose-action hover:bg-rose-action/90 text-white text-xs"
             onClick={() => setOpen(false)}
           >
             Apply

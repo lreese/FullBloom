@@ -370,7 +370,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[#94a3b8]">
+      <div className="flex items-center justify-center py-12 text-text-muted">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         Loading count sheet...
       </div>
@@ -379,7 +379,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
 
   if (productLines.length === 0) {
     return (
-      <div className="text-center py-12 text-[#94a3b8]">
+      <div className="text-center py-12 text-text-muted">
         No varieties found for this product type and date.
       </div>
     );
@@ -390,22 +390,22 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
   return (
     <div className="space-y-6 pb-24">
       {draftRestored && (
-        <div className="rounded-lg border border-[#fef3c7] bg-[#fef3c7]/30 px-4 py-2 text-xs text-[#92400e]">
+        <div className="rounded-lg border border-box-amber-bg bg-box-amber-bg/30 px-4 py-2 text-xs text-box-amber-text">
           Draft restored from previous session
         </div>
       )}
       {lastSavedAt && !hasDirtyValues && (
-        <div className="text-xs text-[#94a3b8] text-right">
+        <div className="text-xs text-text-muted text-right">
           Saved {lastSavedAt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
         </div>
       )}
       {hasDirtyValues && !saving && (
-        <div className="text-xs text-[#94a3b8] text-right">
+        <div className="text-xs text-text-muted text-right">
           Unsaved changes — auto-saves in 10s
         </div>
       )}
       {saving && (
-        <div className="text-xs text-[#94a3b8] text-right flex items-center justify-end gap-1">
+        <div className="text-xs text-text-muted text-right flex items-center justify-end gap-1">
           <Loader2 className="h-3 w-3 animate-spin" /> Saving...
         </div>
       )}
@@ -422,11 +422,11 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
         return (
           <div key={pl.product_line_id}>
             {/* Section header */}
-            <div className="flex items-center justify-between border-b border-[#e0ddd8] pb-2 mb-2">
-              <h3 className="text-sm font-semibold text-[#1e3a5f]">
+            <div className="flex items-center justify-between border-b border-border-warm pb-2 mb-2">
+              <h3 className="text-sm font-semibold text-slate-heading">
                 {pl.product_line_name}
               </h3>
-              <span className="text-xs font-medium text-[#94a3b8]">
+              <span className="text-xs font-medium text-text-muted">
                 Subtotal: {subtotal}
               </span>
             </div>
@@ -450,7 +450,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                     <div
                       className={cn(
                         "flex items-center gap-2 rounded-lg px-2 py-1 min-h-[36px] transition-colors",
-                        state.dirty ? "bg-[#fef3c7]/30" : "hover:bg-[#f4f1ec]"
+                        state.dirty ? "bg-box-amber-bg/30" : "hover:bg-cream"
                       )}
                     >
                       {/* Done checkbox */}
@@ -469,8 +469,8 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                           className={cn(
                             "text-sm truncate",
                             state.is_done
-                              ? "text-[#94a3b8] line-through"
-                              : "text-[#334155]"
+                              ? "text-text-muted line-through"
+                              : "text-text-body"
                           )}
                         >
                           {variety.variety_name}
@@ -510,7 +510,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                                 setExpandedAmount("");
                               }
                             }}
-                            className="text-[#c27890] border-[#c27890]/30 hover:bg-[#c27890]/10 min-w-[44px] min-h-[44px]"
+                            className="text-rose-action border-rose-action/30 hover:bg-rose-action/10 min-w-[44px] min-h-[44px]"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -525,7 +525,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                             handleDirectSet(variety.variety_id, e.target.value)
                           }
                           placeholder="--"
-                          className="w-20 text-center bg-white border-[#e0ddd8] text-[#334155] focus-visible:ring-[#c27890] min-h-[44px] text-base"
+                          className="w-20 text-center bg-white border-border-warm text-text-body focus-visible:ring-rose-action min-h-[44px] text-base"
                         />
 
                         {hasValue && (
@@ -548,7 +548,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                                 setExpandedAmount("");
                               }
                             }}
-                            className="text-[#2d4a2d] border-[#2d4a2d]/30 hover:bg-[#2d4a2d]/10 min-w-[44px] min-h-[44px]"
+                            className="text-sidebar-hover border-sidebar-hover/30 hover:bg-sidebar-hover/10 min-w-[44px] min-h-[44px]"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -562,16 +562,16 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                         className={cn(
                           "flex items-center gap-3 rounded-lg mx-3 px-3 py-2 mt-1 border",
                           expandedRow.mode === "add"
-                            ? "border-[#2d4a2d]/30 bg-[#2d4a2d]/5"
-                            : "border-[#c27890]/30 bg-[#c27890]/5"
+                            ? "border-sidebar-hover/30 bg-sidebar-hover/5"
+                            : "border-rose-action/30 bg-rose-action/5"
                         )}
                       >
                         <span
                           className={cn(
                             "text-sm font-medium shrink-0",
                             expandedRow.mode === "add"
-                              ? "text-[#2d4a2d]"
-                              : "text-[#c27890]"
+                              ? "text-sidebar-hover"
+                              : "text-rose-action"
                           )}
                         >
                           {expandedRow.mode === "add" ? "Add:" : "Remove:"}
@@ -596,10 +596,10 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                             }
                           }}
                           placeholder="0"
-                          className="w-20 text-center bg-white border-[#e0ddd8] min-h-[44px] text-base"
+                          className="w-20 text-center bg-white border-border-warm min-h-[44px] text-base"
                         />
 
-                        <span className="text-sm text-[#334155]">
+                        <span className="text-sm text-text-body">
                           &rarr; new total:{" "}
                           <span className="font-semibold">
                             {(() => {
@@ -621,7 +621,7 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                               setExpandedRow(null);
                               setExpandedAmount("");
                             }}
-                            className="min-h-[44px] border-[#e0ddd8] text-[#94a3b8]"
+                            className="min-h-[44px] border-border-warm text-text-muted"
                           >
                             Cancel
                           </Button>
@@ -637,8 +637,8 @@ export const CountForm = forwardRef<CountFormHandle, CountFormProps>(function Co
                             className={cn(
                               "min-h-[44px]",
                               expandedRow.mode === "add"
-                                ? "bg-[#2d4a2d] hover:bg-[#2d4a2d]/90 text-white"
-                                : "bg-[#c27890] hover:bg-[#c27890]/90 text-white"
+                                ? "bg-sidebar-hover hover:bg-sidebar-hover/90 text-white"
+                                : "bg-rose-action hover:bg-rose-action/90 text-white"
                             )}
                           >
                             Save

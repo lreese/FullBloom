@@ -524,7 +524,7 @@ export function OrderForm() {
 
       {/* 1. Header row */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-extrabold text-[#1e3a5f]">
+        <h1 className="text-xl font-extrabold text-slate-heading">
           {isEditMode ? `Edit Order: ${orderNumber}` : "New Order"}
         </h1>
         <div className="flex items-center gap-2">

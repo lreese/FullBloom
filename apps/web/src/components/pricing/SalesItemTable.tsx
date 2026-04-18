@@ -134,15 +134,15 @@ export function SalesItemTable({
   return (
     <div>
       {someSelected ? (
-        <div className="flex flex-wrap items-center gap-2.5 mb-3 px-3 py-2 bg-[#fce7f3] rounded-lg border border-[#f9a8d4]">
-          <span className="flex items-center gap-1.5 text-sm font-medium text-[#831843]">
+        <div className="flex flex-wrap items-center gap-2.5 mb-3 px-3 py-2 bg-box-pink-bg rounded-lg border border-pink-300">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-box-pink-text">
             <CheckCircle2 className="h-4 w-4" />
             {selectedIds.size} selected
           </span>
 
-          <div className="h-5 w-px bg-[#f9a8d4]" />
+          <div className="h-5 w-px bg-pink-300" />
 
-          <span className="text-xs text-[#831843]">Set</span>
+          <span className="text-xs text-box-pink-text">Set</span>
           <Select value={bulkField} onValueChange={(v) => { setBulkField(v); setBulkValue(""); }}>
             <SelectTrigger className="h-7 w-[140px] text-xs bg-white">
               <SelectValue placeholder="Field..." />
@@ -154,7 +154,7 @@ export function SalesItemTable({
             </SelectContent>
           </Select>
 
-          <span className="text-xs text-[#831843]">to</span>
+          <span className="text-xs text-box-pink-text">to</span>
 
           {bulkField === "variety_id" ? (
             <Select value={bulkValue} onValueChange={setBulkValue}>
@@ -180,7 +180,7 @@ export function SalesItemTable({
 
           <Button
             size="sm"
-            className="bg-[#c27890] hover:bg-[#a8607a] text-white text-xs h-7"
+            className="bg-rose-action hover:bg-rose-action/90 text-white text-xs h-7"
             disabled={!bulkField || !bulkValue}
             onClick={handleBulkApply}
           >
@@ -188,7 +188,7 @@ export function SalesItemTable({
           </Button>
 
           <button
-            className="ml-auto text-xs text-[#94a3b8] hover:text-[#334155]"
+            className="ml-auto text-xs text-text-muted hover:text-text-body"
             onClick={() => onSelectionChange(new Set())}
           >
             Clear Selection

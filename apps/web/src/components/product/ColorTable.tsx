@@ -40,11 +40,11 @@ export function ColorTable({
     if (col.key === "hex_color") {
       return color.hex_color ? (
         <div
-          className="h-5 w-5 rounded-full border border-[#e0ddd8]"
+          className="h-5 w-5 rounded-full border border-border-warm"
           style={{ backgroundColor: color.hex_color as string }}
         />
       ) : (
-        <div className="h-5 w-5 rounded-full border border-[#e0ddd8] bg-[#f4f1ec]" />
+        <div className="h-5 w-5 rounded-full border border-border-warm bg-cream" />
       );
     }
     const val = color[col.key as keyof Color];
@@ -75,7 +75,7 @@ export function ColorTable({
           cn(
             col.key === "hex_color" && "w-10",
             col.key === "name" && "font-medium",
-            col.key === "variety_count" && "w-24 text-[#94a3b8]"
+            col.key === "variety_count" && "w-24 text-text-muted"
           ) || undefined
         }
         emptyMessage="No colors found."
