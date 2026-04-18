@@ -38,6 +38,7 @@ async def get_me(user: User = Depends(get_current_user)) -> dict:
             avatar_url=user.avatar_url,
             role=user.role,
             status=user.status,
+            created_at=user.created_at,
             permissions=permissions,
         ).model_dump()
     }

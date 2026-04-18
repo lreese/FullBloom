@@ -38,30 +38,30 @@ function App() {
                 <ProtectedRoute>
                   <AppShell>
                     <Routes>
-                      <Route path="/orders" element={<OrdersPage />} />
-                      <Route path="/orders/new" element={<OrderForm />} />
-                      <Route path="/orders/:orderId/edit" element={<OrderForm />} />
-                      <Route path="/standing-orders" element={<StandingOrdersPage />} />
-                      <Route path="/standing-orders/new" element={<StandingOrderForm />} />
-                      <Route path="/standing-orders/:standingOrderId/edit" element={<StandingOrderForm />} />
-                      <Route path="/customers" element={<CustomersPage />} />
+                      <Route path="/orders" element={<ProtectedRoute requiredArea="orders"><OrdersPage /></ProtectedRoute>} />
+                      <Route path="/orders/new" element={<ProtectedRoute requiredArea="orders"><OrderForm /></ProtectedRoute>} />
+                      <Route path="/orders/:orderId/edit" element={<ProtectedRoute requiredArea="orders"><OrderForm /></ProtectedRoute>} />
+                      <Route path="/standing-orders" element={<ProtectedRoute requiredArea="orders"><StandingOrdersPage /></ProtectedRoute>} />
+                      <Route path="/standing-orders/new" element={<ProtectedRoute requiredArea="orders"><StandingOrderForm /></ProtectedRoute>} />
+                      <Route path="/standing-orders/:standingOrderId/edit" element={<ProtectedRoute requiredArea="orders"><StandingOrderForm /></ProtectedRoute>} />
+                      <Route path="/customers" element={<ProtectedRoute requiredArea="customers"><CustomersPage /></ProtectedRoute>} />
                       <Route path="/products" element={<Navigate to="/products/varieties" replace />} />
-                      <Route path="/products/varieties" element={<VarietiesPage />} />
-                      <Route path="/products/product-lines" element={<ProductLinesPage />} />
-                      <Route path="/products/colors" element={<ColorsPage />} />
-                      <Route path="/products/product-types" element={<ProductTypesPage />} />
+                      <Route path="/products/varieties" element={<ProtectedRoute requiredArea="products"><VarietiesPage /></ProtectedRoute>} />
+                      <Route path="/products/product-lines" element={<ProtectedRoute requiredArea="products"><ProductLinesPage /></ProtectedRoute>} />
+                      <Route path="/products/colors" element={<ProtectedRoute requiredArea="products"><ColorsPage /></ProtectedRoute>} />
+                      <Route path="/products/product-types" element={<ProtectedRoute requiredArea="products"><ProductTypesPage /></ProtectedRoute>} />
                       <Route path="/pricing" element={<Navigate to="/pricing/sales-items" replace />} />
-                      <Route path="/pricing/sales-items" element={<SalesItemsPage />} />
-                      <Route path="/pricing/price-lists" element={<PriceListsPage />} />
-                      <Route path="/pricing/customer-prices" element={<CustomerPricesPage />} />
+                      <Route path="/pricing/sales-items" element={<ProtectedRoute requiredArea="pricing"><SalesItemsPage /></ProtectedRoute>} />
+                      <Route path="/pricing/price-lists" element={<ProtectedRoute requiredArea="pricing"><PriceListsPage /></ProtectedRoute>} />
+                      <Route path="/pricing/customer-prices" element={<ProtectedRoute requiredArea="pricing"><CustomerPricesPage /></ProtectedRoute>} />
                       <Route path="/inventory" element={<Navigate to="/inventory/counts" replace />} />
-                      <Route path="/inventory/counts" element={<CountsPage />} />
-                      <Route path="/inventory/estimates" element={<EstimatesPage />} />
-                      <Route path="/inventory/availability" element={<AvailabilityPage />} />
-                      <Route path="/inventory/harvest-status" element={<HarvestStatusPage />} />
-                      <Route path="/inventory/comparison" element={<ComparisonPage />} />
+                      <Route path="/inventory/counts" element={<ProtectedRoute requiredArea="inventory_counts"><CountsPage /></ProtectedRoute>} />
+                      <Route path="/inventory/estimates" element={<ProtectedRoute requiredArea="inventory_counts"><EstimatesPage /></ProtectedRoute>} />
+                      <Route path="/inventory/availability" element={<ProtectedRoute requiredArea="inventory_availability"><AvailabilityPage /></ProtectedRoute>} />
+                      <Route path="/inventory/harvest-status" element={<ProtectedRoute requiredArea="inventory_harvest"><HarvestStatusPage /></ProtectedRoute>} />
+                      <Route path="/inventory/comparison" element={<ProtectedRoute requiredArea="inventory_availability"><ComparisonPage /></ProtectedRoute>} />
                       <Route path="/settings/profile" element={<ProfilePage />} />
-                      <Route path="/settings/users" element={<UsersPage />} />
+                      <Route path="/settings/users" element={<ProtectedRoute requiredArea="users"><UsersPage /></ProtectedRoute>} />
                       <Route path="*" element={<Navigate to="/orders" replace />} />
                     </Routes>
                   </AppShell>

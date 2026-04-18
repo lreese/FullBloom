@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/auth/useAuth";
 import { api } from "@/services/api";
 import { ROLE_LABELS } from "@/lib/permissions";
@@ -12,6 +12,13 @@ export function ProfilePage() {
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.display_name ?? "");
+      setPhone(user.phone ?? "");
+    }
+  }, [user]);
 
   if (!user) return null;
 

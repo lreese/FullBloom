@@ -29,6 +29,7 @@ class UserWithPermissionsResponse(BaseModel):
     avatar_url: str | None
     role: str
     status: str
+    created_at: datetime
     permissions: dict[str, str]
 
 

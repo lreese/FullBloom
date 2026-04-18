@@ -2,8 +2,14 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/useAuth";
 import { Button } from "@/components/ui/button";
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, user, loading, signOut } = useAuth();
+export function ProtectedRoute({
+  children,
+  requiredArea,
+}: {
+  children: React.ReactNode;
+  requiredArea?: string;
+}) {
+  const { session, user, loading, signOut, canAccess } = useAuth();
 
   if (loading) {
     return (
@@ -32,6 +38,22 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
             Sign Out & Return to Login
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (requiredArea && !canAccess(requiredArea, "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h2 className="text-2xl font-bold text-slate-heading mb-4">
+          Access Denied
+        </h2>
+        <p className="text-text-body mb-8 max-w-md mx-auto">
+          You don't have permission to view this area. If you believe this is an error, please contact your administrator.
+        </p>
+        <Button variant="outline" onClick={() => window.history.back()}>
+          Go Back
+        </Button>
       </div>
     );
   }

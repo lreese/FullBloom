@@ -52,5 +52,5 @@ def decode_supabase_jwt(token: str, _jwks_client_override: PyJWKClient | None = 
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
-    except Exception as e:
+    except jwt.PyJWTError as e:
         raise HTTPException(status_code=401, detail=f"Token verification failed: {e}")

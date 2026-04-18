@@ -2,7 +2,7 @@
 
 **Feature Branch**: `008-users-rbac`  
 **Created**: 2026-04-12  
-**Status**: in-progress  
+**Status**: implemented  
 **Input**: Add user authentication via Supabase Auth and role-based access control with three roles (admin, salesperson, field worker). Admin manages users and assigns roles. Email/password authentication.
 
 ## User Scenarios & Testing *(mandatory)*

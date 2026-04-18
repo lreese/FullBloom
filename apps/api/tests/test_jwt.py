@@ -70,3 +70,16 @@ class TestDecodeSupabaseJWT:
             decode_supabase_jwt(token, _jwks_client_override=_test_jwk_client)
         assert exc.value.status_code == 401
         assert "exp" in str(exc.value.detail)
+
+    def test_missing_config_raises_500(self, monkeypatch):
+        # Ensure we don't use the override
+        token = _make_token({"sub": "user-uuid-123", "exp": time.time() + 3600, "aud": "authenticated"})
+        
+        # Patch the module's cached client and config
+        import app.auth.supabase as supabase_module
+        monkeypatch.setattr(supabase_module, "_jwks_client", None)
+        monkeypatch.setattr(supabase_module, "SUPABASE_URL", "")
+        
+        # Should raise RuntimeError, NOT HTTPException(401)
+        with pytest.raises(RuntimeError, match="SUPABASE_URL must be set for JWKS verification"):
+            decode_supabase_jwt(token, _jwks_client_override=None)

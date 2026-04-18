@@ -15,9 +15,13 @@ async def get_current_user(request: Request) -> User:
     token = auth_header.split(" ", 1)[1]
     payload = decode_supabase_jwt(token, _jwks_client_override=_jwks_client_override)
     supabase_user_id = payload.get("sub")
+    email = payload.get("email")
+
+    print(f"DEBUG: Checking token for sub={supabase_user_id}, email={email}")
 
     # Look up by supabase_user_id first
     user = await User.filter(supabase_user_id=supabase_user_id).first()
+    print(f"DEBUG: User lookup by sub returned: {user}")
 
     if user is None:
         # Check for a pending invite by email
