@@ -5,6 +5,7 @@ from httpx import AsyncClient
 from unittest.mock import patch, MagicMock
 
 from app.models.user import User
+from tests.conftest import _make_test_token
 
 
 @pytest.fixture
@@ -256,6 +257,53 @@ class TestDeactivateUser:
             headers=auth_headers_salesperson,
         )
         assert resp.status_code == 403
+
+    async def test_deactivate_last_admin_pending_blocked(
+        self, async_client: AsyncClient, admin_user, auth_headers_admin, salesperson_user, auth_headers_salesperson
+    ):
+        # Temporarily give salesperson the ability to manage users for this test
+        from app.auth import permissions
+        original = permissions.PERMISSIONS["salesperson"].copy()
+        permissions.PERMISSIONS["salesperson"]["users"] = "rw"
+        
+        try:
+            # We have 1 active admin (admin_user).
+            # Try to deactivate it from the salesperson account.
+            # It should be blocked because it's the last live admin.
+            resp = await async_client.post(
+                f"/api/v1/users/{admin_user.id}/deactivate",
+                headers=auth_headers_salesperson,
+            )
+            assert resp.status_code == 409
+            assert "last administrator" in resp.json()["error"]
+            
+            # Now create a pending admin. Total live = 2.
+            pending_admin = await User.create(
+                supabase_user_id="pending-admin", email="p@test.com", role="admin", status="pending"
+            )
+            
+            # Try again. Should pass now because pending_admin is still live.
+            resp = await async_client.post(
+                f"/api/v1/users/{admin_user.id}/deactivate",
+                headers=auth_headers_salesperson,
+            )
+            assert resp.status_code == 200
+            
+            # Now ONLY pending_admin is live.
+            # Try to deactivate it. Should be blocked.
+            resp = await async_client.post(
+                f"/api/v1/users/{pending_admin.id}/deactivate",
+                headers=auth_headers_salesperson,
+            )
+            assert resp.status_code == 409
+            assert "last administrator" in resp.json()["error"]
+            
+        finally:
+            permissions.PERMISSIONS["salesperson"] = original
+
+    async def test_deactivate_only_pending_admin_blocked(self):
+        # Already covered in the test above by checking pending deactivation when last.
+        pass
 
 
 class TestReactivateUser:

@@ -197,6 +197,42 @@ async def test_list_orders_search_by_customer_name(
 
 
 # ---------------------------------------------------------------------------
+# Create endpoint tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.anyio
+async def test_create_order_defaults_salesperson_email(
+    async_client: AsyncClient,
+    auth_headers_salesperson,
+    salesperson_user,
+    customer,
+    sales_item_pair,
+):
+    si_a, _ = sales_item_pair
+    data = {
+        "customer_id": str(customer.id),
+        "order_date": "2026-04-18",
+        "ship_via": "FedEx",
+        "lines": [
+            {
+                "sales_item_id": str(si_a.id),
+                "stems": 100,
+                "price_per_stem": "1.50",
+            }
+        ],
+    }
+    # Note: salesperson_email is OMITTED
+    resp = await async_client.post("/api/v1/orders", json=data, headers=auth_headers_salesperson)
+    assert resp.status_code == 201
+
+    # Verify salesperson_email was set to the authenticated user's email
+    order_id = resp.json()["data"]["id"]
+    order = await Order.get(id=order_id)
+    assert order.salesperson_email == salesperson_user.email
+
+
+# ---------------------------------------------------------------------------
 # Update endpoint tests
 # ---------------------------------------------------------------------------
 

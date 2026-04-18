@@ -3,6 +3,7 @@ import time
 
 import jwt
 import pytest
+from fastapi import HTTPException
 from cryptography.hazmat.primitives.asymmetric import ec
 from jwt import PyJWK
 
@@ -58,10 +59,14 @@ class TestDecodeSupabaseJWT:
 
     def test_token_missing_sub_raises(self):
         token = _make_token({"exp": time.time() + 3600})
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException) as exc:
             decode_supabase_jwt(token, _jwks_client_override=_test_jwk_client)
+        assert exc.value.status_code == 401
+        assert "sub" in str(exc.value.detail)
 
     def test_token_missing_exp_raises(self):
         token = jwt.encode({"sub": "user-uuid"}, TEST_PRIVATE_KEY_PEM, algorithm="ES256")
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException) as exc:
             decode_supabase_jwt(token, _jwks_client_override=_test_jwk_client)
+        assert exc.value.status_code == 401
+        assert "exp" in str(exc.value.detail)

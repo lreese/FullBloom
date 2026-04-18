@@ -162,7 +162,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
             <PopoverTrigger asChild>
               <button
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
+                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left border-transparent",
                   childActive && "bg-sidebar-hover text-white"
                 )}
               >
@@ -172,7 +172,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
             <PopoverContent
               side="right"
               align="start"
-              className="w-44 p-1"
+              className="w-44 p-1 bg-white"
               sideOffset={8}
             >
               {children.map((child) => {
@@ -183,11 +183,11 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
                     key={child.href}
                     onClick={() => navigate(child.href)}
                     className={cn(
-                      "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-[#334155] hover:bg-[#f4f1ec] transition-colors",
-                      active && "bg-[#f4f1ec] font-medium"
+                      "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-text-body hover:bg-cream transition-colors border-transparent",
+                      active && "bg-cream font-medium text-slate-heading"
                     )}
                   >
-                    <ChildIcon className="h-4 w-4 shrink-0 text-[#94a3b8]" />
+                    <ChildIcon className="h-4 w-4 shrink-0 text-text-muted" />
                     <span>{child.label}</span>
                   </button>
                 );
@@ -211,21 +211,21 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
               })
             }
             className={cn(
-              "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
-              childActive && "bg-sidebar-hover text-white"
+              "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left border-transparent",
+              childActive && !isDropdownOpen && "bg-sidebar-hover text-white"
             )}
           >
             <Icon className="h-5 w-5 shrink-0" />
             <span className="whitespace-nowrap flex-1">{label}</span>
             <ChevronDown
               className={cn(
-                "h-4 w-4 shrink-0 transition-transform",
-                isDropdownOpen && "rotate-180"
+                "h-4 w-4 shrink-0 transition-transform opacity-60",
+                isDropdownOpen && "rotate-180 opacity-100"
               )}
             />
           </button>
           {isDropdownOpen && (
-            <div className="ml-4 mt-0.5 space-y-0.5">
+            <div className="ml-4 mt-0.5 space-y-0.5 border-l border-sidebar-muted/30 pl-2">
               {children.map((child) => {
                 const ChildIcon = child.icon;
                 const active = activePath.startsWith(child.href);
@@ -237,8 +237,8 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
                       setMobileOpen(false);
                     }}
                     className={cn(
-                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-white/70 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
-                      active && "bg-sidebar-hover text-white"
+                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-white/70 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left border-transparent",
+                      active && "bg-sidebar-hover text-white font-semibold"
                     )}
                   >
                     <ChildIcon className="h-3.5 w-3.5 shrink-0" />
@@ -262,7 +262,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
           setMobileOpen(false);
         }}
         className={cn(
-          "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left",
+          "flex items-center gap-3 rounded-md px-2 py-2 text-sm text-white/80 hover:bg-sidebar-hover hover:text-white transition-colors w-full text-left border-transparent",
           active && "bg-sidebar-hover text-white"
         )}
       >
@@ -281,7 +281,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
         <span className="text-white font-bold text-lg tracking-tight">FullBloom</span>
         <button
           onClick={() => setMobileOpen(true)}
-          className="text-white p-1"
+          className="text-white p-1 border-transparent"
           aria-label="Open menu"
         >
           <Menu className="h-6 w-6" />
@@ -299,7 +299,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
       {/* ── Sidebar ────────────────────────────────────────── */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 flex flex-col h-full bg-sidebar transition-all duration-200",
+          "fixed top-0 left-0 z-50 flex flex-col h-full bg-sidebar transition-all duration-200 shadow-xl",
           "hidden md:flex",
           expanded ? "w-[200px]" : "w-[52px]",
           mobileOpen && "!flex w-[200px]"
@@ -312,7 +312,7 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
           {mobileOpen && (
             <button
               onClick={() => setMobileOpen(false)}
-              className="md:hidden text-white p-1"
+              className="md:hidden text-white p-1 border-transparent"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
@@ -324,13 +324,11 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
           {navItems.map(renderNavItem)}
         </nav>
 
-        <div className="hidden md:flex flex-col px-2 py-3 gap-2">
-          <div style={{ borderTop: "1px solid #2d4a2d" }} className="pt-2">
-            <UserBadge expanded={expanded} />
-          </div>
+        <div className="hidden md:flex flex-col px-2 py-3 gap-2 border-t border-sidebar-muted/30">
+          <UserBadge expanded={expanded} />
           <button
             onClick={() => onExpandedChange(!expanded)}
-            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors px-2 py-1 rounded-md w-full"
+            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors px-2 py-1 rounded-md w-full border-transparent"
             aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
           >
             {expanded ? (

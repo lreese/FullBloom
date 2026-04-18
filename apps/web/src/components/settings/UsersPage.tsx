@@ -9,17 +9,14 @@ import type { Role, UserListItem } from "@/types/user";
 const ROLE_OPTIONS: Role[] = ["admin", "salesperson", "data_manager", "field_worker"];
 
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, { bg: string; color: string }> = {
-    active: { bg: "#dcfce7", color: "#15803d" },
-    pending: { bg: "#fef9c3", color: "#a16207" },
-    deactivated: { bg: "#fce7f3", color: "#9f1239" },
+  const configs: Record<string, { bg: string; text: string }> = {
+    active: { bg: "bg-box-green-bg", text: "text-box-green-text" },
+    pending: { bg: "bg-box-amber-bg", text: "text-box-amber-text" },
+    deactivated: { bg: "bg-box-pink-bg", text: "text-box-pink-text" },
   };
-  const s = styles[status] ?? styles.deactivated;
+  const config = configs[status] ?? configs.deactivated;
   return (
-    <span
-      className="px-2 py-0.5 rounded text-xs font-medium capitalize"
-      style={{ background: s.bg, color: s.color }}
-    >
+    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${config.bg} ${config.text}`}>
       {status}
     </span>
   );
@@ -99,24 +96,24 @@ export function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-6xl">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: "#1e3a5f" }}>
-          Users
-        </h1>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-heading">Users</h1>
+          <p className="text-text-muted mt-1">Manage team members and their access permissions.</p>
+        </div>
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
             onClick={() => setShowMatrix(!showMatrix)}
-            className="text-sm"
+            className="bg-white border-border-warm text-text-body hover:bg-cream"
           >
             {showMatrix ? "Hide Permissions" : "Show Permissions"}
           </Button>
           <Button
             onClick={() => setShowInvite(!showInvite)}
-            style={{ background: "#c27890", color: "white" }}
-            className="text-sm"
+            className="bg-rose-action text-white hover:opacity-90"
           >
             Invite User
           </Button>
@@ -125,11 +122,8 @@ export function UsersPage() {
 
       {/* Permissions Matrix */}
       {showMatrix && (
-        <div
-          className="rounded-lg p-4"
-          style={{ background: "white", border: "1px solid #e0ddd8" }}
-        >
-          <h2 className="text-base font-semibold mb-3" style={{ color: "#1e3a5f" }}>
+        <div className="rounded-xl p-6 bg-white border border-border-warm shadow-sm animate-in fade-in slide-in-from-top-2">
+          <h2 className="text-lg font-bold text-slate-heading mb-4">
             Role Permissions
           </h2>
           <PermissionsMatrix />
@@ -138,17 +132,14 @@ export function UsersPage() {
 
       {/* Invite Form */}
       {showInvite && (
-        <div
-          className="rounded-lg p-4"
-          style={{ background: "white", border: "1px solid #e0ddd8" }}
-        >
-          <h2 className="text-base font-semibold mb-3" style={{ color: "#1e3a5f" }}>
+        <div className="rounded-xl p-6 bg-white border border-border-warm shadow-sm animate-in fade-in slide-in-from-top-2">
+          <h2 className="text-lg font-bold text-slate-heading mb-4">
             Invite New User
           </h2>
-          <form onSubmit={handleInvite} className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium" style={{ color: "#334155" }}>
-                Email
+          <form onSubmit={handleInvite} className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-text-body">
+                Email Address
               </label>
               <Input
                 type="email"
@@ -156,18 +147,17 @@ export function UsersPage() {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-64"
+                className="w-72 bg-white border-border-warm"
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium" style={{ color: "#334155" }}>
-                Role
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-text-body">
+                Account Role
               </label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as Role)}
-                className="h-9 rounded-md border px-3 text-sm"
-                style={{ borderColor: "#e0ddd8", color: "#334155" }}
+                className="h-8 rounded-lg border border-border-warm bg-white px-3 text-sm text-text-body outline-none focus:ring-2 focus:ring-ring/50"
               >
                 {ROLE_OPTIONS.map((r) => (
                   <option key={r} value={r}>
@@ -176,22 +166,25 @@ export function UsersPage() {
                 ))}
               </select>
             </div>
-            <Button
-              type="submit"
-              disabled={inviting}
-              style={{ background: "#c27890", color: "white" }}
-            >
-              {inviting ? "Sending..." : "Send Invite"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowInvite(false)}
-            >
-              Cancel
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="submit"
+                disabled={inviting}
+                className="bg-rose-action text-white hover:opacity-90"
+              >
+                {inviting ? "Sending..." : "Send Invite"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowInvite(false)}
+                className="border-border-warm text-text-body hover:bg-cream"
+              >
+                Cancel
+              </Button>
+            </div>
             {inviteError && (
-              <p className="text-sm text-red-600 w-full">{inviteError}</p>
+              <p className="text-sm text-red-600 w-full font-medium">{inviteError}</p>
             )}
           </form>
         </div>
@@ -199,174 +192,171 @@ export function UsersPage() {
 
       {/* Action error */}
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-600 font-medium">
+          {error}
+        </div>
       )}
 
       {/* Users Table */}
-      <div
-        className="rounded-lg overflow-hidden"
-        style={{ background: "white", border: "1px solid #e0ddd8" }}
-      >
+      <div className="rounded-xl overflow-hidden bg-white border border-border-warm shadow-sm">
         {loading ? (
-          <p className="px-4 py-6 text-sm text-center" style={{ color: "#94a3b8" }}>
-            Loading users…
-          </p>
+          <div className="px-4 py-12 text-center text-text-muted">
+            <p className="animate-pulse">Loading users...</p>
+          </div>
         ) : users.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-center" style={{ color: "#94a3b8" }}>
-            No users found.
-          </p>
+          <div className="px-4 py-12 text-center text-text-muted">
+            <p>No users found.</p>
+          </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr style={{ borderBottom: "1px solid #e0ddd8", background: "#f4f1ec" }}>
-                <th className="text-left py-3 px-4 font-medium" style={{ color: "#1e3a5f" }}>
+              <tr className="bg-cream border-b border-border-warm">
+                <th className="text-left py-3.5 px-6 font-semibold text-slate-heading">
                   User
                 </th>
-                <th className="text-left py-3 px-4 font-medium" style={{ color: "#1e3a5f" }}>
+                <th className="text-left py-3.5 px-6 font-semibold text-slate-heading">
                   Role
                 </th>
-                <th className="text-left py-3 px-4 font-medium" style={{ color: "#1e3a5f" }}>
+                <th className="text-left py-3.5 px-6 font-semibold text-slate-heading">
                   Status
                 </th>
-                <th className="text-left py-3 px-4 font-medium" style={{ color: "#1e3a5f" }}>
+                <th className="text-left py-3.5 px-6 font-semibold text-slate-heading">
                   Joined
                 </th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: "#1e3a5f" }}>
+                <th className="text-right py-3.5 px-6 font-semibold text-slate-heading">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr
-                  key={u.id}
-                  style={{ borderBottom: "1px solid #e0ddd8" }}
-                  className="hover:bg-[#f4f1ec]/50"
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      {u.avatar_url ? (
-                        <img
-                          src={u.avatar_url}
-                          alt=""
-                          className="w-7 h-7 rounded-full flex-shrink-0"
-                        />
-                      ) : (
-                        <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
-                          style={{ background: "#c27890" }}
-                        >
-                          {(u.display_name || u.email)
-                            .split(/[\s@]/)
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map((s) => s[0].toUpperCase())
-                            .join("")}
-                        </div>
-                      )}
-                      <div>
-                        {u.display_name && (
-                          <p className="font-medium" style={{ color: "#334155" }}>
-                            {u.display_name}
-                          </p>
+            <tbody className="divide-y divide-border-warm">
+              {users.map((u) => {
+                const initials = (u.display_name || "")
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((s) => s[0].toUpperCase())
+                  .join("") || (u.email?.[0]?.toUpperCase() ?? "");
+
+                return (
+                  <tr
+                    key={u.id}
+                    className="hover:bg-cream/30 transition-colors"
+                  >
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        {u.avatar_url ? (
+                          <img
+                            src={u.avatar_url}
+                            alt=""
+                            className="w-9 h-9 rounded-full object-cover ring-2 ring-cream"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold bg-rose-action ring-2 ring-cream">
+                            {initials}
+                          </div>
                         )}
-                        <p className="text-xs" style={{ color: "#94a3b8" }}>
-                          {u.email}
-                        </p>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-text-body leading-tight">
+                            {u.display_name || "New User"}
+                          </span>
+                          <span className="text-xs text-text-muted font-medium">
+                            {u.email}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <select
-                      value={u.role}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
-                      className="h-8 rounded border px-2 text-xs"
-                      style={{ borderColor: "#e0ddd8", color: "#334155" }}
-                    >
-                      {ROLE_OPTIONS.map((r) => (
-                        <option key={r} value={r}>
-                          {ROLE_LABELS[r]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="py-3 px-4">
-                    <StatusBadge status={u.status} />
-                  </td>
-                  <td className="py-3 px-4 text-xs" style={{ color: "#94a3b8" }}>
-                    {new Date(u.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    {u.status !== "deactivated" ? (
-                      <button
-                        onClick={() => handleDeactivate(u.id)}
-                        className="text-xs px-2 py-1 rounded border hover:bg-[#f4f1ec] transition-colors"
-                        style={{ color: "#9f1239", borderColor: "#fce7f3" }}
+                    </td>
+                    <td className="py-4 px-6">
+                      <select
+                        value={u.role}
+                        onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
+                        className="h-8 rounded-lg border border-border-warm bg-white px-2.5 text-xs text-text-body font-medium outline-none focus:ring-2 focus:ring-ring/50"
                       >
-                        Deactivate
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleReactivate(u.id)}
-                        className="text-xs px-2 py-1 rounded border hover:bg-[#f4f1ec] transition-colors"
-                        style={{ color: "#15803d", borderColor: "#dcfce7" }}
-                      >
-                        Reactivate
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                        {ROLE_OPTIONS.map((r) => (
+                          <option key={r} value={r}>
+                            {ROLE_LABELS[r]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-4 px-6">
+                      <StatusBadge status={u.status} />
+                    </td>
+                    <td className="py-4 px-6 text-xs text-text-muted font-medium tabular-nums">
+                      {new Date(u.created_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      {u.status !== "deactivated" ? (
+                        <button
+                          onClick={() => handleDeactivate(u.id)}
+                          className="text-xs font-bold px-3 py-1 rounded-full bg-box-pink-bg text-box-pink-text hover:opacity-80 transition-opacity border-transparent"
+                        >
+                          Deactivate
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleReactivate(u.id)}
+                          className="text-xs font-bold px-3 py-1 rounded-full bg-box-green-bg text-box-green-text hover:opacity-80 transition-opacity border-transparent"
+                        >
+                          Reactivate
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
       </div>
 
       {/* About Roles */}
-      <div>
-        <h2 className="text-base font-semibold mb-3" style={{ color: "#1e3a5f" }}>
-          About Roles
+      <div className="pt-4">
+        <h2 className="text-xl font-bold text-slate-heading mb-4">
+          About Access Roles
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               role: "Admin",
-              color: "#c27890",
+              color: "bg-rose-action",
               description:
                 "Full access to all areas, manages users and settings. For owners and office managers.",
             },
             {
               role: "Salesperson",
-              color: "#3b82f6",
+              color: "bg-blue-500",
               description:
-                "Full access to orders, customers, and pricing. Views inventory and products. No user management or import.",
+                "Full access to orders, customers, and pricing. Views inventory and products.",
             },
             {
               role: "Data Manager",
-              color: "#8b5cf6",
+              color: "bg-purple-500",
               description:
-                "Manages products, customers, pricing, and imports. Views orders. For office staff.",
+                "Manages products, customers, and pricing. Views orders. For office staff.",
             },
             {
               role: "Field Worker",
-              color: "#22c55e",
+              color: "bg-green-600",
               description:
-                "Manages inventory counts, estimates, and harvest status. Views orders, customers, and products. No pricing or import access.",
+                "Manages inventory counts, estimates, and harvest. Views orders and products.",
             },
           ].map(({ role, color, description }) => (
             <div
               key={role}
-              className="rounded-lg p-4"
-              style={{
-                background: "white",
-                border: "1px solid #e0ddd8",
-                borderLeft: `4px solid ${color}`,
-              }}
+              className="rounded-xl p-5 bg-white border border-border-warm shadow-sm border-l-4 overflow-hidden"
+              style={{ borderLeftColor: "inherit" }}
             >
-              <p className="font-semibold text-sm mb-1" style={{ color: "#1e3a5f" }}>
-                {role}
-              </p>
-              <p className="text-xs" style={{ color: "#94a3b8" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`w-2 h-2 rounded-full ${color}`} />
+                <span className="font-bold text-sm text-slate-heading">
+                  {role}
+                </span>
+              </div>
+              <p className="text-xs text-text-muted font-medium leading-relaxed">
                 {description}
               </p>
             </div>

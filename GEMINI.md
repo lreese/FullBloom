@@ -28,6 +28,9 @@ When implementation begins, update the spec's status field from `approved` → `
 ### Scope discipline
 Do not implement anything not described in the spec. If a good idea surfaces during implementation, add it to the spec's **Open Questions** or create a new spec for it. Do not silently expand scope.
 
+### Review Files (`review-*.md`)
+When fixing issues identified in review documents (e.g., `review-security.md`, `review-code.md`, `review-tests.md`), you MUST always document what you fixed directly in the corresponding review file. Update the issue descriptions with a "Fixed" note explaining how it was resolved, and update any summary tables to reflect the new "Fixed" status.
+
 ## Code Style Defaults (until per-app standards exist)
 - Prefer TypeScript over JavaScript.
 - Prefer simple, readable code over clever abstractions.

@@ -48,6 +48,14 @@ class UpdateProfileRequest(BaseModel):
     display_name: str | None = Field(None, max_length=255)
     phone: str | None = Field(None, max_length=15)
 
+    @field_validator("display_name")
+    @classmethod
+    def sanitize_display_name(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        import html
+        return html.escape(v.strip())
+
     @field_validator("phone")
     @classmethod
     def validate_phone(cls, v: str | None) -> str | None:

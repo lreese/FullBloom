@@ -1,8 +1,9 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/useAuth";
+import { Button } from "@/components/ui/button";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, user, loading } = useAuth();
+  const { session, user, loading, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -20,9 +21,16 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: "#f4f1ec" }}>
-        <div className="text-center space-y-4 p-8 bg-white rounded-lg shadow max-w-sm">
-          <h2 className="text-lg font-bold" style={{ color: "#1e3a5f" }}>Access Denied</h2>
-          <p className="text-sm" style={{ color: "#334155" }}>Your account is not active or has not been set up. Contact your administrator.</p>
+        <div className="text-center space-y-6 p-8 bg-white rounded-lg shadow max-w-sm">
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-slate-heading">Access Denied</h2>
+            <p className="text-sm text-text-body">
+              Your account is not active or has not been set up. Please contact your administrator for access.
+            </p>
+          </div>
+          <Button variant="outline" className="w-full" onClick={signOut}>
+            Sign Out & Return to Login
+          </Button>
         </div>
       </div>
     );

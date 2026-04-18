@@ -42,3 +42,6 @@ htmlcov/
 
 # Reference data (large CSVs, not source-controlled)
 References/
+
+# Gemini settings
+.gemini.json

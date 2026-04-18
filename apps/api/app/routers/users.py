@@ -90,11 +90,12 @@ async def deactivate_user(
         raise HTTPException(status_code=404, detail="User not found")
     if target.id == _user.id:
         raise HTTPException(status_code=409, detail="Cannot deactivate yourself")
-    if target.role == "admin" and target.status == "active":
-        active_admin_count = await User.filter(role="admin", status="active").count()
-        if active_admin_count <= 1:
+    if target.role == "admin":
+        # A pending admin can still log in and become active, so they are part of the 'live' pool.
+        live_admin_count = await User.filter(role="admin", status__in=["active", "pending"]).count()
+        if live_admin_count <= 1:
             raise HTTPException(
-                status_code=409, detail="Cannot deactivate the last active admin"
+                status_code=409, detail="Cannot deactivate the last administrator"
             )
     target.status = "deactivated"
     await target.save()

@@ -30,48 +30,37 @@ export function UserBadge({ expanded }: UserBadgeProps) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 w-full px-3 py-2 rounded transition-colors"
-        style={{ color: "white" }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#2d4a2d")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        className="flex items-center gap-2 w-full px-3 py-2 rounded transition-colors border-transparent text-white hover:bg-sidebar-hover"
       >
         {user.avatar_url ? (
-          <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
+          <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-white/20" />
         ) : (
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
-            style={{ background: "#c27890" }}
-          >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 bg-rose-action ring-1 ring-white/20">
             {initials}
           </div>
         )}
         {expanded && (
-          <span className="text-sm text-white truncate">{user.display_name || user.email}</span>
+          <span className="text-sm font-medium truncate flex-1 text-left">{user.display_name || user.email}</span>
         )}
       </button>
 
       {open && (
-        <div
-          className="absolute bottom-full left-0 mb-1 w-48 bg-white rounded-md shadow-lg py-1 z-50"
-          style={{ border: "1px solid #e0ddd8" }}
-        >
+        <div className="absolute bottom-full left-0 mb-1 w-48 bg-white rounded-lg shadow-xl py-1 z-50 border border-border-warm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <Link
             to="/settings/profile"
-            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#f4f1ec]"
-            style={{ color: "#334155" }}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-text-body hover:bg-cream transition-colors border-transparent"
             onClick={() => setOpen(false)}
           >
-            <UserCircle className="w-4 h-4" /> Profile
+            <UserCircle className="w-4 h-4 text-text-muted" /> Profile
           </Link>
           <button
             onClick={() => {
               setOpen(false);
               signOut();
             }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#f4f1ec]"
-            style={{ color: "#334155" }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-text-body hover:bg-cream transition-colors border-transparent"
           >
-            <LogOut className="w-4 h-4" /> Log out
+            <LogOut className="w-4 h-4 text-text-muted" /> Log out
           </button>
         </div>
       )}

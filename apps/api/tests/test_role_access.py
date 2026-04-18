@@ -44,6 +44,12 @@ class TestFieldWorkerRestrictions:
         )
         assert resp.status_code == 200
 
+    async def test_field_worker_cannot_access_users(
+        self, async_client: AsyncClient, auth_headers_field_worker: dict
+    ):
+        resp = await async_client.get("/api/v1/users", headers=auth_headers_field_worker)
+        assert resp.status_code == 403
+
 
 @pytest.mark.anyio
 class TestSalespersonRestrictions:
@@ -58,6 +64,18 @@ class TestSalespersonRestrictions:
             json={"name": "Test", "product_line_id": "00000000-0000-0000-0000-000000000000"},
         )
         assert resp.status_code == 403
+
+    async def test_salesperson_cannot_write_counts(
+        self, async_client: AsyncClient, auth_headers_salesperson: dict, product_type
+    ):
+        # Salesperson has 'r' on inventory_counts, not 'rw'
+        resp = await async_client.put(
+            "/api/v1/counts",
+            headers=auth_headers_salesperson,
+            json={"product_type_id": str(product_type.id), "count_date": "2026-04-12", "counts": []},
+        )
+        assert resp.status_code == 403
+        assert "cannot write 'inventory_counts'" in resp.json()["error"]
 
     async def test_salesperson_can_read_varieties(
         self, async_client: AsyncClient, auth_headers_salesperson: dict
