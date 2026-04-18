@@ -54,3 +54,8 @@ If requirements are ambiguous, ask before building. A wrong implementation is mo
 
 ## Recent Changes
 - 001-order-management: Added Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, Tortoise ORM, Aerich (backend); React, Vite, Tailwind CSS, shadcn/ui (frontend)
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
