@@ -57,6 +57,7 @@ export function LoginPage() {
       <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--color-cream)" }}>
         <div className="w-full max-w-sm space-y-6 p-8 bg-white rounded-lg shadow">
           <div className="text-center">
+            <img src="/icon-192.png" alt="FullBloom Logo" className="mx-auto h-20 w-20 mb-4 rounded-xl shadow-sm" />
             <h1 className="text-2xl font-bold" style={{ color: "var(--color-slate-heading)" }}>Reset Password</h1>
             <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Enter your email to receive a reset link</p>
           </div>
@@ -82,6 +83,7 @@ export function LoginPage() {
     <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--color-cream)" }}>
       <div className="w-full max-w-sm space-y-6 p-8 bg-white rounded-lg shadow">
         <div className="text-center">
+          <img src="/icon-192.png" alt="FullBloom Logo" className="mx-auto h-20 w-20 mb-4 rounded-xl shadow-sm" />
           <h1 className="text-2xl font-bold" style={{ color: "var(--color-slate-heading)" }}>FullBloom</h1>
           <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Sign in to continue</p>
         </div>

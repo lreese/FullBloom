@@ -278,7 +278,10 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
     <>
       {/* ── Mobile top bar ─────────────────────────────────── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between h-12 px-3 bg-sidebar">
-        <span className="text-white font-bold text-lg tracking-tight">FullBloom</span>
+        <div className="flex items-center gap-2">
+          <img src="/icon-192.png" alt="Logo" className="h-6 w-6 rounded-sm" />
+          <span className="text-white font-bold text-lg tracking-tight">FullBloom</span>
+        </div>
         <button
           onClick={() => setMobileOpen(true)}
           className="text-white p-1 border-transparent"
@@ -306,9 +309,14 @@ export function Sidebar({ expanded, onExpandedChange }: SidebarProps) {
         )}
       >
         <div className="flex items-center justify-between h-14 px-3">
-          <span className="text-white font-bold text-xl tracking-tight select-none">
-            {isExpanded ? "FullBloom" : "FB"}
-          </span>
+          <div className="flex items-center gap-2">
+            <img src="/icon-192.png" alt="Logo" className="h-7 w-7 rounded-sm shadow-sm" />
+            {isExpanded && (
+              <span className="text-white font-bold text-xl tracking-tight select-none">
+                FullBloom
+              </span>
+            )}
+          </div>
           {mobileOpen && (
             <button
               onClick={() => setMobileOpen(false)}
