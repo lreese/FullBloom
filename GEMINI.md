@@ -60,6 +60,5 @@ If requirements are ambiguous, ask before building. A wrong implementation is mo
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan at:
-specs/009-create-icon-favicon/plan.md
+shell commands, and other important information, read the current plan
 <!-- SPECKIT END -->

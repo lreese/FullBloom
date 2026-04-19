@@ -1,0 +1,7 @@
+{
+  "inputs": {
+    "spec": "specify a feature for packing by day as well as showing progress. The two pictures give you ideas.",
+    "integration": "gemini",
+    "scope": "full"
+  }
+}
